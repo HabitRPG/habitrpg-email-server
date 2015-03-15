@@ -1,0 +1,29 @@
+Greetings, adventurer!
+
+In honor of your second day with us, we wanted to share 5 easy tricks to help you get the most from HabitRPG (*|BASE_URL|*).
+
+1. Make HabitRPG.com a home page/bookmark.
+  Our users tell us that this is their favorite method to help them remember to check in every day!
+2. Set alarms.
+  If you don’t complete your Dailies before the end of your day, they will hurt you! Set an alarm to remember to check them off. 
+3. Check out the website as well as the mobile app.
+  Our website has more features, a tutorial, and lots of other great stuff! We’re working on rewriting our mobile apps to be native, but until then, take a peek at the website (*|BASE_URL|*). 
+  Check out this screenshot for a sample: https://habitrpg.com/emails/images/one-day-v1.png
+4. Use the Data Display Tool
+  Clicking the “Data” tab or going to data.habitrpg.com will show you how much damage your Dailies will cause, which To-Dos you forgot to tag, and more!
+5. Join the Newbies Guild
+  If you’ve got any questions, join the Newbies Guild (https://habitrpg.com/#/options/groups/guilds/5481ccf3-5d2d-48a9-a871-70a7380cee5a)! It’s a great place to ask questions.
+
+If you use these tips and tricks, it’ll really help your experience in the land of Habitica.
+
+Stay productive,
+Tyler, Vicky, and Leslie
+HabitRPG (*|BASE_URL|*)
+
+Follow HabitRPG on social media!
+https://twitter.com/HabitRPG
+http://blog.habitrpg.com/
+https://www.facebook.com/Habitrpg
+
+---------------------------------
+Don't want to get emails about this event any more? Your wish is our command! Click here (*|UNSUB_EMAIL_TYPE_URL|*) to Unsubscribe from this type of email, or teleport over to Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!

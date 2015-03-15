@@ -1,0 +1,13 @@
+Password for *|USERNAME|* has been reset to *|NEW_PASSWORD|*. Log in at *|BASE_URL|*.
+
+Stay productive,
+Tyler, Vicky, and Leslie
+HabitRPG (*|BASE_URL|*)
+
+Follow HabitRPG on social media!
+https://twitter.com/HabitRPG
+http://blog.habitrpg.com/
+https://www.facebook.com/Habitrpg
+
+---------------------------------
+Don't want to get emails about this event any more? Your wish is our command! Just teleport over to your Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!

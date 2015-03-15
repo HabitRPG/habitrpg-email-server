@@ -1,0 +1,17 @@
+Greetings, *|RECIPIENT_NAME|*!
+
+You've just received a private message from *|SENDER|* on HabitRPG!
+
+Read your message here: *|PMS_INBOX_URL|*
+
+Stay productive,
+Tyler, Vicky, and Leslie
+HabitRPG (*|BASE_URL|*)
+
+Follow HabitRPG on social media!
+https://twitter.com/HabitRPG
+http://blog.habitrpg.com/
+https://www.facebook.com/Habitrpg
+
+---------------------------------
+Don't want to get emails about this event any more? Your wish is our command! Click here (*|UNSUB_EMAIL_TYPE_URL|*) to Unsubscribe from this type of email, or teleport over to Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!

@@ -1,0 +1,19 @@
+Greetings, *|RECIPIENT_NAME|*!
+
+*|INVITER|* wants you to join their Guild *|GUILD_NAME|* on HabitRPG! *|GUILD_URL|*
+
+Guilds are a fun place to meet people with a common interest and keep each other motivated on your journey to fight monsters and improve your life.
+
+What are you waiting for? Come say hi! *|GUILD_URL|*
+
+Stay productive,
+Tyler, Vicky, and Leslie
+HabitRPG (*|BASE_URL|*)
+
+Follow HabitRPG on social media!
+https://twitter.com/HabitRPG
+http://blog.habitrpg.com/
+https://www.facebook.com/Habitrpg
+
+---------------------------------
+Don't want to get emails about this event any more? Your wish is our command! Click here (*|UNSUB_EMAIL_TYPE_URL|*) to Unsubscribe from this type of email, or teleport over to Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!

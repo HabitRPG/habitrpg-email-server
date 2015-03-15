@@ -1,0 +1,19 @@
+Offending Content
+
+*|MESSAGE_TIME|*
+*|MESSAGE_TEXT|*
+
+Persons Involved
+
+Author: *|AUTHOR_EMAIL|* - *|AUTHOR_USERNAME|* - *|AUTHOR_UUID|*
+View Profile (*|AUTHOR_MODAL_URL|*)
+
+Reporter: *|REPORTER_EMAIL|* - *|REPORTER_USERNAME|* - *|REPORTER_UUID|*
+View Profile (*|REPORTER_MODAL_URL|*)
+
+Group Details
+
+Name: *|GROUP_NAME|*
+Type: *|GROUP_TYPE|*
+ID: *|GROUP_ID|*
+View group (*|GROUP_URL|*)

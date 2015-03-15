@@ -1,0 +1,17 @@
+Greetings, *|RECIPIENT_NAME|*!
+
+*|INVITER|* needs your help to defeat the terrifying Boss of "*|QUEST_NAME|*" on HabitRPG! (*|PARTY_URL|*)
+
+Together, you can keep each other accountable for your goals as you work to attack this monster with your Dailies and To-Dos! What are you waiting for? Come adventure at *|INVITER|*’s side! (*|PARTY_URL|*)
+
+Stay productive,
+Tyler, Vicky, and Leslie
+HabitRPG (*|BASE_URL|*)
+
+Follow HabitRPG on social media!
+https://twitter.com/HabitRPG
+http://blog.habitrpg.com/
+https://www.facebook.com/Habitrpg
+
+---------------------------------
+Don't want to get emails about this event any more? Your wish is our command! Click here (*|UNSUB_EMAIL_TYPE_URL|*) to Unsubscribe from this type of email, or teleport over to Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!
