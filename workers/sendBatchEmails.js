@@ -2,6 +2,8 @@ var nconf = require('nconf'),
     moment = require('moment'),
     _ = require('lodash');
 
+var queue; // Defined later
+
 var db = require('monk')(nconf.get('MONGODB_URL'));
 db.options.multi = true;
 
@@ -14,7 +16,7 @@ var nowRecapture, nowOneDay, OneDayAgo, OneDayAgoOneHour, ThreeDaysAgo, ThreeDay
 var phaseRecapture = 0; // 2, 3 or 4 then ends
 var phaseOneDay = 0; // 1, then ends
 
-module.exports = function(job, done){
+var worker = function(job, done){
   if(job.data.type == 'sendRecaptureEmails'){
     nowRecapture = new Date();
     ThreeDaysAgo = moment(nowRecapture).subtract({days: 2, hours: 23, minutes: 50}).toDate();
@@ -317,4 +319,9 @@ module.exports = function(job, done){
   }else{
     throw new Error('sendBatchEmails receive invalid job.data.type: ' + (job.data && job.data.type));
   }
+}
+
+module.exports = function(queue){
+  queue = queue; // Pass queue from parent module
+  return worker;
 }

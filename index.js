@@ -29,7 +29,7 @@ var queue = kue.createQueue({
 });
 
 queue.process('email', 3, require('./workers/email'));
-queue.process('sendBatchEmails', require('./workers/sendBatchEmails'));
+queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue));
 
 queue.promote();
 
