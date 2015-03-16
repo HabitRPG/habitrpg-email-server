@@ -66,7 +66,7 @@ var worker = function(job, done){
       });
     }
 
-    var sendEmailsRecapture = function(type, users, continueCb){
+    var sendEmailsRecapture = function(users, continueCb){
       var ids = [];
 
       var toData = users.map(function(user){
@@ -135,14 +135,14 @@ var worker = function(job, done){
         });
     };
 
-    var execQueryRecapture = function(emailType, beforeTime, afterTime){
+    var execQueryRecapture = function(beforeTime, afterTime){
       findAffectedUsersRecapture(beforeTime, afterTime, function(docs, continueCb){
         if(docs.length < limit){
           continueCb = startPhaseRecapture;
           lastIdRecapture = null;
         }
 
-        sendEmailsRecapture(emailType, docs, continueCb);
+        sendEmailsRecapture(docs, continueCb);
       });
     };
 
@@ -150,15 +150,15 @@ var worker = function(job, done){
       switch(phaseRecapture){
         case 0:
           phaseRecapture = 2;
-          execQueryRecapture('3-days-recapture', ThreeDaysAgo, ThreeDaysAgoOneHour);
+          execQueryRecapture(ThreeDaysAgo, ThreeDaysAgoOneHour);
           break;
         case 2:
           phaseRecapture = 3;
-          execQueryRecapture('10-days-recapture', TenDaysAgo, TenDaysAgoOneHour);
+          execQueryRecapture(TenDaysAgo, TenDaysAgoOneHour);
           break;
         case 3:
           phaseRecapture = 4;
-          execQueryRecapture('1-month-recapture', OneMonthAgo, OneMonthAgoOneHour);
+          execQueryRecapture(OneMonthAgo, OneMonthAgoOneHour);
           break;
         case 4:
           phaseRecapture = 0;
