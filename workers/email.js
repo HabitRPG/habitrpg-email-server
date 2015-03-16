@@ -35,9 +35,9 @@ var mapEmailsToPreferences = {
   'invite-collection-quest': 'invitedQuest',
   //'reminder-to-login': 'remindersToLogin',
   '1-day-email': 'importantAnnouncements',
-  '3-days-email': 'importantAnnouncements',
-  '10-days-email': 'importantAnnouncements',
-  '1-month-email': 'importantAnnouncements'
+  '3-days-recapture': 'importantAnnouncements',
+  '10-days-recapture': 'importantAnnouncements',
+  '1-month-recapture': 'importantAnnouncements'
 };
 
 module.exports = function(job, done){
