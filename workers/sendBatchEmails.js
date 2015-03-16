@@ -321,7 +321,7 @@ var worker = function(job, done){
   }
 }
 
-module.exports = function(queue){
-  queue = queue; // Pass queue from parent module
+module.exports = function(parentQueue){
+  queue = parentQueue; // Pass queue from parent module
   return worker;
 }
