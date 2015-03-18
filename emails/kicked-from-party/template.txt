@@ -2,8 +2,8 @@ You have been removed from your Party, "*|GROUP_NAME|*". You can form your own p
 under Social > Party, or look for a new one in the Party Wanted Guild (*|PARTY_WANTED_GUILD|*).
 
 *|IF:MESSAGE|*
-    Your former Party Leader has provided the following message:
-      "*|MESSAGE|*"
+Your former Party Leader has provided the following message:
+  "*|MESSAGE|*"
 *|END:IF|*
 
 Stay productive,

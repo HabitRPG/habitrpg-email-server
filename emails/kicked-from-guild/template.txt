@@ -2,8 +2,8 @@ You have been removed from your guild "*|GROUP_NAME|*", *|RECIPIENT_NAME|*. You 
 or look for a new one under Social > Guilds (*|GUILDS_LINK|*).
 
 *|IF:MESSAGE|*
-    Your former Guild Leader has provided the following message:
-      "*|MESSAGE|*"
+Your former Guild Leader has provided the following message:
+  "*|MESSAGE|*"
 *|END:IF|*
 
 Stay productive,
