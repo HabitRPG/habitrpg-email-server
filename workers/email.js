@@ -25,6 +25,8 @@ fs.readdirSync(__dirname + '/../emails').filter(function(file){
 // user.preferences.emailNotifications[key]
 var mapEmailsToPreferences = {
   'new-pm': 'newPM',
+  'kicked-from-guild': 'kickedGroup',
+  'kicked-from-party': 'kickedGroup',
   'won-challenge': 'wonChallenge',
   'gifted-gems': 'giftedGems',
   'gifted-subscription': 'giftedSubscription',

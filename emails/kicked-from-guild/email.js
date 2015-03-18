@@ -1,0 +1,3 @@
+{
+  "subject": "Removed from Guild"
+}
