@@ -1,6 +1,6 @@
 Greetings, *|RECIPIENT_NAME|*!
 
-*|INVITER|* wants you to join their Guild *|GUILD_NAME|* on HabitRPG! *|GUILD_URL|*
+*|INVITER|* wants you to join their Guild "*|GUILD_NAME|*" on HabitRPG! *|GUILD_URL|*
 
 Guilds are a fun place to meet people with a common interest and keep each other motivated on your journey to fight monsters and improve your life.
 
