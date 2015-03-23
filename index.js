@@ -28,7 +28,7 @@ var queue = kue.createQueue({
   redis: kueRedisOpts
 });
 
-queue.process('email', 3, require('./workers/email'));
+queue.process('email', 5, require('./workers/email'));
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue));
 
 queue.promote();
