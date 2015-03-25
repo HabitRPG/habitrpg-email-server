@@ -28,7 +28,7 @@ var queue = kue.createQueue({
   redis: kueRedisOpts
 });
 
-queue.process('email', 5, require('./workers/email'));
+queue.process('email', 10, require('./workers/email'));
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue));
 
 queue.promote();
@@ -46,6 +46,12 @@ queue.on('job failed', function(){
   var args = Array.prototype.slice.call(arguments);
   args.unshift('Error processing job.');
   console.error.apply(console, args);
+});
+
+process.once('uncaughtException', function(err){
+  queue.shutdown(9500, function(err2){
+    process.exit(0);
+  });
 });
 
 process.once('SIGTERM', function(sig){
