@@ -85,6 +85,7 @@ module.exports = function(job, done){
         'Reply-To': replyToAddress
       },
       global_merge_vars: job.data.variables,
+      merge_var: job.data.personalVariables,
       google_analytics_domains: ['habitrpg.com'],
       from_email: 'messengers@habitrpg.com',
       from_name: 'HabitRPG',
