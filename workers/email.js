@@ -86,7 +86,7 @@ module.exports = function(job, done){
       },
       global_merge_vars: job.data.variables,
       merge_vars: job.data.personalVariables,
-      google_analytics_domains: ['habitrpg.com'],
+      //google_analytics_domains: ['habitrpg.com'],
       from_email: 'messengers@habitrpg.com',
       from_name: 'HabitRPG',
       html: email.htmlTemplate,
