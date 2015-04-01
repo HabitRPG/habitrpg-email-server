@@ -2,11 +2,7 @@ Greetings, adventurer!
 
 Remember HabitRPG, the website that turns your real life into a game? We’ve just launched our Spring Fling event and given everyone a free Egg Hunt collection quest! Motivate yourself and your friends to find eggs by completing your real-life tasks, and you’ll be rewarded with Egg pets and mounts (*|BASE_URL|*)!
 
-Also, on the website we have brand-new, limited edition class equipment available to purchase with gold from the Rewards column! These items will disappear on April 30th, so you’ll have to be extra-productive to earn them all in time.  Depending on your class, you can be a Magician’s Bunny, Comforting Kitty, Beware Dog, or Sneaky Squeaker! Come check them out! (*|BASE_URL|*)
-
-The event is only just beginning, and there is plenty more to come.  We might even have something special up our sleeve for April Fools... Plus, we’ve added lots of new features since the last time you signed in.
-
-So what are you waiting for?  Come get organized, get motivated, and get some gold (*|BASE_URL|*)! We’re looking forward to seeing you again.
+Also, on the website we have brand-new, limited edition class equipment available to purchase with gold from the Rewards column! These items will disappear on April 30th, so you’ll have to be extra-productive to earn them all in time. Depending on your class, you can be a Magician’s Bunny, Comforting Kitty, Beware Dog, or Sneaky Squeaker! Come check them out! (*|BASE_URL|*)
 
 Warmly,
 Tyler, Leslie, and Vicky
