@@ -1,24 +1,21 @@
 Greetings, adventurer!
 
-It’s been a long time since we’ve seen you on the fair website HabitRPG, motivating yourself to improve your habits by making your life like a game.
+Remember HabitRPG, the website that turns your real life into a game? We’ve just launched our Spring Fling event and given everyone a free Egg Hunt collection quest! Motivate yourself and your friends to find eggs by completing your real-life tasks, and you’ll be rewarded with Egg pets and mounts (*|BASE_URL|*)!
 
-We’ve been busy filling the site with new features and content to keep life improvement as fun as possible. Check out a summary of everything we’ve done (http://blog.habitrpg.com/tagged/weekly-status-report)!
+Also, on the website we have brand-new, limited edition class equipment available to purchase with gold from the Rewards column! These items will disappear on April 30th, so you’ll have to be extra-productive to earn them all in time.  Depending on your class, you can be a Magician’s Bunny, Comforting Kitty, Beware Dog, or Sneaky Squeaker! Come check them out! (*|BASE_URL|*)
 
-So come back to Habitica! We miss you. 
-Here are some resources to help speed your return:
-- Establishing your tasks (http://habitrpg.wikia.com/wiki/Establishing_Your_Tasks)
-- Task List FAQ (http://habitrpg.wikia.com/wiki/Task_List_FAQ)
-- Overcoming Productivity Pitfalls (http://habitrpg.wikia.com/wiki/Antidotes:_Overcoming_Obstacles)
-- Avoiding Burnout (http://habitrpg.wikia.com/wiki/Burnout)
+The event is only just beginning, and there is plenty more to come.  We might even have something special up our sleeve for April Fools... Plus, we’ve added lots of new features since the last time you signed in.
 
-Stay productive,
-Tyler, Vicky, and Leslie
+So what are you waiting for?  Come get organized, get motivated, and get some gold (*|BASE_URL|*)! We’re looking forward to seeing you again.
+
+Warmly,
+Tyler, Leslie, and Vicky
 HabitRPG (*|BASE_URL|*)
 
-Follow HabitRPG on social media!
+Follow us on Social Media!
 https://twitter.com/HabitRPG
-http://blog.habitrpg.com/
 https://www.facebook.com/Habitrpg
+http://blog.habitrpg.com
 
 ---------------------------------
 Don't want to get emails about this event any more? Your wish is our command! Click here (*|UNSUB_EMAIL_TYPE_URL|*) to Unsubscribe from this type of email, or teleport over to Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!
