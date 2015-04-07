@@ -16,4 +16,4 @@ http://blog.habitrpg.com/
 https://www.facebook.com/Habitrpg
 
 ---------------------------------
-Don't want to get emails about this event any more? Your wish is our command! Just teleport over to your Email Settings Page (*|EMAIL_SETTINGS_URL|*) and choose which types of emails you no longer want to receive. Our messenger dragons will be happy to comply!
+Click here (*|UNSUB_EMAIL_TYPE_URL|*) to unsubscribe from further HabitRPG emails.
