@@ -14,4 +14,4 @@ http://blog.habitrpg.com/
 https://www.facebook.com/Habitrpg
 
 ---------------------------------
-Click here (*|UNSUB_EMAIL_TYPE_URL|*) to unsubscribe from further HabitRPG emails.
+Click here (*|RECIPIENT_UNSUB_URL|*) to unsubscribe from further HabitRPG emails.
