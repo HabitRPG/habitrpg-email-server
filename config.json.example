@@ -7,5 +7,6 @@
   "REDIS_PORT": 6379,
   "REDIS_HOST": "127.0.0.1",
   "STANDARD_REPLY_TO_ADDR": "an@email.address",
-  "ORGS_REPLY_TO_ADDR": "an@email.address"
+  "ORGS_REPLY_TO_ADDR": "an@email.address",
+  "SESSION_SECRET": "password"
 }

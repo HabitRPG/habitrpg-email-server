@@ -1,11 +1,14 @@
 var nconf = require('nconf'),
     moment = require('moment'),
+    utils = require('../utils'),
     _ = require('lodash');
 
 var queue; // Defined later
 
 var db = require('monk')(nconf.get('MONGODB_URL'));
 db.options.multi = true;
+
+var baseUrl = 'https://habitrpg.com';
 
 var habitrpgUsers = db.get('users');
 var limit = 100;
@@ -84,10 +87,29 @@ var worker = function(job, done){
           email = user.auth.facebook.emails[0].value;
           name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
         }
-        return {'email': email, 'name': name};
+        return {'email': email, 'name': name, _id: user._id};
+      }).filter(function(data){
+        return (data && data.email) ? true : false;
       });
 
-      toData = _.compact(toData);
+      var personalVariables = toData.map(function(personalToData){
+        return {
+          rcpt: personalToData.email,
+          vars: [
+            /*{
+              name: 'RECIPIENT_NAME',
+              content: personalToData.name
+            },*/
+            {
+              name: 'RECIPIENT_UNSUB_URL',
+              content: baseUrl + '/unsubscribe?code=' + module.exports.encrypt(JSON.stringify({
+                _id: personalToData._id,
+                email: personalToData.email
+              }))
+            }
+          ]
+        };
+      });
 
       var emailType;
 
@@ -122,8 +144,9 @@ var worker = function(job, done){
             to: toData,
             // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
             variables: [
-              {name: 'BASE_URL', content: 'https://habitrpg.com'}
-            ]
+              {name: 'BASE_URL', content: baseUrl}
+            ],
+            personalVariables: personalVariables
           })
           .priority('high')
           .attempts(5)
@@ -245,9 +268,28 @@ var worker = function(job, done){
         // Here so that new users are not ignored
         ids.push(user._id);
 
-        return {email: email, name: name};
+        return {email: email, name: name, _id: user._id};
       }).filter(function(data){
         return (data && data.email) ? true : false;
+      });
+
+      var personalVariables = toData.map(function(personalToData){
+        return {
+          rcpt: personalToData.email,
+          vars: [
+            /*{
+              name: 'RECIPIENT_NAME',
+              content: personalToData.name
+            },*/
+            {
+              name: 'RECIPIENT_UNSUB_URL',
+              content: baseUrl + '/unsubscribe?code=' + module.exports.encrypt(JSON.stringify({
+                _id: personalToData._id,
+                email: personalToData.email
+              }))
+            }
+          ]
+        };
       });
 
       // Update the recaptureEmailsPhase flag in the database for each user
@@ -269,8 +311,9 @@ var worker = function(job, done){
             to: toData,
             // Manually pass BASE_URL as it's not been passed from server like other emails
             variables: [
-              {name: 'BASE_URL', content: 'https://habitrpg.com'}
-            ]
+              {name: 'BASE_URL', content: baseUrl}
+            ],
+            personalVariables: personalVariables
           })
           .priority('high')
           .attempts(5)
