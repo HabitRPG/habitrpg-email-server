@@ -29,8 +29,8 @@ var worker = function(job, done){
     var END_DATE = lastCron;
     var START_DATE = moment(lastCron).subtract(7, 'days');
 
-    variables.END_DATE = END_DATE.format("dddd, MMMM Do YYYY, h:mm:ss a");
-    variables.START_DATE = START_DATE.format("dddd, MMMM Do YYYY, h:mm:ss a");
+    variables.END_DATE = END_DATE.format('dddd, MMMM Do YYYY');
+    variables.START_DATE = START_DATE.format('dddd, MMMM Do YYYY');
     
     var XP_START, XP_END;
 
@@ -45,7 +45,7 @@ var worker = function(job, done){
 
     XP_END = user.history.exp[user.history.exp.length - 1].value;
 
-    variables.XP_EARNED = XP_END - XP_START;
+    variables.XP_EARNED = parseInt(XP_END - XP_START) || 0;
 
     variables.TODOS_ADDED = 0;
     variables.TODOS_COMPLETED = 0;
@@ -59,7 +59,7 @@ var worker = function(job, done){
       if(todo.dateCompleted && (moment(todo.dateCompleted).isAfter(variables.START_DATE) || moment(todo.dateCompleted).isSame(variables.START_DATE))){
         variables.TODOS_COMPLETED++;
         if(!variables.OLDEST_TODO_COMPLETED_DATE || moment(todo.dateCreated).isBefore(variables.OLDEST_TODO_COMPLETED_DATE)){
-          variables.OLDEST_TODO_COMPLETED_DATE = moment(todo.dateCreated).format("dddd, MMMM Do YYYY, h:mm:ss a");
+          variables.OLDEST_TODO_COMPLETED_DATE = moment(todo.dateCreated).format("dddd, MMMM Do YYYY");
         }
       }
     });
