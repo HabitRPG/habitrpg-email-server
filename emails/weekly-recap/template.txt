@@ -4,8 +4,9 @@ The bards are singing of your adventures this week! From *|START_DATE|* until *|
 - *|TODOS_ADDED|*</b> To-Dos Added
 - *|TODOS_COMPLETED|*</b> To-Dos Completed
 
-The oldest To-Do that you completed was added on: *|OLDEST_TODO_COMPLETED_DATE|*.
-
+*|IF:OLDEST_TODO_COMPLETED_DATE|*
+  The oldest To-Do that you completed was added on: *|OLDEST_TODO_COMPLETED_DATE|*.
+*|END:IF|*
 Your highest Daily streak is: *|HIGHEST_DAILY_STREAK|*.
 
 *|HIGHEST_DAILY_STREAK_MESSAGE|*
