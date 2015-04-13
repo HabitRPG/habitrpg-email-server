@@ -1,5 +1,4 @@
-var nconf = require('nconf'),
-    moment = require('moment'),
+var moment = require('moment'),
     utils = require('../utils'),
     _ = require('lodash');
 
