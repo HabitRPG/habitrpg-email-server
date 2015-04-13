@@ -1,5 +1,6 @@
 var kue = require('kue'),
     express = require('express'),
+    monk = require('monk'),
     nconf = require('nconf');
 
 nconf
@@ -8,6 +9,11 @@ nconf
   .file({ file: __dirname + '/config.json' });
 
 var app = express();
+
+var baseUrl = 'https://habitrpg.com';
+
+var db = monk(nconf.get('MONGODB_URL'));
+db.options.multi = true;
 
 var kueRedisOpts = {
   port: nconf.get('REDIS_PORT'),
@@ -29,7 +35,8 @@ var queue = kue.createQueue({
 });
 
 queue.process('email', 10, require('./workers/email'));
-queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue));
+queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue, db, baseUrl));
+queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, baseUrl));
 
 queue.promote();
 

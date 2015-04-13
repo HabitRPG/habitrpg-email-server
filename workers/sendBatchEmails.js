@@ -3,14 +3,9 @@ var nconf = require('nconf'),
     utils = require('../utils'),
     _ = require('lodash');
 
-var queue; // Defined later
+// Defined later
+var queue, db, baseUrl, habitrpgUsers;
 
-var db = require('monk')(nconf.get('MONGODB_URL'));
-db.options.multi = true;
-
-var baseUrl = 'https://habitrpg.com';
-
-var habitrpgUsers = db.get('users');
 var limit = 100;
 
 var nowRecapture, nowOneDay, OneDayAgo, OneDayAgoOneHour, ThreeDaysAgo, ThreeDaysAgoOneHour, TenDaysAgo, 
@@ -20,6 +15,8 @@ var phaseRecapture = 0; // 2, 3 or 4 then ends
 var phaseOneDay = 0; // 1, then ends
 
 var worker = function(job, done){
+  habitrpgUsers = db.get('users');
+
   if(job.data.type == 'sendRecaptureEmails'){
     nowRecapture = new Date();
     ThreeDaysAgo = moment(nowRecapture).subtract({days: 2, hours: 23, minutes: 50}).toDate();
@@ -364,7 +361,10 @@ var worker = function(job, done){
   }
 }
 
-module.exports = function(parentQueue){
+module.exports = function(parentQueue, parentDb, parentBaseUrl){
   queue = parentQueue; // Pass queue from parent module
+  db = parentDb; // Pass db from parent module
+  baseUrl = parentBaseUrl; // Pass baseurl from parent module
+  
   return worker;
 }
