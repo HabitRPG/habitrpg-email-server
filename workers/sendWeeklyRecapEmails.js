@@ -37,7 +37,7 @@ var worker = function(job, done){
     // TODO break after first iteration
     user.history.exp.forEach(function(obj){
       if(!XP_START){
-        if(moment(obj.date).isSame(variables.START_DATE) || moment(obj.date).isAfter(variables.START_DATE)){
+        if(moment(obj.date).isSame(START_DATE) || moment(obj.date).isAfter(START_DATE)){
           XP_START = obj.value;
         }
       }
@@ -52,11 +52,11 @@ var worker = function(job, done){
     variables.OLDEST_TODO_COMPLETED_DATE = null;
 
     user.todos.forEach(function(todo){
-      if(moment(todo.dateCreated).isAfter(variables.START_DATE) || moment(todo.dateCreated).isSame(variables.START_DATE)){
+      if(moment(todo.dateCreated).isAfter(START_DATE) || moment(todo.dateCreated).isSame(START_DATE)){
         variables.TODOS_ADDED++;
       }
 
-      if(todo.dateCompleted && (moment(todo.dateCompleted).isAfter(variables.START_DATE) || moment(todo.dateCompleted).isSame(variables.START_DATE))){
+      if(todo.dateCompleted && (moment(todo.dateCompleted).isAfter(START_DATE) || moment(todo.dateCompleted).isSame(START_DATE))){
         variables.TODOS_COMPLETED++;
         if(!variables.OLDEST_TODO_COMPLETED_DATE || moment(todo.dateCreated).isBefore(variables.OLDEST_TODO_COMPLETED_DATE)){
           variables.OLDEST_TODO_COMPLETED_DATE = moment(todo.dateCreated).format("dddd, MMMM Do YYYY");
