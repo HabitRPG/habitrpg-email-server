@@ -60,6 +60,7 @@ module.exports = function(job, done){
   var toArr = job.data.to.email ? [job.data.to] : job.data.to;
   mandrillClient.messages.sendTemplate({
     template_name: job.data.emailType, // template_name === tag === emailType
+    template_content: [], // must be supplied even if not used
     message: {
       to: toArr,
       'headers': {
