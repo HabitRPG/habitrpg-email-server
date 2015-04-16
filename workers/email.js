@@ -8,19 +8,6 @@ var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
 var standardReplyTo = nconf.get('STANDARD_REPLY_TO_ADDR');
 var orgsReplyTo = nconf.get('ORGS_REPLY_TO_ADDR');
 
-var emails = {};
-
-fs.readdirSync(__dirname + '/../emails').filter(function(file){
-  var stats = fs.statSync(__dirname + '/../emails/' + file);
-  if(stats.isDirectory()){
-    emails[file] = {
-      data: require(__dirname + '/../emails/' + file + '/email.json'),
-      textTemplate: fs.readFileSync(__dirname + '/../emails/' + file + '/template.txt', 'utf8'),
-      htmlTemplate: fs.readFileSync(__dirname + '/../emails/' + file + '/template.html', 'utf8')
-    }
-  }
-});
-
 // A simple map that link an email type to its key stored in
 // user.preferences.emailNotifications[key]
 var mapEmailsToPreferences = {
@@ -43,12 +30,6 @@ var mapEmailsToPreferences = {
 };
 
 module.exports = function(job, done){
-  var email = emails[job.data.emailType];
-
-  if(!email){
-    return done(new Error('Invalid email type'));
-  }
-
   var replyToAddress = standardReplyTo; // For beta and production
 
   var baseUrl = _.find(job.data.variables, {name: 'BASE_URL'});
@@ -77,9 +58,9 @@ module.exports = function(job, done){
   // If it's an object there is only one email to send, otherwise
   // the same one to multiple users
   var toArr = job.data.to.email ? [job.data.to] : job.data.to;
-  mandrillClient.messages.send({
+  mandrillClient.messages.sendTemplate({
+    template_name: job.data.emailType, // template_name === tag === emailType
     message: {
-      subject: email.data.subject,
       to: toArr,
       'headers': {
         'Reply-To': replyToAddress
@@ -89,8 +70,6 @@ module.exports = function(job, done){
       //google_analytics_domains: ['habitrpg.com'],
       from_email: 'messengers@habitrpg.com',
       from_name: 'HabitRPG',
-      html: email.htmlTemplate,
-      text: email.textTemplate,
       track_opens: true,
       preserve_recipients: false,
       tags: [job.data.emailType]

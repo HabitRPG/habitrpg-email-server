@@ -92,10 +92,10 @@ var worker = function(job, done){
         return {
           rcpt: personalToData.email,
           vars: [
-            /*{
+            {
               name: 'RECIPIENT_NAME',
               content: personalToData.name
-            },*/
+            },
             {
               name: 'RECIPIENT_UNSUB_URL',
               content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
@@ -273,10 +273,10 @@ var worker = function(job, done){
         return {
           rcpt: personalToData.email,
           vars: [
-            /*{
+            {
               name: 'RECIPIENT_NAME',
               content: personalToData.name
-            },*/
+            },
             {
               name: 'RECIPIENT_UNSUB_URL',
               content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({

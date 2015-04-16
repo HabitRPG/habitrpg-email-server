@@ -74,6 +74,8 @@ var worker = function(job, done){
 
     if(variables.HIGHEST_DAILY_STREAK === 0){
       variables.HIGHEST_DAILY_STREAK_MESSAGE = 'Don\'t despair! Apply yourself, and soon that number will be sky-high!';
+    }else if(variables.HIGHEST_DAILY_STREAK < 15){
+      variables.HIGHEST_DAILY_STREAK_MESSAGE = 'Keep going, and you\'ll earn a 21-Day Streak Achievement!';
     }else if(variables.HIGHEST_DAILY_STREAK < 20){
       variables.HIGHEST_DAILY_STREAK_MESSAGE = 'You\'re getting close to a 21-Day Streak Achievement! Don\'t give up!';
     }else if(variables.HIGHEST_DAILY_STREAK < 41){
@@ -93,9 +95,9 @@ var worker = function(job, done){
       }
     });
 
-    if(variables.STRONG_HABITS > variables.WEAK_HABITS){
+    if(variables.STRONG_HABITS < variables.WEAK_HABITS){
       variables.HABITS_MESSAGE = 'Uh oh! Work hard to turn those weak Habits blue!';
-    }else if(variables.STRONG_HABITS < variables.WEAK_HABITS){
+    }else if(variables.STRONG_HABITS > variables.WEAK_HABITS){
       variables.HABITS_MESSAGE = 'Well done! Keep attacking those Habits to keep them strong!';
     }else{
       variables.HABITS_MESSAGE = 'You\'re almost there! Work hard to tip the balance.';
@@ -118,13 +120,19 @@ var worker = function(job, done){
 
     variables = [{
       rcpt: toData.email,
-      vars: variables.concat([{
-        name: 'RECIPIENT_UNSUB_URL',
-        content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
-          _id: toData._id,
-          email: toData.email
-        }))
-      }])
+      vars: variables.concat([
+        {
+          name: 'RECIPIENT_UNSUB_URL',
+          content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+            _id: toData._id,
+            email: toData.email
+          }))
+        },
+        {
+          name: 'RECIPIENT_NAME',
+          content: toData.name
+        }
+      ])
     }];
 
     if(toData.email){
