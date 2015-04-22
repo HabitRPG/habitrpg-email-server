@@ -77,16 +77,17 @@ var worker = function(job, done){
     });
 
     if(variables.HIGHEST_DAILY_STREAK === 0){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 'Don\'t despair! Apply yourself, and soon that number will be sky-high!';
+      variables.HIGHEST_DAILY_STREAK_MESSAGE = 1;
     }else if(variables.HIGHEST_DAILY_STREAK < 15){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 'Keep going, and you\'ll earn a 21-Day Streak Achievement!';
+      variables.HIGHEST_DAILY_STREAK_MESSAGE = 2;
     }else if(variables.HIGHEST_DAILY_STREAK < 20){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 'You\'re getting close to a 21-Day Streak Achievement! Don\'t give up!';
+      variables.HIGHEST_DAILY_STREAK_MESSAGE = 3;
     }else if(variables.HIGHEST_DAILY_STREAK < 41){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 'Can you stack your 21-day Streak Achievement?';
+      variables.HIGHEST_DAILY_STREAK_MESSAGE = 4;
     }else{
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 'You\'re racking up the Streak Achievements! How high can you go?';
+      variables.HIGHEST_DAILY_STREAK_MESSAGE = 5;
     }
+
 
     variables.WEAK_HABITS = 0;
     variables.STRONG_HABITS = 0;
