@@ -201,7 +201,7 @@ var worker = function(job, done){
 
           var params = {
             Bucket: 'habitica-assets',
-            Key: ('emails/weekly-recap-graphs/xp-' + variables.GRAPHS_UUID),
+            Key: ('emails/weekly-recap-graphs/xp-' + variables.GRAPHS_UUID + '.png'),
             Body: buf,
             StorageClass: 'REDUCED_REDUNDANCY'
           };
@@ -219,7 +219,7 @@ var worker = function(job, done){
 
           var params = {
             Bucket: 'habitica-assets',
-            Key: ('emails/weekly-recap-graphs/habits-' + variables.GRAPHS_UUID),
+            Key: ('emails/weekly-recap-graphs/habits-' + variables.GRAPHS_UUID + '.png'),
             Body: buf,
             StorageClass: 'REDUCED_REDUNDANCY'
           };
