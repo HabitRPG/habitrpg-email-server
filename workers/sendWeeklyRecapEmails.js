@@ -3,7 +3,7 @@ var moment = require('moment'),
     _ = require('lodash'),
     uuidGen = require('uuid'),
     AWS = require('aws-sdk'),
-    canvas = require('canvas'),
+    Canvas = require('canvas'),
     Chart = require('nchart'),
     fs = require('fs'),
     async = require('async');
@@ -23,7 +23,7 @@ var worker = function(job, done){
     fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos', 'flags.weeklyRecapEmailsPhase']
   }, function(err, user){
     if(err) return done(err);
-    if(!user) return done(new Error('User not found with uuid ' + uuid + ' (or in the inn)'));
+    if(!user) return done(new Error('User not found with uuid ' + uuid));
 
     var variables = {};
 
@@ -130,14 +130,15 @@ var worker = function(job, done){
     // TODO be sure on how many values taken
     _.last(user.history.exp, user.history.exp.length - XP_START_INDEX)
       .forEach(function(item){
-        xpGraphData.labesl.push(moment(item.date).format('dddd, MMMM Do YYYY'));
+        xpGraphData.labels.push(moment(item.date).format('dddd, MMMM Do YYYY'));
         xpGraphData.datasets[0].data.push(item.value);
       });
 
     var xpCanvas = new Canvas(1600, 800);
+
     var xpCanvasCtx = xpCanvas.getContext('2d');
 
-    new Chart(ctx).Line(xpGraphData);
+    new Chart(xpCanvasCtx).Line(xpGraphData);
 
     var habitsGraphData = {
       labels: ['Weak Habits', 'Strong Habits'],
@@ -154,7 +155,7 @@ var worker = function(job, done){
     var habitsCanvas = new Canvas(1600, 800);
     var habitsCanvasCtx = habitsCanvas.getContext('2d');
 
-    new Chart(ctx).Line(habitsGraphData);
+    new Chart(habitsCanvasCtx).Line(habitsGraphData);
 
     variables.GRAPHS_UUID = uuidGen.v1();
 
