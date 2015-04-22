@@ -88,7 +88,6 @@ var worker = function(job, done){
       variables.HIGHEST_DAILY_STREAK_MESSAGE = 5;
     }
 
-
     variables.WEAK_HABITS = 0;
     variables.STRONG_HABITS = 0;
 
@@ -102,11 +101,11 @@ var worker = function(job, done){
 
     // TODO move all text to the template, using a code to identify them
     if(variables.STRONG_HABITS < variables.WEAK_HABITS){
-      variables.HABITS_MESSAGE = 'Uh oh! Work hard to turn those weak Habits blue!';
+      variables.HABITS_MESSAGE = 1;
     }else if(variables.STRONG_HABITS > variables.WEAK_HABITS){
-      variables.HABITS_MESSAGE = 'Well done! Keep attacking those Habits to keep them strong!';
+      variables.HABITS_MESSAGE = 2;
     }else{
-      variables.HABITS_MESSAGE = 'You\'re almost there! Work hard to tip the balance.';
+      variables.HABITS_MESSAGE = 3;
     }
 
     if(!user.flags.weeklyRecapEmailsPhase || !isNan(user.flags.weeklyRecapEmailsPhase)){
