@@ -108,7 +108,7 @@ var worker = function(job, done){
       variables.HABITS_MESSAGE = 3;
     }
 
-    if(!user.flags.weeklyRecapEmailsPhase || !isNan(user.flags.weeklyRecapEmailsPhase)){
+    if(!user.flags.weeklyRecapEmailsPhase || !isNaN(user.flags.weeklyRecapEmailsPhase)){
       var phase = user.flags.weeklyRecapEmailsPhase || 0;
       variables.TIP_NUMBER = phase < 10 ? (phase + 1) : 10;
     }
@@ -155,13 +155,9 @@ var worker = function(job, done){
     var habitsCanvas = new Canvas(1600, 800);
     var habitsCanvasCtx = habitsCanvas.getContext('2d');
 
-    new Chart(habitsCanvasCtx).Line(habitsGraphData);
+    new Chart(habitsCanvasCtx).Bar(habitsGraphData);
 
-    variables.GRAPHS_UUID = uuidGen.v1();
-
-    variables = Object.keys(variables).map(function(key){
-      return {name: key, content: variables[key]};
-    });
+    variables.GRAPHS_UUID = uuidGen.v1().toString();
 
     var toData = {_id: user._id};
 
@@ -177,23 +173,6 @@ var worker = function(job, done){
     if(!toData.email){
       return done(new Error('Email unavalaible for uuid:' + uuid));
     }
-
-    variables = [{
-      rcpt: toData.email,
-      vars: variables.concat([
-        {
-          name: 'RECIPIENT_UNSUB_URL',
-          content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
-            _id: toData._id,
-            email: toData.email
-          }))
-        },
-        {
-          name: 'RECIPIENT_NAME',
-          content: toData.name
-        }
-      ])
-    }];
 
     async.parallel([
       function(cb){
@@ -245,6 +224,27 @@ var worker = function(job, done){
           }
         }, function(e, res){
           if(e) return done(e);
+
+          variables = Object.keys(variables).map(function(key){
+            return {name: key, content: variables[key]};
+          });
+
+          variables = [{
+            rcpt: toData.email,
+            vars: variables.concat([
+              {
+                name: 'RECIPIENT_UNSUB_URL',
+                content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+                  _id: toData._id,
+                  email: toData.email
+                }))
+              },
+              {
+                name: 'RECIPIENT_NAME',
+                content: toData.name
+              }
+            ])
+          }];
 
           queue.create('email', {
             emailType: 'weekly-recap',
