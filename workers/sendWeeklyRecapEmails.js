@@ -2,7 +2,7 @@ var moment = require('moment'),
     utils = require('../utils'),
     _ = require('lodash'),
     uuidGen = require('uuid'),
-    s3 = new AWS.S3();
+    s3 = new (require('aws-sdk').S3());
 
 // Defined later
 var queue, habitrpgUsers, baseUrl, db;
