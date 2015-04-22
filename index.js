@@ -15,6 +15,13 @@ var baseUrl = 'https://habitrpg.com';
 var db = monk(nconf.get('MONGODB_URL'));
 db.options.multi = true;
 
+var AWS = require('aws-sdk');
+
+AWS.config.update({
+  accessKeyId: nconf.get('AWS_ACCESS_KEY'),
+  secretAccessKey: nconf.get('AWS_SECRET_KEY')
+});
+
 var kueRedisOpts = {
   port: nconf.get('REDIS_PORT'),
   host: nconf.get('REDIS_HOST')
