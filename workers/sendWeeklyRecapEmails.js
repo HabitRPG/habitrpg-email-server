@@ -134,7 +134,7 @@ var worker = function(job, done){
         xpGraphData.datasets[0].data.push(item.value);
       });
 
-    var xpCanvas = new Canvas(1600, 800);
+    var xpCanvas = new Canvas(600, 300);
 
     var xpCanvasCtx = xpCanvas.getContext('2d');
 
@@ -152,7 +152,7 @@ var worker = function(job, done){
       }]
     };
 
-    var habitsCanvas = new Canvas(1600, 800);
+    var habitsCanvas = new Canvas(600, 300);
     var habitsCanvasCtx = habitsCanvas.getContext('2d');
 
     new Chart(habitsCanvasCtx).Bar(habitsGraphData);
