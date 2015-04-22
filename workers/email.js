@@ -27,7 +27,7 @@ var mapEmailsToPreferences = {
   '3-days-recapture': 'importantAnnouncements',
   '10-days-recapture': 'importantAnnouncements',
   '1-month-recapture': 'importantAnnouncements',
-  'weekly-recap': 'weeklyRecap'
+  'weekly-recap': 'weeklyRecaps'
 };
 
 module.exports = function(job, done){

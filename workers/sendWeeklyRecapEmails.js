@@ -20,7 +20,7 @@ var worker = function(job, done){
     _id: uuid,
     //preferences.sleep
   }, {
-    fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos']
+    fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos', 'flags.weeklyRecapEmailsPhase']
   }, function(err, user){
     if(err) return done(err);
     if(!user) return done(new Error('User not found with uuid ' + uuid + ' (or in the inn)'));
@@ -99,6 +99,20 @@ var worker = function(job, done){
       }
     });
 
+    // TODO move all text to the template, using a code to identify them
+    if(variables.STRONG_HABITS < variables.WEAK_HABITS){
+      variables.HABITS_MESSAGE = 'Uh oh! Work hard to turn those weak Habits blue!';
+    }else if(variables.STRONG_HABITS > variables.WEAK_HABITS){
+      variables.HABITS_MESSAGE = 'Well done! Keep attacking those Habits to keep them strong!';
+    }else{
+      variables.HABITS_MESSAGE = 'You\'re almost there! Work hard to tip the balance.';
+    }
+
+    if(!user.flags.weeklyRecapEmailsPhase || !isNan(user.flags.weeklyRecapEmailsPhase)){
+      var phase = user.flags.weeklyRecapEmailsPhase || 0;
+      variables.TIP_NUMBER = phase < 10 ? (phase + 1) : 10;
+    }
+
     var xpGraphData = {
       labels: [],
       datasets: [{
@@ -143,14 +157,6 @@ var worker = function(job, done){
     new Chart(ctx).Line(habitsGraphData);
 
     variables.GRAPHS_UUID = uuidGen.v1();
-
-    if(variables.STRONG_HABITS < variables.WEAK_HABITS){
-      variables.HABITS_MESSAGE = 'Uh oh! Work hard to turn those weak Habits blue!';
-    }else if(variables.STRONG_HABITS > variables.WEAK_HABITS){
-      variables.HABITS_MESSAGE = 'Well done! Keep attacking those Habits to keep them strong!';
-    }else{
-      variables.HABITS_MESSAGE = 'You\'re almost there! Work hard to tip the balance.';
-    }
 
     variables = Object.keys(variables).map(function(key){
       return {name: key, content: variables[key]};
@@ -227,20 +233,33 @@ var worker = function(job, done){
     ], function(err, res){
       if(err) return done(err);
 
-      queue.create('email', {
-        emailType: 'weekly-recap',
-        to: toData,
-        // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
-        variables: [{name: 'BASE_URL', content: baseUrl}],
-        personalVariables: variables
-      })
-      .priority('high')
-      .attempts(5)
-      .backoff({type: 'fixed', delay: 60*1000})
-      .save(function(err){
-        if(err) return done(err);
-        done();
-      });
+      // Update the recaptureEmailsPhase flag in the database for each user
+      habitrpgUsers.update(
+        {
+          _id: uuid
+        },
+        {
+          $inc: {
+            'flags.weeklyRecapEmailsPhase': 1
+          }
+        }, function(e, res){
+          if(e) return done(e);
+
+          queue.create('email', {
+            emailType: 'weekly-recap',
+            to: toData,
+            // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
+            variables: [{name: 'BASE_URL', content: baseUrl}],
+            personalVariables: variables
+          })
+          .priority('high')
+          .attempts(5)
+          .backoff({type: 'fixed', delay: 60*1000})
+          .save(function(err){
+            if(err) return done(err);
+            done();
+          });
+        });
     });
   });
 }
