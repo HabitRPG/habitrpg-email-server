@@ -3,15 +3,17 @@ var moment = require('moment'),
     _ = require('lodash'),
     uuidGen = require('uuid'),
     AWS = require('aws-sdk'),
-    s3 = new AWS.S3();
+    canvas = require('canvas'),
+    Chart = require('nchart'),
+    fs = require('fs'),
+    async = require('async');
+
+var s3 = new AWS.S3();
 
 // Defined later
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  // FIXME Override the id function as otherwise it tries to convert non ObjectIDs to them
-  habitrpgUsers.id = function (str) { return str; };
-
   var uuid = job.data.uuid;
 
   habitrpgUsers.findOne({
@@ -26,8 +28,6 @@ var worker = function(job, done){
     var variables = {};
 
     var lastCron = moment(user.lastCron);
-
-    console.log(lastCron.toDate())
 
     var END_DATE = lastCron;
     var START_DATE = moment(lastCron).subtract(7, 'days');
@@ -46,48 +46,6 @@ var worker = function(job, done){
         return false;
       }
     }).value;
-
-    var graphData = _.last(user.history.exp, user.history.exp.length - XP_START_INDEX /*TODO OR 6?*/)
-                    .map(function(item){
-                      return {value: item.value, date: moment(item.date).format('dddd, MMMM Do YYYY')}
-                    })
-
-    var graphDataOk = {
-      labels: graphData.map(function(i){return i.date}),
-      datasets: [{
-        label: 'EXP history',
-        fillColor: "rgba(220,220,220,0.2)",
-        strokeColor: "rgba(220,220,220,1)",
-        pointColor: "rgba(220,220,220,1)",
-        pointStrokeColor: "#fff",
-        pointHighlightFill: "#fff",
-        pointHighlightStroke: "rgba(220,220,220,1)",
-        data: graphData.map(function(i){return i.value})
-      }]
-    }
-
-    var Canvas = require('canvas')
-      , canvas = new Canvas(1600, 800)
-      , ctx = canvas.getContext('2d')
-      , Chart = require('nchart')
-      , fs = require('fs');
-
-    new Chart(ctx).Line(graphDataOk);
-
-    canvas.toBuffer(function (err, buf) {
-      var params = {
-        Bucket: 'habitica-assets',
-        Key: ('emails/weekly-recap-graphs/line-' + uuidGen.v1()),
-        Body: buf,
-        StorageClass: 'REDUCED_REDUNDANCY'
-      };
-
-      if(err) throw err;
-      s3.putObject(params, function(err, data){
-        if(err) throw err;
-        console.log("Successfully uploaded data to myBucket/myKey");   
-      });
-    });
 
     XP_END = user.history.exp[user.history.exp.length - 1].value;
 
@@ -141,27 +99,50 @@ var worker = function(job, done){
       }
     });
 
-    var graphDataOkBar = {
+    var xpGraphData = {
+      labels: [],
+      datasets: [{
+        label: 'EXP history',
+        fillColor: 'rgba(220,220,220,0.2)',
+        strokeColor: 'rgba(220,220,220,1)',
+        pointColor: 'rgba(220,220,220,1)',
+        pointStrokeColor: '#fff',
+        pointHighlightFill: '#fff',
+        pointHighlightStroke: 'rgba(220,220,220,1)',
+        data: []
+      }]
+    };
+
+    // TODO be sure on how many values taken
+    _.last(user.history.exp, user.history.exp.length - XP_START_INDEX)
+      .forEach(function(item){
+        xpGraphData.labesl.push(moment(item.date).format('dddd, MMMM Do YYYY'));
+        xpGraphData.datasets[0].data.push(item.value);
+      });
+
+    var xpCanvas = new Canvas(1600, 800);
+    var xpCanvasCtx = xpCanvas.getContext('2d');
+
+    new Chart(ctx).Line(xpGraphData);
+
+    var habitsGraphData = {
       labels: ['Weak Habits', 'Strong Habits'],
       datasets: [{
-        label: "My Second dataset",
-        fillColor: "rgba(151,187,205,0.5)",
-        strokeColor: "rgba(151,187,205,0.8)",
-        highlightFill: "rgba(151,187,205,0.75)",
-        highlightStroke: "rgba(151,187,205,1)",
+        label: 'Habits',
+        fillColor: 'rgba(151,187,205,0.5)',
+        strokeColor: 'rgba(151,187,205,0.8)',
+        highlightFill: 'rgba(151,187,205,0.75)',
+        highlightStroke: 'rgba(151,187,205,1)',
         data: [variables.WEAK_HABITS, variables.STRONG_HABITS]
       }]
-    }
+    };
 
-      var canvasBar = new Canvas(1600, 800)
-      , ctxBar = canvasBar.getContext('2d')
+    var habitsCanvas = new Canvas(1600, 800);
+    var habitsCanvasCtx = habitsCanvas.getContext('2d');
 
-    new Chart(ctxBar).Bar(graphDataOkBar);
+    new Chart(ctx).Line(habitsGraphData);
 
-    canvasBar.toBuffer(function (err, buf) {
-      if (err) throw err;
-      fs.writeFile(__dirname + '/pie1.png', buf);
-    });
+    variables.GRAPHS_UUID = uuidGen.v1();
 
     if(variables.STRONG_HABITS < variables.WEAK_HABITS){
       variables.HABITS_MESSAGE = 'Uh oh! Work hard to turn those weak Habits blue!';
@@ -186,6 +167,10 @@ var worker = function(job, done){
       toData.name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
     }
 
+    if(!toData.email){
+      return done(new Error('Email unavalaible for uuid:' + uuid));
+    }
+
     variables = [{
       rcpt: toData.email,
       vars: variables.concat([
@@ -203,8 +188,45 @@ var worker = function(job, done){
       ])
     }];
 
-    if(toData.email){
-      return console.log(JSON.stringify(variables))
+    async.parallel([
+      function(cb){
+        xpCanvas.toBuffer(function(err, buf){
+          if(err) return cb(err);
+
+          var params = {
+            Bucket: 'habitica-assets',
+            Key: ('emails/weekly-recap-graphs/xp-' + variables.GRAPHS_UUID),
+            Body: buf,
+            StorageClass: 'REDUCED_REDUNDANCY'
+          };
+
+          s3.putObject(params, function(err, data){
+            if(err) return cb(err);
+            cb();
+          });
+        });
+      },
+
+      function(cb){
+        habitsCanvas.toBuffer(function(err, buf){
+          if(err) return cb(err);
+
+          var params = {
+            Bucket: 'habitica-assets',
+            Key: ('emails/weekly-recap-graphs/habits-' + variables.GRAPHS_UUID),
+            Body: buf,
+            StorageClass: 'REDUCED_REDUNDANCY'
+          };
+
+          s3.putObject(params, function(err, data){
+            if(err) return cb(err);
+            cb();
+          });
+        });
+      }
+    ], function(err, res){
+      if(err) return done(err);
+
       queue.create('email', {
         emailType: 'weekly-recap',
         to: toData,
@@ -219,7 +241,7 @@ var worker = function(job, done){
         if(err) return done(err);
         done();
       });
-    }
+    });
   });
 }
 
@@ -229,6 +251,9 @@ module.exports = function(parentQueue, parentDb, parentBaseUrl){
   baseUrl = parentBaseUrl; // Pass baseurl from parent module
 
   habitrpgUsers = db.get('users');
+
+  // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
+  habitrpgUsers.id = function(str){ return str; };
   
   return worker;
 }
