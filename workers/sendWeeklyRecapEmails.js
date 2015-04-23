@@ -54,6 +54,8 @@ var worker = function(job, done){
         
         var XP_START, XP_END, XP_START_INDEX;
 
+        if(user.history.exp.length === 0) return cb();
+
         // TODO this assumes exp history is sorted from least to most recent
         XP_START = _.find(user.history.exp, function(obj, i){
           if(moment(obj.date).isSame(START_DATE) || moment(obj.date).isAfter(START_DATE)){
@@ -71,6 +73,8 @@ var worker = function(job, done){
         variables.TODOS_ADDED = 0;
         variables.TODOS_COMPLETED = 0;
         variables.OLDEST_TODO_COMPLETED_DATE = null;
+
+        if(user.todos.length === 0) return cb();
 
         user.todos.forEach(function(todo){
           if(moment(todo.dateCreated).isAfter(START_DATE) || moment(todo.dateCreated).isSame(START_DATE)){
@@ -107,6 +111,8 @@ var worker = function(job, done){
 
         variables.WEAK_HABITS = 0;
         variables.STRONG_HABITS = 0;
+
+        if(user.habits.length === 0) return cb();
 
         user.habits.forEach(function(habit){
           if(habit.value < 1){
@@ -152,7 +158,6 @@ var worker = function(job, done){
           });
 
         var xpCanvas = new Canvas(600, 300);
-
         var xpCanvasCtx = xpCanvas.getContext('2d');
 
         new Chart(xpCanvasCtx).Line(xpGraphData, {
@@ -208,7 +213,7 @@ var worker = function(job, done){
         async.parallel([
           function(cbParallel){
             xpCanvas.toBuffer(function(err, buf){
-              if(err) return cb(err);
+              if(err) return cbParallel(err);
 
               var params = {
                 Bucket: 'habitica-assets',
@@ -226,7 +231,7 @@ var worker = function(job, done){
 
           function(cbParallel){
             habitsCanvas.toBuffer(function(err, buf){
-              if(err) return cb(err);
+              if(err) return cbParallel(err);
 
               var params = {
                 Bucket: 'habitica-assets',
@@ -304,6 +309,8 @@ var worker = function(job, done){
       });
     });
   }
+
+  findAffectedUsers();
 }
 
 module.exports = function(parentQueue, parentDb, parentBaseUrl){
