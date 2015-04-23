@@ -14,269 +14,296 @@ var s3 = new AWS.S3();
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  var uuid = job.data.uuid;
+  var targetDateBegin = new Date('2015-04-15T00:00:00.000Z');
+  var targetDateEnd = new Date('2015-04-15T02:00:00.000Z');
+  var lastId;
 
-  habitrpgUsers.findOne({
-    _id: uuid,
-    //preferences.sleep
-  }, {
-    fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos', 'flags.weeklyRecapEmailsPhase']
-  }, function(err, user){
-    if(err) return done(err);
-    if(!user) return done(new Error('User not found with uuid ' + uuid));
-
-    var variables = {};
-
-    var lastCron = moment(user.lastCron);
-
-    var END_DATE = lastCron;
-    var START_DATE = moment(lastCron).subtract(7, 'days');
-
-    variables.END_DATE = END_DATE.format('dddd, MMMM Do YYYY');
-    variables.START_DATE = START_DATE.format('dddd, MMMM Do YYYY');
-    
-    var XP_START, XP_END, XP_START_INDEX;
-
-    // TODO this assumes exp history is sorted from least to most recent
-    XP_START = _.find(user.history.exp, function(obj, i){
-      if(moment(obj.date).isSame(START_DATE) || moment(obj.date).isAfter(START_DATE)){
-        XP_START_INDEX = i;
-        return true;
-      }else{
-        return false;
+  var findAffectedUsers = function(){
+    var query = {
+      'auth.timestamps.created': {
+        $gte: targetDateBegin,
+        $lt: targetDateEnd
       }
-    }).value;
-
-    XP_END = user.history.exp[user.history.exp.length - 1].value;
-
-    variables.XP_EARNED = parseInt(XP_END - XP_START) || 0;
-
-    variables.TODOS_ADDED = 0;
-    variables.TODOS_COMPLETED = 0;
-    variables.OLDEST_TODO_COMPLETED_DATE = null;
-
-    user.todos.forEach(function(todo){
-      if(moment(todo.dateCreated).isAfter(START_DATE) || moment(todo.dateCreated).isSame(START_DATE)){
-        variables.TODOS_ADDED++;
-      }
-
-      if(todo.dateCompleted && (moment(todo.dateCompleted).isAfter(START_DATE) || moment(todo.dateCompleted).isSame(START_DATE))){
-        variables.TODOS_COMPLETED++;
-        if(!variables.OLDEST_TODO_COMPLETED_DATE || moment(todo.dateCreated).isBefore(variables.OLDEST_TODO_COMPLETED_DATE)){
-          variables.OLDEST_TODO_COMPLETED_DATE = moment(todo.dateCreated).format("dddd, MMMM Do YYYY");
-        }
-      }
-    });
-
-    variables.HIGHEST_DAILY_STREAK = 0;
-
-    user.dailys.forEach(function(daily){
-      if(daily.streak > variables.HIGHEST_DAILY_STREAK){
-        variables.HIGHEST_DAILY_STREAK = daily.streak;
-      }
-    });
-
-    if(variables.HIGHEST_DAILY_STREAK === 0){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 1;
-    }else if(variables.HIGHEST_DAILY_STREAK < 15){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 2;
-    }else if(variables.HIGHEST_DAILY_STREAK < 20){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 3;
-    }else if(variables.HIGHEST_DAILY_STREAK < 41){
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 4;
-    }else{
-      variables.HIGHEST_DAILY_STREAK_MESSAGE = 5;
-    }
-
-    variables.WEAK_HABITS = 0;
-    variables.STRONG_HABITS = 0;
-
-    user.habits.forEach(function(habit){
-      if(habit.value < 1){
-        variables.WEAK_HABITS++;
-      }else{
-        variables.STRONG_HABITS++;
-      }
-    });
-
-    // TODO move all text to the template, using a code to identify them
-    if(variables.STRONG_HABITS < variables.WEAK_HABITS){
-      variables.HABITS_MESSAGE = 1;
-    }else if(variables.STRONG_HABITS > variables.WEAK_HABITS){
-      variables.HABITS_MESSAGE = 2;
-    }else{
-      variables.HABITS_MESSAGE = 3;
-    }
-
-    if(!user.flags.weeklyRecapEmailsPhase || !isNaN(user.flags.weeklyRecapEmailsPhase)){
-      var phase = user.flags.weeklyRecapEmailsPhase || 0;
-      variables.TIP_NUMBER = phase < 10 ? (phase + 1) : 10;
-    }
-
-    var xpGraphData = {
-      labels: [],
-      datasets: [{
-        label: 'EXP history',
-        fillColor: 'rgba(151,187,205,0.2)',
-        strokeColor: 'rgba(151,187,205,1)',
-        pointColor: 'rgba(151,187,205,1)',
-        pointStrokeColor: '#fff',
-        pointHighlightFill: '#fff',
-        pointHighlightStroke: 'rgba(151,187,205,1)',
-        data: []
-      }]
     };
 
-    // TODO be sure on how many values taken
-    _.last(user.history.exp, user.history.exp.length - XP_START_INDEX)
-      .forEach(function(item){
-        xpGraphData.labels.push(moment(item.date).format('MM/DD'));
-        xpGraphData.datasets[0].data.push(item.value);
-      });
-
-    var xpCanvas = new Canvas(600, 300);
-
-    var xpCanvasCtx = xpCanvas.getContext('2d');
-
-    new Chart(xpCanvasCtx).Line(xpGraphData, {
-      animation: false,
-      scaleShowGridLines: false,
-      scaleShowLabels: true,
-      barShowStroke: true,
-      barStrokeWidth: 2,
-      showTooltips: false
-    });
-
-    var habitsGraphData = {
-      labels: ['Weak Habits', 'Strong Habits'],
-      datasets: [{
-        label: 'Habits',
-        fillColor: 'rgba(151,187,205,0.5)',
-        strokeColor: 'rgba(151,187,205,0.8)',
-        highlightFill: 'rgba(151,187,205,0.75)',
-        highlightStroke: 'rgba(151,187,205,1)',
-        data: [variables.WEAK_HABITS, variables.STRONG_HABITS]
-      }]
-    };
-
-    var habitsCanvas = new Canvas(600, 300);
-    var habitsCanvasCtx = habitsCanvas.getContext('2d');
-
-    new Chart(habitsCanvasCtx).Bar(habitsGraphData, {
-      animation: false,
-      scaleShowGridLines: false,
-      scaleShowLabels: true,
-      barShowStroke: true,
-      barStrokeWidth: 2,
-      showTooltips: false
-    });
-
-    variables.GRAPHS_UUID = uuidGen.v1().toString();
-
-    var toData = {_id: user._id};
-
-    // Code taken from habitrpg/src/controllers/payments.js
-    if(user.auth.local && user.auth.local.email){
-      toData.email = user.auth.local.email;
-      toData.name = user.profile.name || user.auth.local.username;
-    }else if(user.auth.facebook && user.auth.facebook.emails && user.auth.facebook.emails[0] && user.auth.facebook.emails[0].value){
-      toData.email = user.auth.facebook.emails[0].value;
-      toData.name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
+    if(lastId){
+      query._id = {
+        $gt: lastId
+      } 
     }
 
-    if(!toData.email){
-      return done(new Error('Email unavalaible for uuid:' + uuid));
-    }
-
-    async.parallel([
-      function(cb){
-        xpCanvas.toBuffer(function(err, buf){
-          if(err) return cb(err);
-
-          var params = {
-            Bucket: 'habitica-assets',
-            Key: ('emails/weekly-recap-graphs/xp-' + variables.GRAPHS_UUID + '.png'),
-            Body: buf,
-            StorageClass: 'REDUCED_REDUNDANCY'
-          };
-
-          s3.putObject(params, function(err, data){
-            if(err) return cb(err);
-            cb();
-          });
-        });
-      },
-
-      function(cb){
-        habitsCanvas.toBuffer(function(err, buf){
-          if(err) return cb(err);
-
-          var params = {
-            Bucket: 'habitica-assets',
-            Key: ('emails/weekly-recap-graphs/habits-' + variables.GRAPHS_UUID + '.png'),
-            Body: buf,
-            StorageClass: 'REDUCED_REDUNDANCY'
-          };
-
-          s3.putObject(params, function(err, data){
-            if(err) return cb(err);
-            cb();
-          });
-        });
-      }
-    ], function(err, res){
+    habitrpgUsers.find(query, {
+      sort: {_id: 1},
+      limit: 10,
+      fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos', 'flags.weeklyRecapEmailsPhase']
+    }, function(err, docs){
       if(err) return done(err);
+      if(docs.length === 0) return done();
+      lastId = docs.length > 0 ? docs[docs.length - 1]._id : null;
 
-      // Update the recaptureEmailsPhase flag in the database for each user
-      habitrpgUsers.update(
-        {
-          _id: uuid
-        },
-        {
-          $inc: {
-            'flags.weeklyRecapEmailsPhase': 1
+      async.each(docs, function(user, cb){
+        var variables = {};
+
+        var lastCron = moment(user.lastCron);
+
+        var END_DATE = lastCron;
+        var START_DATE = moment(lastCron).subtract(7, 'days');
+
+        variables.END_DATE = END_DATE.format('dddd, MMMM Do YYYY');
+        variables.START_DATE = START_DATE.format('dddd, MMMM Do YYYY');
+        
+        var XP_START, XP_END, XP_START_INDEX;
+
+        // TODO this assumes exp history is sorted from least to most recent
+        XP_START = _.find(user.history.exp, function(obj, i){
+          if(moment(obj.date).isSame(START_DATE) || moment(obj.date).isAfter(START_DATE)){
+            XP_START_INDEX = i;
+            return true;
+          }else{
+            return false;
           }
-        }, function(e, res){
-          if(e) return done(e);
+        }).value;
 
-          variables = Object.keys(variables).map(function(key){
-            return {name: key, content: variables[key]};
-          });
+        XP_END = user.history.exp[user.history.exp.length - 1].value;
 
-          variables = [{
-            rcpt: toData.email,
-            vars: variables.concat([
-              {
-                name: 'RECIPIENT_UNSUB_URL',
-                content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
-                  _id: toData._id,
-                  email: toData.email
-                }))
-              },
-              {
-                name: 'RECIPIENT_NAME',
-                content: toData.name
-              }
-            ])
-          }];
+        variables.XP_EARNED = parseInt(XP_END - XP_START) || 0;
 
-          queue.create('email', {
-            emailType: 'weekly-recap',
-            to: toData,
-            // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
-            variables: [{name: 'BASE_URL', content: baseUrl}],
-            personalVariables: variables
-          })
-          .priority('high')
-          .attempts(5)
-          .backoff({type: 'fixed', delay: 60*1000})
-          .save(function(err){
-            if(err) return done(err);
-            done();
-          });
+        variables.TODOS_ADDED = 0;
+        variables.TODOS_COMPLETED = 0;
+        variables.OLDEST_TODO_COMPLETED_DATE = null;
+
+        user.todos.forEach(function(todo){
+          if(moment(todo.dateCreated).isAfter(START_DATE) || moment(todo.dateCreated).isSame(START_DATE)){
+            variables.TODOS_ADDED++;
+          }
+
+          if(todo.dateCompleted && (moment(todo.dateCompleted).isAfter(START_DATE) || moment(todo.dateCompleted).isSame(START_DATE))){
+            variables.TODOS_COMPLETED++;
+            if(!variables.OLDEST_TODO_COMPLETED_DATE || moment(todo.dateCreated).isBefore(variables.OLDEST_TODO_COMPLETED_DATE)){
+              variables.OLDEST_TODO_COMPLETED_DATE = moment(todo.dateCreated).format("dddd, MMMM Do YYYY");
+            }
+          }
         });
+
+        variables.HIGHEST_DAILY_STREAK = 0;
+
+        user.dailys.forEach(function(daily){
+          if(daily.streak > variables.HIGHEST_DAILY_STREAK){
+            variables.HIGHEST_DAILY_STREAK = daily.streak;
+          }
+        });
+
+        if(variables.HIGHEST_DAILY_STREAK === 0){
+          variables.HIGHEST_DAILY_STREAK_MESSAGE = 1;
+        }else if(variables.HIGHEST_DAILY_STREAK < 15){
+          variables.HIGHEST_DAILY_STREAK_MESSAGE = 2;
+        }else if(variables.HIGHEST_DAILY_STREAK < 20){
+          variables.HIGHEST_DAILY_STREAK_MESSAGE = 3;
+        }else if(variables.HIGHEST_DAILY_STREAK < 41){
+          variables.HIGHEST_DAILY_STREAK_MESSAGE = 4;
+        }else{
+          variables.HIGHEST_DAILY_STREAK_MESSAGE = 5;
+        }
+
+        variables.WEAK_HABITS = 0;
+        variables.STRONG_HABITS = 0;
+
+        user.habits.forEach(function(habit){
+          if(habit.value < 1){
+            variables.WEAK_HABITS++;
+          }else{
+            variables.STRONG_HABITS++;
+          }
+        });
+
+        // TODO move all text to the template, using a code to identify them
+        if(variables.STRONG_HABITS < variables.WEAK_HABITS){
+          variables.HABITS_MESSAGE = 1;
+        }else if(variables.STRONG_HABITS > variables.WEAK_HABITS){
+          variables.HABITS_MESSAGE = 2;
+        }else{
+          variables.HABITS_MESSAGE = 3;
+        }
+
+        if(!user.flags.weeklyRecapEmailsPhase || !isNaN(user.flags.weeklyRecapEmailsPhase)){
+          var phase = user.flags.weeklyRecapEmailsPhase || 0;
+          variables.TIP_NUMBER = phase < 10 ? (phase + 1) : 10;
+        }
+
+        var xpGraphData = {
+          labels: [],
+          datasets: [{
+            label: 'EXP history',
+            fillColor: 'rgba(151,187,205,0.2)',
+            strokeColor: 'rgba(151,187,205,1)',
+            pointColor: 'rgba(151,187,205,1)',
+            pointStrokeColor: '#fff',
+            pointHighlightFill: '#fff',
+            pointHighlightStroke: 'rgba(151,187,205,1)',
+            data: []
+          }]
+        };
+
+        // TODO be sure on how many values taken
+        _.last(user.history.exp, user.history.exp.length - XP_START_INDEX)
+          .forEach(function(item){
+            xpGraphData.labels.push(moment(item.date).format('MM/DD'));
+            xpGraphData.datasets[0].data.push(item.value);
+          });
+
+        var xpCanvas = new Canvas(600, 300);
+
+        var xpCanvasCtx = xpCanvas.getContext('2d');
+
+        new Chart(xpCanvasCtx).Line(xpGraphData, {
+          animation: false,
+          scaleShowGridLines: false,
+          scaleShowLabels: true,
+          barShowStroke: true,
+          barStrokeWidth: 2,
+          showTooltips: false
+        });
+
+        var habitsGraphData = {
+          labels: ['Weak Habits', 'Strong Habits'],
+          datasets: [{
+            label: 'Habits',
+            fillColor: 'rgba(151,187,205,0.5)',
+            strokeColor: 'rgba(151,187,205,0.8)',
+            highlightFill: 'rgba(151,187,205,0.75)',
+            highlightStroke: 'rgba(151,187,205,1)',
+            data: [variables.WEAK_HABITS, variables.STRONG_HABITS]
+          }]
+        };
+
+        var habitsCanvas = new Canvas(600, 300);
+        var habitsCanvasCtx = habitsCanvas.getContext('2d');
+
+        new Chart(habitsCanvasCtx).Bar(habitsGraphData, {
+          animation: false,
+          scaleShowGridLines: false,
+          scaleShowLabels: true,
+          barShowStroke: true,
+          barStrokeWidth: 2,
+          showTooltips: false
+        });
+
+        variables.GRAPHS_UUID = uuidGen.v1().toString();
+
+        var toData = {_id: user._id};
+
+        // Code taken from habitrpg/src/controllers/payments.js
+        if(user.auth.local && user.auth.local.email){
+          toData.email = user.auth.local.email;
+          toData.name = user.profile.name || user.auth.local.username;
+        }else if(user.auth.facebook && user.auth.facebook.emails && user.auth.facebook.emails[0] && user.auth.facebook.emails[0].value){
+          toData.email = user.auth.facebook.emails[0].value;
+          toData.name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
+        }
+
+        if(!toData.email){
+          return cb(new Error('Email unavalaible for uuid:' + user._id));
+        }
+
+        async.parallel([
+          function(cbParallel){
+            xpCanvas.toBuffer(function(err, buf){
+              if(err) return cb(err);
+
+              var params = {
+                Bucket: 'habitica-assets',
+                Key: ('emails/weekly-recap-graphs/xp-' + variables.GRAPHS_UUID + '.png'),
+                Body: buf,
+                StorageClass: 'REDUCED_REDUNDANCY'
+              };
+
+              s3.putObject(params, function(err, data){
+                if(err) return cbParallel(err);
+                cbParallel();
+              });
+            });
+          },
+
+          function(cbParallel){
+            habitsCanvas.toBuffer(function(err, buf){
+              if(err) return cb(err);
+
+              var params = {
+                Bucket: 'habitica-assets',
+                Key: ('emails/weekly-recap-graphs/habits-' + variables.GRAPHS_UUID + '.png'),
+                Body: buf,
+                StorageClass: 'REDUCED_REDUNDANCY'
+              };
+
+              s3.putObject(params, function(err, data){
+                if(err) return cbParallel(err);
+                cbParallel();
+              });
+            });
+          }
+        ], function(err, res){
+          if(err) return cb(err);
+
+          // Update the recaptureEmailsPhase flag in the database for each user
+          habitrpgUsers.update(
+            {
+              _id: user._id
+            },
+            {
+              $inc: {
+                'flags.weeklyRecapEmailsPhase': 1
+              }
+            }, function(e, res){
+              if(e) return cb(e);
+
+              variables = Object.keys(variables).map(function(key){
+                return {name: key, content: variables[key]};
+              });
+
+              variables = [{
+                rcpt: toData.email,
+                vars: variables.concat([
+                  {
+                    name: 'RECIPIENT_UNSUB_URL',
+                    content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+                      _id: toData._id,
+                      email: toData.email
+                    }))
+                  },
+                  {
+                    name: 'RECIPIENT_NAME',
+                    content: toData.name
+                  }
+                ])
+              }];
+
+              queue.create('email', {
+                emailType: 'weekly-recap',
+                to: toData,
+                // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
+                variables: [{name: 'BASE_URL', content: baseUrl}],
+                personalVariables: variables
+              })
+              .priority('high')
+              .attempts(5)
+              .backoff({type: 'fixed', delay: 60*1000})
+              .save(function(err){
+                if(err) return cb(err);
+                cb();
+              });
+            });
+        });
+
+      }, function(err){
+        if(err) return done(err);
+        if(docs.length === 10){
+          findAffectedUsers();
+        }else{
+          done();
+        }
+      });
     });
-  });
+  }
 }
 
 module.exports = function(parentQueue, parentDb, parentBaseUrl){
