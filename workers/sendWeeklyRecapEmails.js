@@ -117,12 +117,12 @@ var worker = function(job, done){
       labels: [],
       datasets: [{
         label: 'EXP history',
-        fillColor: 'rgba(220,220,220,0.2)',
-        strokeColor: 'rgba(220,220,220,1)',
-        pointColor: 'rgba(220,220,220,1)',
+        fillColor: 'rgba(151,187,205,0.2)',
+        strokeColor: 'rgba(151,187,205,1)',
+        pointColor: 'rgba(151,187,205,1)',
         pointStrokeColor: '#fff',
         pointHighlightFill: '#fff',
-        pointHighlightStroke: 'rgba(220,220,220,1)',
+        pointHighlightStroke: 'rgba(151,187,205,1)',
         data: []
       }]
     };
@@ -130,7 +130,7 @@ var worker = function(job, done){
     // TODO be sure on how many values taken
     _.last(user.history.exp, user.history.exp.length - XP_START_INDEX)
       .forEach(function(item){
-        xpGraphData.labels.push(moment(item.date).format('L'));
+        xpGraphData.labels.push(moment(item.date).format('MM/DD'));
         xpGraphData.datasets[0].data.push(item.value);
       });
 
@@ -138,7 +138,14 @@ var worker = function(job, done){
 
     var xpCanvasCtx = xpCanvas.getContext('2d');
 
-    new Chart(xpCanvasCtx).Line(xpGraphData);
+    new Chart(xpCanvasCtx).Line(xpGraphData, {
+      animation: false,
+      scaleShowGridLines: false,
+      scaleShowLabels: true,
+      barShowStroke: true,
+      barStrokeWidth: 2,
+      showTooltips: false
+    });
 
     var habitsGraphData = {
       labels: ['Weak Habits', 'Strong Habits'],
@@ -155,7 +162,14 @@ var worker = function(job, done){
     var habitsCanvas = new Canvas(600, 300);
     var habitsCanvasCtx = habitsCanvas.getContext('2d');
 
-    new Chart(habitsCanvasCtx).Bar(habitsGraphData);
+    new Chart(habitsCanvasCtx).Bar(habitsGraphData, {
+      animation: false,
+      scaleShowGridLines: false,
+      scaleShowLabels: true,
+      barShowStroke: true,
+      barStrokeWidth: 2,
+      showTooltips: false
+    });
 
     variables.GRAPHS_UUID = uuidGen.v1().toString();
 
