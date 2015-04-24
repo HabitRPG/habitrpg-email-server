@@ -14,8 +14,8 @@ var s3 = new AWS.S3();
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  var targetDateBegin = new Date('2015-04-15T00:00:00.000Z');
-  var targetDateEnd = new Date('2015-04-15T02:00:00.000Z');
+  var targetDateBegin = new Date('2015-04-15T02:00:00.000Z');
+  var targetDateEnd = new Date('2015-04-17T00:00:00.000Z');
   var lastId;
 
   var findAffectedUsers = function(){
