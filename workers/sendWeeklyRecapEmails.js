@@ -23,7 +23,9 @@ var worker = function(job, done){
       'auth.timestamps.created': {
         $gte: targetDateBegin,
         $lt: targetDateEnd
-      }
+      },
+
+      'flags.weeklyRecapEmailsPhase': {$ne: 1}
     };
 
     if(lastId){
@@ -206,9 +208,8 @@ var worker = function(job, done){
           toData.name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
         }
 
-        if(!toData.email){
-          return cb(new Error('Email unavalaible for uuid:' + user._id));
-        }
+        // If missing email, skip, don't break the whole process
+        if(!toData.email) return cb();
 
         async.parallel([
           function(cbParallel){
