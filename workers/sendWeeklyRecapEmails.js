@@ -11,17 +11,13 @@ var moment = require('moment'),
 var s3 = new AWS.S3();
 
 // Defined later
-var queue, baseUrl, db;
+var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
   var targetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
   var targetDateEnd = moment(targetDateBegin).add(1, 'days').toDate();
   var beginDate;
   var lastId;
-  var habitrpgUsers = db.get('users');
-
-  // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
-  habitrpgUsers.id = function(str){ return str; };
   
   var findAffectedUsers = function(){
     var query = {
@@ -175,7 +171,7 @@ var worker = function(job, done){
             var xpCanvas = new Canvas(600, 300);
             var xpCanvasCtx = xpCanvas.getContext('2d');
 
-            new Chart(xpCanvasCtx).Line(xpGraphData, {
+            var xpChart = new Chart(xpCanvasCtx).Line(xpGraphData, {
               animation: false,
               scaleShowGridLines: false,
               scaleShowLabels: true,
@@ -199,7 +195,7 @@ var worker = function(job, done){
             var habitsCanvas = new Canvas(600, 300);
             var habitsCanvasCtx = habitsCanvas.getContext('2d');
 
-            new Chart(habitsCanvasCtx).Bar(habitsGraphData, {
+            var habitsChart = new Chart(habitsCanvasCtx).Bar(habitsGraphData, {
               animation: false,
               scaleShowGridLines: false,
               scaleShowLabels: true,
@@ -237,7 +233,10 @@ var worker = function(job, done){
                   };
 
                   s3.putObject(params, function(err, data){
-                    xpCanvas = buf = data = xpCanvasCtx = null; // Possible memory leak fix
+                    // Possible memory leak fixes
+                    xpChart.destroy();
+                    xpCanvas = buf = data = xpCanvasCtx = null; 
+
                     if(err) return cbParallel(err);
                     cbParallel();
                   });
@@ -256,7 +255,10 @@ var worker = function(job, done){
                   };
 
                   s3.putObject(params, function(err, data){
-                    habitsCanvas = buf = data = habitsCanvasCtx = null; // Possible memory leak fix
+                    // Possible memory leak fixes
+                    habitsChart.destroy();
+                    habitsCanvas = buf = data = habitsCanvasCtx = null;
+
                     if(err) return cbParallel(err);
                     cbParallel();
                   });
@@ -309,7 +311,6 @@ var worker = function(job, done){
                   .attempts(5)
                   .backoff({type: 'fixed', delay: 60*1000})
                   .save(function(err){
-                    user = null; // Possible memory leak fix
                     if(err) return cb(err);
                     cb();
                   });
@@ -345,6 +346,12 @@ module.exports = function(parentQueue, parentDb, parentBaseUrl){
   queue = parentQueue; // Pass queue from parent module
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseurl from parent module
+
+  habitrpgUsers = db.get('users');
+
+  // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
+  habitrpgUsers.id = function(str){ return str; };
+
 
   return worker;
 }
