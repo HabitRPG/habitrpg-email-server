@@ -11,13 +11,18 @@ var moment = require('moment'),
 var s3 = new AWS.S3();
 
 // Defined later
-var queue, habitrpgUsers, baseUrl, db;
+var queue, baseUrl, db;
 
 var worker = function(job, done){
-  var targetDateBegin = new Date('2015-04-17T00:00:00.000Z');
-  var targetDateEnd = new Date('2015-04-19T00:00:00.000Z');
+  var targetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
+  var targetDateEnd = moment(targetDateBegin).add(1, 'days');
+  var beginDate;
   var lastId;
+  var habitrpgUsers = db.get('users');
 
+  // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
+  habitrpgUsers.id = function(str){ return str; };
+  
   var findAffectedUsers = function(){
     var query = {
       'auth.timestamps.created': {
@@ -46,8 +51,12 @@ var worker = function(job, done){
         if(docs.length === 0) return done();
         lastId = docs.length > 0 ? docs[docs.length - 1]._id : null;
 
+        var currentUserId;
+
         async.each(docs, function(user, cb){
           try{
+            currentUserId = user._id; // FIXME for debugging
+
             var variables = {};
 
             var lastCron = moment(user.lastCron);
@@ -228,6 +237,7 @@ var worker = function(job, done){
                   };
 
                   s3.putObject(params, function(err, data){
+                    xpCanvas = buf = data = xpCanvasCtx = null; // Possible memory leak fix
                     if(err) return cbParallel(err);
                     cbParallel();
                   });
@@ -246,6 +256,7 @@ var worker = function(job, done){
                   };
 
                   s3.putObject(params, function(err, data){
+                    habitsCanvas = buf = data = habitsCanvasCtx = null; // Possible memory leak fix
                     if(err) return cbParallel(err);
                     cbParallel();
                   });
@@ -298,6 +309,7 @@ var worker = function(job, done){
                   .attempts(5)
                   .backoff({type: 'fixed', delay: 60*1000})
                   .save(function(err){
+                    user = null; // Possible memory leak fix
                     if(err) return cb(err);
                     cb();
                   });
@@ -305,7 +317,7 @@ var worker = function(job, done){
             });
           }catch(e){
             //FIXME
-            console.error(e, 'ERROR PROCESSING WEEKLY RECAP');
+            console.error(e, 'ERROR PROCESSING WEEKLY RECAP for user ', currentUserId);
             cb();
           }
         }, function(err){
@@ -313,12 +325,19 @@ var worker = function(job, done){
           if(docs.length === 10){
             findAffectedUsers();
           }else{
-            done();
+            queue.create('sendWeeklyRecapEmails')
+            .priority('critical')
+            .delay(moment(beginDate).add({hours: 24}).toDate() - new Date())
+            .attempts(5)
+            .save(function(err){
+              return err ? done(err) : done();
+            });
           }
         });
     });
   }
 
+  beginDate = new Date();
   findAffectedUsers();
 }
 
@@ -327,10 +346,5 @@ module.exports = function(parentQueue, parentDb, parentBaseUrl){
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseurl from parent module
 
-  habitrpgUsers = db.get('users');
-
-  // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
-  habitrpgUsers.id = function(str){ return str; };
-  
   return worker;
 }
