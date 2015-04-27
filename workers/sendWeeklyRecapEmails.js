@@ -15,7 +15,7 @@ var queue, baseUrl, db;
 
 var worker = function(job, done){
   var targetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
-  var targetDateEnd = moment(targetDateBegin).add(1, 'days');
+  var targetDateEnd = moment(targetDateBegin).add(1, 'days').toDate();
   var beginDate;
   var lastId;
   var habitrpgUsers = db.get('users');
