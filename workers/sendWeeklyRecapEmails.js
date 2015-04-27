@@ -25,7 +25,10 @@ var worker = function(job, done){
         $lt: targetDateEnd
       },
 
-      'flags.weeklyRecapEmailsPhase': {$ne: 1}
+      'flags.weeklyRecapEmailsPhase': {$ne: 1},
+
+      'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
+      'preferences.emailNotifications.weeklyRecaps': {$ne: false}
     };
 
     if(lastId){
@@ -57,7 +60,11 @@ var worker = function(job, done){
             
             var XP_START, XP_END, XP_START_INDEX;
 
-            if(user.history.exp.length === 0) return cb();
+            if(user.history.exp.length === 0 ||
+               user.todos.length === 0 ||
+               user.habits.length === 0){
+              return cb();
+            }
 
             // TODO this assumes exp history is sorted from least to most recent
             XP_START = _.find(user.history.exp, function(obj, i){
@@ -77,8 +84,6 @@ var worker = function(job, done){
             variables.TODOS_COMPLETED = 0;
             variables.OLDEST_TODO_COMPLETED_DATE = null;
 
-            if(user.todos.length === 0) return cb();
-
             user.todos.forEach(function(todo){
               if(moment(todo.dateCreated).isAfter(START_DATE) || moment(todo.dateCreated).isSame(START_DATE)){
                 variables.TODOS_ADDED++;
@@ -94,7 +99,7 @@ var worker = function(job, done){
 
             variables.HIGHEST_DAILY_STREAK = 0;
 
-            user.dailys.forEach(function(daily){
+            (user.dailys || []).forEach(function(daily){
               if(daily.streak > variables.HIGHEST_DAILY_STREAK){
                 variables.HIGHEST_DAILY_STREAK = daily.streak;
               }
@@ -114,8 +119,6 @@ var worker = function(job, done){
 
             variables.WEAK_HABITS = 0;
             variables.STRONG_HABITS = 0;
-
-            if(user.habits.length === 0) return cb();
 
             user.habits.forEach(function(habit){
               if(habit.value < 1){
