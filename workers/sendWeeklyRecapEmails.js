@@ -233,9 +233,6 @@ var worker = function(job, done){
                   };
 
                   s3.putObject(params, function(err, data){
-                    // Possible memory leak fixes
-                    xpChart.destroy();
-
                     if(err) return cbParallel(err);
                     cbParallel();
                   });
@@ -254,9 +251,6 @@ var worker = function(job, done){
                   };
 
                   s3.putObject(params, function(err, data){
-                    // Possible memory leak fixes
-                    habitsChart.destroy();
-
                     if(err) return cbParallel(err);
                     cbParallel();
                   });
