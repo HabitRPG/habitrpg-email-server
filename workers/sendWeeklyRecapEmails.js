@@ -235,7 +235,6 @@ var worker = function(job, done){
                   s3.putObject(params, function(err, data){
                     // Possible memory leak fixes
                     xpChart.destroy();
-                    xpCanvas = buf = data = xpCanvasCtx = null; 
 
                     if(err) return cbParallel(err);
                     cbParallel();
@@ -257,7 +256,6 @@ var worker = function(job, done){
                   s3.putObject(params, function(err, data){
                     // Possible memory leak fixes
                     habitsChart.destroy();
-                    habitsCanvas = buf = data = habitsCanvasCtx = null;
 
                     if(err) return cbParallel(err);
                     cbParallel();
