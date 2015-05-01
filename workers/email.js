@@ -74,7 +74,7 @@ module.exports = function(job, done){
       from_name: 'HabitRPG',
       track_opens: true,
       preserve_recipients: false,
-      tags: [job.data.emailType]
+      tags: job.data.tags ? job.data.tags.concat([job.data.emailType]) : [job.data.emailType]
     }
   }, function(r){
     done(null, r);

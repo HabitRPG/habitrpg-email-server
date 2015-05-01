@@ -301,6 +301,7 @@ var worker = function(job, done){
                   queue.create('email', {
                     emailType: 'weekly-recap',
                     to: toData,
+                    tags: ['weekly-recap-phase-' + ((user.flags.weeklyRecapEmailsPhase || 0) + 1)],
                     // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
                     variables: [{name: 'BASE_URL', content: baseUrl}],
                     personalVariables: variables
