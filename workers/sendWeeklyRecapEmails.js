@@ -79,9 +79,15 @@ var worker = function(job, done){
               }else{
                 return false;
               }
-            }).value;
+            });
 
-            XP_END = user.history.exp[user.history.exp.length - 1].value;
+            if(!XP_START) return cb();
+            XP_START = XP_START.value;
+
+            XP_END = user.history.exp[user.history.exp.length - 1];
+
+            if(!XP_END) return cb();
+            XP_END = XP_END.value;
 
             variables.XP_EARNED = parseInt(XP_END - XP_START) || 0;
 
