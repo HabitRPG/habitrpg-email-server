@@ -240,6 +240,7 @@ var worker = function(job, done){
 
                   s3.putObject(params, function(err, data){
                     if(err) return cbParallel(err);
+                    xpChart.destroy();
                     cbParallel();
                   });
                 });
@@ -258,6 +259,7 @@ var worker = function(job, done){
 
                   s3.putObject(params, function(err, data){
                     if(err) return cbParallel(err);
+                    habitsChart.destroy();
                     cbParallel();
                   });
                 });

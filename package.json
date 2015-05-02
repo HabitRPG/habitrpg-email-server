@@ -19,7 +19,7 @@
     "mandrill-api": "~1.0.40",
     "moment": "~2.8.3",
     "monk": "~0.9.0",
-    "nchart": "~1.0.1",
+    "nchart": "git://github.com/HabitRPG/nchart#master",
     "nconf": "~0.6.9",
     "uuid": "~2.0.1"
   }
