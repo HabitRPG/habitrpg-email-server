@@ -14,7 +14,7 @@ var s3 = new AWS.S3();
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  var targetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
+  var targetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
   var targetDateEnd = moment(targetDateBegin).add(1, 'days').toDate();
   var beginDate;
   var lastId;
@@ -26,7 +26,7 @@ var worker = function(job, done){
         $lt: targetDateEnd
       },
 
-      'flags.weeklyRecapEmailsPhase': 1,
+      'flags.weeklyRecapEmailsPhase': {$ne: 1},
 
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
