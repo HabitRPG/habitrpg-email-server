@@ -26,8 +26,6 @@ var worker = function(job, done){
         $lt: targetDateEnd
       },
 
-      'flags.weeklyRecapEmailsPhase': {$ne: 1},
-
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
     };
@@ -266,6 +264,7 @@ var worker = function(job, done){
               }
             ], function(err, res){
               if(err) return cb(err);
+              return cb();
 
               // Update the recaptureEmailsPhase flag in the database for each user
               habitrpgUsers.update(
