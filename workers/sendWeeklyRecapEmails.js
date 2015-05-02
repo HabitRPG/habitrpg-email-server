@@ -14,8 +14,8 @@ var s3 = new AWS.S3();
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  var targetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
-  var targetDateEnd = moment(targetDateBegin).add(7, 'days').toDate();
+  var targetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
+  var targetDateEnd = moment(targetDateBegin).add(1, 'days').toDate();
   var beginDate;
   var lastId;
   
@@ -25,6 +25,8 @@ var worker = function(job, done){
         $gte: targetDateBegin,
         $lt: targetDateEnd
       },
+
+      'flags.weeklyRecapEmailsPhase': {$ne: 1},
 
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
@@ -264,7 +266,6 @@ var worker = function(job, done){
               }
             ], function(err, res){
               if(err) return cb(err);
-              return cb();
 
               // Update the recaptureEmailsPhase flag in the database for each user
               habitrpgUsers.update(
