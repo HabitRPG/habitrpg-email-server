@@ -14,19 +14,18 @@ var s3 = new AWS.S3();
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  var targetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
-  var targetDateEnd = moment(targetDateBegin).add(1, 'days').toDate();
   var beginDate;
   var lastId;
+  var passedTargetDateBegin, passedTargetDateEnd;
   
-  var findAffectedUsers = function(){
+  var findAffectedUsers = function(targetDateBegin, targetDateEnd, weeklyPhase){
     var query = {
       'auth.timestamps.created': {
         $gte: targetDateBegin,
         $lt: targetDateEnd
       },
 
-      'flags.weeklyRecapEmailsPhase': 1,
+      'flags.weeklyRecapEmailsPhase': (weeklyPhase === 1 ? {$ne: 1} : 1),
 
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
@@ -340,7 +339,16 @@ var worker = function(job, done){
   }
 
   beginDate = new Date();
-  findAffectedUsers();
+
+  if(job.data.weeklyPhase === 2){
+    passedTargetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
+    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
+    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 2);
+  }else{
+    passedTargetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
+    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
+    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 1);
+  }
 }
 
 module.exports = function(parentQueue, parentDb, parentBaseUrl){
@@ -352,7 +360,6 @@ module.exports = function(parentQueue, parentDb, parentBaseUrl){
 
   // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
   habitrpgUsers.id = function(str){ return str; };
-
 
   return worker;
 }
