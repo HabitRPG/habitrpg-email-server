@@ -340,7 +340,7 @@ var worker = function(job, done){
 
   beginDate = new Date();
 
-  if(job.data.weeklyPhase === 2){
+  if(parseInt(job.data.weeklyPhase) === 2){
     passedTargetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
     passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
     findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 2);
