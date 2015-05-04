@@ -328,7 +328,7 @@ var worker = function(job, done){
         }, function(err){
           if(err) return done(err);
           if(docs.length === 10){
-            findAffectedUsers();
+            findAffectedUsers(targetDateBegin, targetDateEnd, weeklyPhase);
           }else{
             queue.create('sendWeeklyRecapEmails', {
               weeklyPhase: weeklyPhase
