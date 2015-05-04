@@ -37,6 +37,8 @@ var worker = function(job, done){
       } 
     }
 
+    console.log('Run query', query);
+
     habitrpgUsers.find(query, {
       sort: {_id: 1},
       limit: 10,
@@ -50,6 +52,8 @@ var worker = function(job, done){
 
         async.each(docs, function(user, cb){
           try{
+
+            console.log('Processing', user._id);
             currentUserId = user._id; // FIXME for debugging
 
             var variables = {};
@@ -343,10 +347,12 @@ var worker = function(job, done){
   beginDate = new Date();
 
   if(parseInt(job.data.weeklyPhase) === 2){
+    console.log('Starting phase 2');
     passedTargetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
     passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
     findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 2);
   }else{
+    console.log('Starting phase 1');
     passedTargetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
     passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
     findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 1);
