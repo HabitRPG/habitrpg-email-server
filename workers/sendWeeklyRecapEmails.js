@@ -326,7 +326,9 @@ var worker = function(job, done){
           if(docs.length === 10){
             findAffectedUsers();
           }else{
-            queue.create('sendWeeklyRecapEmails')
+            queue.create('sendWeeklyRecapEmails', {
+              weeklyPhase: weeklyPhase
+            })
             .priority('critical')
             .delay(moment(beginDate).add({hours: 24}).toDate() - new Date())
             .attempts(5)
