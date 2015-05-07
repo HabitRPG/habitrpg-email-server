@@ -25,7 +25,7 @@ var worker = function(job, done){
         $lt: targetDateEnd
       },
 
-      'flags.weeklyRecapEmailsPhase': (weeklyPhase === 1 ? {$ne: 1} : 1),
+      'flags.weeklyRecapEmailsPhase': (weeklyPhase === 1 ? {$ne: 1} : (weeklyPhase - 1)),
 
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
