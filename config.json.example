@@ -10,5 +10,6 @@
   "ORGS_REPLY_TO_ADDR": "an@email.address",
   "SESSION_SECRET": "password",
   "AWS_ACCESS_KEY": "accesskey",
-  "AWS_SECRET_KEY": "secretKey"
+  "AWS_SECRET_KEY": "secretKey",
+  "BLACKLISTED_BASE_URLS": []
 }

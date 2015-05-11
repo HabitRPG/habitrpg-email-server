@@ -7,6 +7,7 @@ var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
 
 var standardReplyTo = nconf.get('STANDARD_REPLY_TO_ADDR');
 var orgsReplyTo = nconf.get('ORGS_REPLY_TO_ADDR');
+var blacklistedBaseUrl = JSON.parse(nconf.get('BLACKLISTED_BASE_URLS'));
 
 // A simple map that link an email type to its key stored in
 // user.preferences.emailNotifications[key]
@@ -44,7 +45,8 @@ module.exports = function(job, done){
     baseUrl = job.data.variables[baseUrlI];
   } 
 
-  if(baseUrl.content === 'https://habitrpg-staging.herokuapp.com' ||  baseUrl.content === 'https://habitrpg-gamma.herokuapp.com'){
+  // Exclude some base urls, falling back to the main site
+  if(blacklistedBaseUrl.indexOf(baseUrl.content) == -1){
     baseUrl.content = 'https://habitrpg.com';
   }
 
