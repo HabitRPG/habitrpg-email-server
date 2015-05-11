@@ -294,7 +294,7 @@ var worker = function(job, done){
                     vars: variables.concat([
                       {
                         name: 'RECIPIENT_UNSUB_URL',
-                        content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+                        content: '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
                           _id: toData._id,
                           email: toData.email
                         }))

@@ -98,7 +98,7 @@ var worker = function(job, done){
             },
             {
               name: 'RECIPIENT_UNSUB_URL',
-              content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+              content: '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
                 _id: personalToData._id,
                 email: personalToData.email
               }))
@@ -279,7 +279,7 @@ var worker = function(job, done){
             },
             {
               name: 'RECIPIENT_UNSUB_URL',
-              content: baseUrl + '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+              content: '/unsubscribe?code=' + utils.encrypt(JSON.stringify({
                 _id: personalToData._id,
                 email: personalToData.email
               }))

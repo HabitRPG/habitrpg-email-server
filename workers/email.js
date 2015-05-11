@@ -7,7 +7,7 @@ var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
 
 var standardReplyTo = nconf.get('STANDARD_REPLY_TO_ADDR');
 var orgsReplyTo = nconf.get('ORGS_REPLY_TO_ADDR');
-var blacklistedBaseUrl = JSON.parse(nconf.get('BLACKLISTED_BASE_URLS'));
+var blacklistedBaseUrls = nconf.get('BLACKLISTED_BASE_URLS');
 
 // A simple map that link an email type to its key stored in
 // user.preferences.emailNotifications[key]
@@ -46,7 +46,7 @@ module.exports = function(job, done){
   } 
 
   // Exclude some base urls, falling back to the main site
-  if(blacklistedBaseUrl.indexOf(baseUrl.content) !== -1){
+  if(blacklistedBaseUrls.indexOf(baseUrl.content) !== -1){
     baseUrl.content = 'https://habitrpg.com';
   }
 
@@ -58,10 +58,10 @@ module.exports = function(job, done){
 
     job.data.variables.push({
       name: 'EMAIL_SETTINGS_URL',
-      content: baseUrl + '/#/options/settings/notifications'
+      content: '/#/options/settings/notifications'
     }, {
       name: 'UNSUB_EMAIL_TYPE_URL',
-      content: baseUrl + '/#/options/settings/notifications?unsubFrom=' + mapEmailsToPreferences[job.data.emailType]
+      content: '/#/options/settings/notifications?unsubFrom=' + mapEmailsToPreferences[job.data.emailType]
     });
   }
 
