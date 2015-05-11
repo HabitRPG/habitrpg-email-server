@@ -33,7 +33,20 @@ var mapEmailsToPreferences = {
 module.exports = function(job, done){
   var replyToAddress = standardReplyTo; // For beta and production
 
-  var baseUrl = _.find(job.data.variables, {name: 'BASE_URL'});
+  if(!job.data.variables) job.data.variables = [];
+  var baseUrlI = _.findIndex(job.data.variables, {name: 'BASE_URL'});
+  var baseUrl;
+
+  if(baseUrlI === -1){
+    job.data.variables.push({name: 'BASE_URL', content: 'https://habitrpg.com'});
+    baseUrl = job.data.variables[job.data.variables.length - 1];
+  }else{
+    baseUrl = job.data.variables[baseUrlI];
+  } 
+
+  if(baseUrl.content === 'https://habitrpg-staging.herokuapp.com' ||  baseUrl.content === 'https://habitrpg-gamma.herokuapp.com'){
+    baseUrl.content = 'https://habitrpg.com';
+  }
 
   if(baseUrl && baseUrl.content){
     baseUrl = baseUrl.content;
