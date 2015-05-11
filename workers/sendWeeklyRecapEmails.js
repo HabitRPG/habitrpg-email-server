@@ -278,6 +278,9 @@ var worker = function(job, done){
                 {
                   $inc: {
                     'flags.weeklyRecapEmailsPhase': 1
+                  },
+                  $set: {
+                    'flags.lastWeeklyRecap': beginDate
                   }
                 }, function(e, res){
                   if(e) return cb(e);
