@@ -46,7 +46,7 @@ module.exports = function(job, done){
   } 
 
   // Exclude some base urls, falling back to the main site
-  if(blacklistedBaseUrl.indexOf(baseUrl.content) == -1){
+  if(blacklistedBaseUrl.indexOf(baseUrl.content) !== -1){
     baseUrl.content = 'https://habitrpg.com';
   }
 
