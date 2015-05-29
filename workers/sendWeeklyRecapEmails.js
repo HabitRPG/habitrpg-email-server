@@ -369,6 +369,11 @@ var worker = function(job, done){
     passedTargetDateBegin = moment.utc().subtract(37, 'days').startOf('day').toDate();
     passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
     findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 5);
+  }else if(parseInt(job.data.weeklyPhase) === 6){
+    console.log('Starting phase 6');
+    passedTargetDateBegin = moment.utc().subtract(44, 'days').startOf('day').toDate();
+    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
+    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 6);
   }else{
     console.log('Starting phase 3');
     passedTargetDateBegin = moment.utc().subtract(22, 'days').startOf('day').toDate();
