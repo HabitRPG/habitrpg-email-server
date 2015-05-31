@@ -41,7 +41,19 @@ var worker = function(job, done){
       fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos', 'flags.weeklyRecapEmailsPhase']
     }, function(err, docs){
         if(err) return done(err);
-        if(docs.length === 0) return done();
+
+        // When there are no users to process, schedule next job & end this one
+        if(docs.length === 0){
+          queue.create('sendWeeklyRecapEmails')
+          .priority('critical')
+          .delay(moment(jobStartDate).add({hours: 1}).toDate() - new Date())
+          .attempts(5)
+          .save(function(err){
+            return err ? done(err) : done();
+          });
+          return;
+        }
+
         lastId = docs.length > 0 ? docs[docs.length - 1]._id : null;
 
         var currentUserId;
@@ -49,6 +61,25 @@ var worker = function(job, done){
         async.each(docs, function(user, cb){
           try{
             console.log('Processing', user._id);
+
+            // When a user has not enough data, set his flags.lastWeeklyRecap
+            // to now so that we don't process it every time
+            var handleUserWithoutData = function(){
+              habitrpgUsers.update(
+                {
+                  _id: user._id
+                },
+                {
+                  $set: {
+                    'flags.lastWeeklyRecap': jobStartDate
+                  }
+                }, function(e, res){
+                  if(e) return cb(e);
+
+                  return cb();
+                });              
+            };
+
             currentUserId = user._id; // FIXME for debugging
 
             var variables = {};
@@ -66,7 +97,7 @@ var worker = function(job, done){
             if(user.history.exp.length === 0 ||
                user.todos.length === 0 ||
                user.habits.length === 0){
-              return cb();
+              return handleUserWithoutData();
             }
 
             // TODO this assumes exp history is sorted from least to most recent
@@ -79,12 +110,12 @@ var worker = function(job, done){
               }
             });
 
-            if(!XP_START) return cb();
+            if(!XP_START) return handleUserWithoutData();
             XP_START = XP_START.value;
 
             XP_END = user.history.exp[user.history.exp.length - 1];
 
-            if(!XP_END) return cb();
+            if(!XP_END) return handleUserWithoutData();
             XP_END = XP_END.value;
 
             variables.XP_EARNED = parseInt(XP_END - XP_START) || 0;
@@ -222,7 +253,7 @@ var worker = function(job, done){
             }
 
             // If missing email, skip, don't break the whole process
-            if(!toData.email) return cb();
+            if(!toData.email) return handleUserWithoutData();
 
             async.parallel([
               function(cbParallel){
