@@ -14,18 +14,14 @@ var s3 = new AWS.S3();
 var queue, habitrpgUsers, baseUrl, db;
 
 var worker = function(job, done){
-  var beginDate;
+  var jobStartDate, oneWeekAgo;
   var lastId;
-  var passedTargetDateBegin, passedTargetDateEnd;
   
-  var findAffectedUsers = function(targetDateBegin, targetDateEnd, weeklyPhase){
+  var findAffectedUsers = function(){
     var query = {
-      'auth.timestamps.created': {
-        $gte: targetDateBegin,
-        $lt: targetDateEnd
+      'flags.lastWeeklyRecap': {
+        $lte: oneWeekAgo 
       },
-
-      'flags.weeklyRecapEmailsPhase': (weeklyPhase === 1 ? {$ne: 1} : (weeklyPhase - 1)),
 
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
@@ -52,7 +48,6 @@ var worker = function(job, done){
 
         async.each(docs, function(user, cb){
           try{
-
             console.log('Processing', user._id);
             currentUserId = user._id; // FIXME for debugging
 
@@ -280,7 +275,7 @@ var worker = function(job, done){
                     'flags.weeklyRecapEmailsPhase': 1
                   },
                   $set: {
-                    'flags.lastWeeklyRecap': beginDate
+                    'flags.lastWeeklyRecap': jobStartDate
                   }
                 }, function(e, res){
                   if(e) return cb(e);
@@ -347,39 +342,10 @@ var worker = function(job, done){
     });
   }
 
-  beginDate = new Date();
-
-  if(parseInt(job.data.weeklyPhase) === 2){
-    console.log('Starting phase 2');
-    passedTargetDateBegin = moment.utc().subtract(16, 'days').startOf('day').toDate();
-    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
-    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 2);
-  }else if(parseInt(job.data.weeklyPhase) === 1){
-    console.log('Starting phase 1');
-    passedTargetDateBegin = moment.utc().subtract(8, 'days').startOf('day').toDate();
-    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
-    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 1);
-  }else if(parseInt(job.data.weeklyPhase) === 4){
-    console.log('Starting phase 4');
-    passedTargetDateBegin = moment.utc().subtract(29, 'days').startOf('day').toDate();
-    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
-    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 4);
-  }else if(parseInt(job.data.weeklyPhase) === 5){
-    console.log('Starting phase 5');
-    passedTargetDateBegin = moment.utc().subtract(37, 'days').startOf('day').toDate();
-    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
-    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 5);
-  }else if(parseInt(job.data.weeklyPhase) === 6){
-    console.log('Starting phase 6');
-    passedTargetDateBegin = moment.utc().subtract(44, 'days').startOf('day').toDate();
-    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
-    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 6);
-  }else{
-    console.log('Starting phase 3');
-    passedTargetDateBegin = moment.utc().subtract(22, 'days').startOf('day').toDate();
-    passedTargetDateEnd = moment(passedTargetDateBegin).add(1, 'days').toDate();
-    findAffectedUsers(passedTargetDateBegin, passedTargetDateEnd, 3);
-  }
+  console.log('Start sending weekly recap emails.');
+  jobStartDate = moment.utc().startOf('day').toDate();
+  oneWeekAgo = moment.utc(jobStartDate).subtract(7, 'days');
+  findAffectedUsers();
 }
 
 module.exports = function(parentQueue, parentDb, parentBaseUrl){
