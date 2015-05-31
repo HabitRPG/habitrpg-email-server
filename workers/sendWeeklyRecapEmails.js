@@ -20,7 +20,7 @@ var worker = function(job, done){
   var findAffectedUsers = function(){
     var query = {
       'flags.lastWeeklyRecap': {
-        $lte: oneWeekAgo 
+        $lt: oneWeekAgo 
       },
 
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
