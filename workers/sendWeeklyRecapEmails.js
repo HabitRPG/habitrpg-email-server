@@ -326,13 +326,11 @@ var worker = function(job, done){
         }, function(err){
           if(err) return done(err);
           if(docs.length === 10){
-            findAffectedUsers(targetDateBegin, targetDateEnd, weeklyPhase);
+            findAffectedUsers();
           }else{
-            queue.create('sendWeeklyRecapEmails', {
-              weeklyPhase: weeklyPhase
-            })
+            queue.create('sendWeeklyRecapEmails')
             .priority('critical')
-            .delay(moment(beginDate).add({hours: 24}).toDate() - new Date())
+            .delay(moment(jobStartDate).add({hours: 24}).toDate() - new Date())
             .attempts(5)
             .save(function(err){
               return err ? done(err) : done();
