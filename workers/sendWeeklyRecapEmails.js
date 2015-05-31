@@ -330,7 +330,7 @@ var worker = function(job, done){
           }else{
             queue.create('sendWeeklyRecapEmails')
             .priority('critical')
-            .delay(moment(jobStartDate).add({hours: 24}).toDate() - new Date())
+            .delay(moment(jobStartDate).add({hours: 1}).toDate() - new Date())
             .attempts(5)
             .save(function(err){
               return err ? done(err) : done();
