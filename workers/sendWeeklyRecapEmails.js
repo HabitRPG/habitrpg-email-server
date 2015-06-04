@@ -63,7 +63,7 @@ var worker = function(job, done){
             console.log('Processing', user._id);
 
             // When a user has not enough data, set his flags.lastWeeklyRecap
-            // to now so that we don't process it every time
+            // to 6 days agoso we process it a day later
             var handleUserWithoutData = function(){
               habitrpgUsers.update(
                 {
@@ -71,7 +71,7 @@ var worker = function(job, done){
                 },
                 {
                   $set: {
-                    'flags.lastWeeklyRecap': jobStartDate
+                    'flags.lastWeeklyRecap': moment(jobStartDate).subtract(6, 'days').toDate()
                   }
                 }, function(e, res){
                   if(e) return cb(e);
