@@ -373,7 +373,7 @@ var worker = function(job, done){
 
   console.log('Start sending weekly recap emails.');
   jobStartDate = new Date();
-  oneWeekAgo = moment.utc(jobStartDate).startOf('day').subtract(7, 'days').toDate();
+  oneWeekAgo = moment(jobStartDate).subtract(7, 'days').toDate();
   findAffectedUsers();
 }
 
