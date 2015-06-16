@@ -119,6 +119,7 @@ var worker = function(job, done){
             XP_END = XP_END.value;
 
             variables.XP_EARNED = parseInt(XP_END - XP_START) || 0;
+            if(variables.XP_EARNED === 0) return handleUserWithoutData();
 
             variables.TODOS_ADDED = 0;
             variables.TODOS_COMPLETED = 0;
