@@ -45,8 +45,6 @@ queue.process('email', 10, require('./workers/email'));
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue, db, baseUrl));
 queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, baseUrl));
 
-queue.promote();
-
 queue.on('job complete', function(id, result){
   kue.Job.get(id, function(err, job){
     if(err) return;
