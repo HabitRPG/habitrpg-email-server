@@ -14,11 +14,11 @@
     "basic-auth-connect": "~1.0.0",
     "canvas": "~1.2.1",
     "express": "~4.12.4",
-    "kue": "~1.0.1",
+    "kue": "~0.9.3",
     "lodash": "~2.4.1",
     "mandrill-api": "~1.0.40",
     "moment": "~2.8.3",
-    "monk": "~0.9.0",
+    "monk": "~1.0.1",
     "nchart": "git://github.com/HabitRPG/nchart#master",
     "nconf": "~0.6.9",
     "uuid": "~2.0.1"
