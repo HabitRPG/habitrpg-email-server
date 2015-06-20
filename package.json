@@ -13,7 +13,7 @@
     "aws-sdk": "~2.1.24",
     "basic-auth-connect": "~1.0.0",
     "canvas": "~1.2.1",
-    "express": "~4.12.4",
+    "express": "~4.9.8",
     "kue": "~0.9.3",
     "lodash": "~2.4.1",
     "mandrill-api": "~1.0.40",
