@@ -14,7 +14,7 @@
     "basic-auth-connect": "~1.0.0",
     "canvas": "~1.2.1",
     "express": "~4.13.0",
-    "kue": "~0.9.3",
+    "kue": "~0.8.12",
     "lodash": "~3.10.0",
     "mandrill-api": "~1.0.40",
     "moment": "~2.10.3",
