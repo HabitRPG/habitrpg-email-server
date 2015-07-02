@@ -1,7 +1,7 @@
 // Defined later
 var db, habitrpgUsers;
 
-var worker = function(job, ctx, done){
+var worker = function(job, done){
   habitrpgUsers = db.get('users');
 
 

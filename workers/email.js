@@ -31,7 +31,7 @@ var mapEmailsToPreferences = {
   'weekly-recap': 'weeklyRecaps'
 };
 
-module.exports = function(job, ctx, done){
+module.exports = function(job, done){
   var replyToAddress = standardReplyTo; // For beta and production
 
   if(!job.data.variables) job.data.variables = [];
