@@ -13,7 +13,7 @@ var s3 = new AWS.S3();
 // Defined later
 var queue, habitrpgUsers, baseUrl, db;
 
-var worker = function(job, done){
+var worker = function(job, ctx, done){
   var jobStartDate, oneWeekAgo;
   var lastId;
   

@@ -13,7 +13,7 @@ var nowRecapture, nowOneDay, OneDayAgo, OneDayAgoOneHour, ThreeDaysAgo, ThreeDay
 var phaseRecapture = 0; // 2, 3 or 4 then ends
 var phaseOneDay = 0; // 1, then ends
 
-var worker = function(job, done){
+var worker = function(job, ctx, done){
   habitrpgUsers = db.get('users');
 
   if(job.data.type == 'sendRecaptureEmails'){

@@ -44,8 +44,9 @@ var queue = kue.createQueue({
 queue.process('email', 10, require('./workers/email'));
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue, db, baseUrl));
 queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, baseUrl));
+queue.process('amazonPayments', require('./workers/amazonPayments')(db));
 
-queue.promote();
+//queue.promote();
 
 queue.on('job complete', function(id, result){
   kue.Job.get(id, function(err, job){
@@ -69,10 +70,10 @@ process.once('uncaughtException', function(err){
 });
 
 process.once('SIGTERM', function(sig){
-  queue.shutdown(function(err) {
+  queue.shutdown(9500, function(err) {
     console.log('Kue is shutting down.', err || '');
     process.exit(0);
-  }, 9500);
+  });
 });
 
 app.use(require('basic-auth-connect')(nconf.get('AUTH_USER'), nconf.get('AUTH_PASSWORD')));
