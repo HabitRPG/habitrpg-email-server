@@ -121,7 +121,7 @@ var worker = function(job, done){
                   url: 'https://habitrpg.com/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
-                    noRedirect: true,
+                    noRedirect: 'true',
                     _id: user._id,
                     apiToken: user.apiToken
                   }
@@ -184,8 +184,6 @@ var worker = function(job, done){
     // So if it's Feb 28th, we go to January 31th
     oneMonthAgo = oneMonthAgo.date(oneMonthAgo.daysInMonth());
   }
-
-  console.log('Before find')
 
   findAffectedUsers();
 }
