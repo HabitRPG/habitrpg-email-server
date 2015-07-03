@@ -9,6 +9,7 @@
     "node": "0.12.x"
   },
   "dependencies": {
+    "amazon-payments": "0.0.4",
     "async": "~1.3.0",
     "aws-sdk": "~2.1.24",
     "basic-auth-connect": "~1.0.0",
@@ -21,6 +22,7 @@
     "monk": "~1.0.1",
     "nchart": "git://github.com/HabitRPG/nchart#master",
     "nconf": "~0.6.9",
+    "request": "^2.58.0",
     "uuid": "~2.0.1"
   }
 }
