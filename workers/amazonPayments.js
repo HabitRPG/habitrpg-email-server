@@ -111,10 +111,10 @@ var worker = function(job, done){
                 SellerOrderId: uuid.v4(),
                 StoreName: 'HabitRPG'
               }
-            }, function(err){
+            }, function(err, amzRes){
               // TODO should expire only in case of failed payment
               // otherwise retry
-              if(err){
+              if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
                 // Cancel the subscription on main server
 
                 return require({
