@@ -198,7 +198,7 @@ var worker = function(job, done){
             };
 
             // TODO be sure on how many values taken
-            _.last(user.history.exp, user.history.exp.length - XP_START_INDEX)
+            _.takeRight(user.history.exp, user.history.exp.length - XP_START_INDEX)
               .forEach(function(item){
                 xpGraphData.labels.push(moment(item.date).format('MM/DD'));
                 xpGraphData.datasets[0].data.push(item.value);
