@@ -23,6 +23,7 @@ var worker = function(job, done){
         $lt: oneWeekAgo 
       },
 
+      'preferences.sleep': false,
       'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
       'preferences.emailNotifications.weeklyRecaps': {$ne: false}
     };
