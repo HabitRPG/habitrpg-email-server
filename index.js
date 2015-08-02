@@ -63,6 +63,8 @@ queue.on('job failed', function(){
   console.error.apply(console, args);
 });
 
+queue.watchStuckJobs();
+
 process.once('uncaughtException', function(err){
   queue.shutdown(9500, function(err2){
     process.exit(0);
