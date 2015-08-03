@@ -27,18 +27,9 @@ var kueRedisOpts = {
   host: nconf.get('REDIS_HOST')
 };
 
-if(nconf.get('NODE_ENV') === 'production'){
-  var rawConnection = nconf.get('REDIS_URL').slice(19);
-  var split = rawConnection.split('@');
-  kueRedisOpts.auth = split[0];
-  split = split[1].split(':');
-  kueRedisOpts.host = split[0];
-  kueRedisOpts.port = split[1];
-}
-
 var queue = kue.createQueue({
   disableSearch: true,
-  redis: kueRedisOpts
+  redis: (nconf.get('NODE_ENV') === 'production') ? process.env.REDIS_URL : kueRedisOpts
 });
 
 queue.process('email', 10, require('./workers/email'));
@@ -47,6 +38,7 @@ queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails'
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
 
 queue.promote();
+queue.watchStuckJobs()
 
 queue.on('job complete', function(id, result){
   kue.Job.get(id, function(err, job){
