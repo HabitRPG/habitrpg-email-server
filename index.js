@@ -27,6 +27,8 @@ var kueRedisOpts = {
   host: nconf.get('REDIS_HOST')
 };
 
+console.log((nconf.get('NODE_ENV') === 'production') ? process.env.REDIS_URL : kueRedisOpts)
+
 var queue = kue.createQueue({
   disableSearch: true,
   redis: (nconf.get('NODE_ENV') === 'production') ? process.env.REDIS_URL : kueRedisOpts
