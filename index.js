@@ -47,7 +47,6 @@ queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails'
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
 
 queue.promote();
-queue.watchStuckJobs();
 
 queue.on('job complete', function(id, result){
   kue.Job.get(id, function(err, job){
@@ -64,6 +63,7 @@ queue.on('job failed', function(){
   console.error.apply(console, args);
 });
 
+queue.watchStuckJobs();
 
 process.once('uncaughtException', function(err){
   queue.shutdown(9500, function(err2){
