@@ -56,7 +56,7 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
-        console.log('AMAZON PAYMENTS, found n users', docs.length)
+        console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
@@ -95,7 +95,10 @@ var worker = function(job, done){
               }
 
               // We check plan.months - 1 because we're comparing with one month ago
-              if(oneMonthAgo.diff(lastBillingDate, 'months') < (plan.months - 1)) return cb();
+              if(oneMonthAgo.diff(lastBillingDate, 'months') < (plan.months - 1)){
+                console.log('returning because not this month')
+                return cb();
+              }
             }
             
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
