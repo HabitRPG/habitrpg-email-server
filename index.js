@@ -1,6 +1,7 @@
 var kue = require('kue'),
     express = require('express'),
     monk = require('monk'),
+    url = require('url'),
     nconf = require('nconf');
 
 nconf
@@ -27,11 +28,16 @@ var kueRedisOpts = {
   host: nconf.get('REDIS_HOST')
 };
 
-console.log((nconf.get('NODE_ENV') === 'production') ? process.env.REDIS_URL : kueRedisOpts)
+if(nconf.get('NODE_ENV') === 'production'){
+  var redisURL = url.parse(process.env.REDIS_URL);
+  kueRedisOpts.auth = redisURL.auth.split(":")[1];
+  kueRedisOpts.host = redisURL.hostname;
+  kueRedisOpts.port = redisURL.port;
+}
 
 var queue = kue.createQueue({
   disableSearch: true,
-  redis: (nconf.get('NODE_ENV') === 'production') ? process.env.REDIS_URL : kueRedisOpts
+  redis: kueRedisOpts
 });
 
 queue.process('email', 10, require('./workers/email'));
@@ -40,7 +46,6 @@ queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails'
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
 
 queue.promote();
-queue.watchStuckJobs()
 
 queue.on('job complete', function(id, result){
   kue.Job.get(id, function(err, job){
@@ -56,6 +61,8 @@ queue.on('job failed', function(){
   args.unshift('Error processing job.');
   console.error.apply(console, args);
 });
+
+queue.watchStuckJobs();
 
 process.once('uncaughtException', function(err){
   queue.shutdown(9500, function(err2){
