@@ -28,7 +28,7 @@ var kueRedisOpts = {
 };
 
 if(nconf.get('NODE_ENV') === 'production'){
-  var rawConnection = nconf.get('REDISCLOUD_URL').slice(19);
+  var rawConnection = nconf.get('REDIS_URL').slice(19);
   var split = rawConnection.split('@');
   kueRedisOpts.auth = split[0];
   split = split[1].split(':');
