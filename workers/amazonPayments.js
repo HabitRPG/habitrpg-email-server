@@ -56,6 +56,8 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
+        console.log('AMAZON PAYMENTS, found n users', docs.length)
+
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
           queue.create('amazonPayments')
