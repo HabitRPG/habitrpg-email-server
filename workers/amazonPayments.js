@@ -103,13 +103,13 @@ var worker = function(job, done){
                 CurrencyCode: 'USD',
                 Amount: plan.price
               },
-              SellerAuthorizationNote: 'HabitRPG Subscription Payment',
+              SellerAuthorizationNote: 'Habitica Subscription Payment',
               TransactionTimeout: 0,
               CaptureNow: true,
-              SellerNote: 'HabitRPG Subscription Payment',
+              SellerNote: 'Habitica Subscription Payment',
               SellerOrderAttributes: {
                 SellerOrderId: uuid.v4(),
-                StoreName: 'HabitRPG'
+                StoreName: 'Habitica'
               }
             }, function(err, amzRes){
               // TODO should expire only in case of failed payment
@@ -118,7 +118,7 @@ var worker = function(job, done){
                 // Cancel the subscription on main server
 
                 return require({
-                  url: 'https://habitrpg.com/amazon/subscribe/cancel',
+                  url: 'https://habitica.com/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
                     noRedirect: 'true',

@@ -39,7 +39,7 @@ module.exports = function(job, done){
   var baseUrl;
 
   if(baseUrlI === -1){
-    job.data.variables.push({name: 'BASE_URL', content: 'https://habitrpg.com'});
+    job.data.variables.push({name: 'BASE_URL', content: 'https://habitica.com'});
     baseUrl = job.data.variables[job.data.variables.length - 1];
   }else{
     baseUrl = job.data.variables[baseUrlI];
@@ -47,12 +47,12 @@ module.exports = function(job, done){
 
   // Exclude some base urls, falling back to the main site
   if(blacklistedBaseUrls.indexOf(baseUrl.content) !== -1){
-    baseUrl.content = 'https://habitrpg.com';
+    baseUrl.content = 'https://habitica.com';
   }
 
   if(baseUrl && baseUrl.content){
     baseUrl = baseUrl.content;
-    if(['https://beta.habitrpg.com', 'https://habitrpg.com'].indexOf(baseUrl) == -1){
+    if(['https://beta.habitrpg.com', 'https://habitrpg.com', 'https://habititca.com'].indexOf(baseUrl) == -1){
       replyToAddress = orgsReplyTo; // For org plans
     }
 
@@ -84,9 +84,9 @@ module.exports = function(job, done){
       },
       global_merge_vars: job.data.variables,
       merge_vars: job.data.personalVariables,
-      //google_analytics_domains: ['habitrpg.com'],
-      from_email: 'messengers@habitrpg.com',
-      from_name: 'HabitRPG',
+      //google_analytics_domains: ['habitica.com'],
+      from_email: 'messengers@habitica.com',
+      from_name: 'Habitica',
       track_opens: true,
       preserve_recipients: false,
       tags: job.data.tags ? job.data.tags.concat([job.data.emailType]) : [job.data.emailType]
