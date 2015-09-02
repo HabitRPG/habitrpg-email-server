@@ -73,7 +73,7 @@ var worker = function(job, done){
 
         lastId = docs.length > 0 ? docs[docs.length - 1]._id : null;
 
-        async.each(docs, function(user, cb){
+        async.eachSeries(docs, function(user, cb){
           try{
             console.log('Processing', user._id);
             var plan = subscriptionBlocks[user.purchased.plan.planId];
@@ -122,7 +122,7 @@ var worker = function(job, done){
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
                 // Cancel the subscription on main server
 
-                return require({
+                return request({
                   url: 'https://habitica.com/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
