@@ -65,9 +65,9 @@ queue.on('job failed', function(){
 queue.watchStuckJobs();
 
 process.once('uncaughtException', function(err){
-  queue.shutdown(9500, function(err2){
+  queue.shutdown(function(err2){
     process.exit(0);
-  });
+  }, 9500);
 });
 
 process.once('SIGTERM', function(sig){
