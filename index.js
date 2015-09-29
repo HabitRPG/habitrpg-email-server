@@ -64,7 +64,7 @@ queue.on('job failed', function(){
 
 queue.watchStuckJobs();
 
-/*process.once('uncaughtException', function(err){
+process.once('uncaughtException', function(err){
   queue.shutdown(9500, function(err2){
     process.exit(0);
   });
@@ -75,7 +75,7 @@ process.once('SIGTERM', function(sig){
     console.log('Kue is shutting down.', err || '');
     process.exit(0);
   }, 9500);
-});*/
+});
 
 app.use(require('basic-auth-connect')(nconf.get('AUTH_USER'), nconf.get('AUTH_PASSWORD')));
 app.use(kue.app);
