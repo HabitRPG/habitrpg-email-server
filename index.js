@@ -59,7 +59,7 @@ queue.on('job complete', function(id, result){
 queue.on('job failed', function(){
   var args = Array.prototype.slice.call(arguments);
   args.unshift('Error processing job.');
-  console.error.apply(console, args);
+  console.error.apply(console, JSON.stringify(args));
 });
 
 queue.watchStuckJobs();
