@@ -161,12 +161,18 @@ var worker = function(job, done){
 
             variables.WEAK_HABITS = 0;
             variables.STRONG_HABITS = 0;
+            var weakHabitCutoff = -1.1;
 
             user.habits.forEach(function(habit){
-              if(habit.value < 1){
-                variables.WEAK_HABITS++;
-              }else{
+              // treat brightly yellow negative-only habits as strong
+              if(habit.down == true && habit.up == false && habit.value > weakHabitCutoff){
                 variables.STRONG_HABITS++;
+              }else{
+                  if(habit.value < 1){
+                    variables.WEAK_HABITS++;
+                  }else{
+                    variables.STRONG_HABITS++;
+                  }
               }
             });
 
