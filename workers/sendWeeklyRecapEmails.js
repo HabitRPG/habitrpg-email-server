@@ -162,7 +162,7 @@ var worker = function(job, done){
             variables.WEAK_HABITS = 0;
             variables.STRONG_HABITS = 0;
             // minimum value a negative-only habit has to reach to be considered strong
-            var weakHabitCutoff = -1.1;
+            var weakHabitCutoff = -1;
 
             user.habits.forEach(function(habit){
               // treat brightly yellow negative-only habits as strong
