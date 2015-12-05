@@ -162,15 +162,18 @@ var worker = function(job, done){
             variables.WEAK_HABITS = 0;
             variables.STRONG_HABITS = 0;
             // minimum value a negative-only habit has to reach to be considered strong
+            // taken from api.taskClasses in habitrpg/common/script/index.js (lower bound for neutral)
             var weakHabitCutoff = -1;
 
             user.habits.forEach(function(habit){
               // treat brightly yellow negative-only habits as strong
-              if(habit.down == true && habit.up == false && habit.value > weakHabitCutoff){
+              if(habit.down === true && habit.up === false && habit.value >= weakHabitCutoff){
                 variables.STRONG_HABITS++;
-              }else if(habit.down == false && habit.up == false){
+              }else if(habit.down === false && habit.up === false){
                   // ignore markerless habits (notes, separators etc.)
               }else{
+                  // is the task at least of neutral value?
+                  // taken from api.taskClasses in habitrpg/common/script/index.js (upper bound for neutral)
                   if(habit.value < 1){
                     variables.WEAK_HABITS++;
                   }else{
