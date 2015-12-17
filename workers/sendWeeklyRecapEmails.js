@@ -16,11 +16,11 @@ var queue, habitrpgUsers, baseUrl, db;
 var worker = function(job, done){
   var jobStartDate, oneWeekAgo;
   var lastId;
-  
+
   var findAffectedUsers = function(){
     var query = {
       'flags.lastWeeklyRecap': {
-        $lt: oneWeekAgo 
+        $lt: oneWeekAgo
       },
 
       'preferences.sleep': false,
@@ -31,7 +31,7 @@ var worker = function(job, done){
     if(lastId){
       query._id = {
         $gt: lastId
-      } 
+      }
     }
 
     console.log('Run query', query);
@@ -47,7 +47,7 @@ var worker = function(job, done){
     if(docs.length === 0){
       queue.create('sendWeeklyRecapEmails')
       .priority('critical')
-      .delay(moment(jobStartDate).add({hours: 1}).toDate() - new Date())
+      .delay(moment(jobStartDate).add({hours: 6}).toDate() - new Date())
       .attempts(5)
       .save(function(err){
         return err ? done(err) : done();
@@ -78,7 +78,7 @@ var worker = function(job, done){
             if(e) return cb(e);
 
             return cb();
-          });              
+          });
         };
 
         currentUserId = user._id; // FIXME for debugging
@@ -92,7 +92,7 @@ var worker = function(job, done){
 
         variables.END_DATE = END_DATE.format('dddd, MMMM Do YYYY');
         variables.START_DATE = START_DATE.format('dddd, MMMM Do YYYY');
-      
+
         var XP_START, XP_END, XP_START_INDEX;
 
         if(user.history.exp.length === 0 ||
@@ -375,7 +375,7 @@ var worker = function(job, done){
       }else{
         queue.create('sendWeeklyRecapEmails')
         .priority('critical')
-        .delay(moment(jobStartDate).add({hours: 1}).toDate() - new Date())
+        .delay(moment(jobStartDate).add({hours: 6}).toDate() - new Date())
         .attempts(5)
         .save(function(err){
           return err ? done(err) : done();
