@@ -193,7 +193,7 @@ var worker = function(job, done){
 
         if(!user.flags.weeklyRecapEmailsPhase || !isNaN(user.flags.weeklyRecapEmailsPhase)){
           var phase = user.flags.weeklyRecapEmailsPhase || 0;
-          variables.TIP_NUMBER = phase < 10 ? (phase + 1) : 10;
+          variables.TIP_NUMBER = phase < 52 ? (phase + 1) : 52;
         }
 
         var xpGraphData = {

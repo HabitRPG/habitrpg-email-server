@@ -7,10 +7,12 @@ var queue, db, baseUrl, habitrpgUsers;
 
 var limit = 100;
 
-var nowRecapture, nowOneDay, OneDayAgo, OneDayAgoOneHour, ThreeDaysAgo, ThreeDaysAgoOneHour, TenDaysAgo, 
-    TenDaysAgoOneHour, OneMonthAgo, OneMonthAgoOneHour, lastIdRecapture, lastIdOneDay;
+var nowRecapture, nowOneDay, OneDayAgo, OneDayAgoOneHour, ThreeDaysAgo, ThreeDaysAgoOneHour, TenDaysAgo,
+    TenDaysAgoOneHour, OneMonthAgo, OneMonthAgoOneHour, TwoMonthsAgo, TwoMonthsAgoOneHour,
+    ThreeMonthsAgo, ThreeMonthsAgoOneHour, FourMonthsAgo, FourMonthsAgoOneHour,
+    lastIdRecapture, lastIdOneDay;
 
-var phaseRecapture = 0; // 2, 3 or 4 then ends
+var phaseRecapture = 0; // 2, 3 or 4, 5, 6, 7 then ends
 var phaseOneDay = 0; // 1, then ends
 
 var worker = function(job, done){
@@ -24,6 +26,12 @@ var worker = function(job, done){
     TenDaysAgoOneHour = moment(nowRecapture).subtract({days: 10, hours: 1, minutes: 10}).toDate();
     OneMonthAgo = moment(nowRecapture).subtract({days: 30, hours: 23, minutes: 50}).toDate();
     OneMonthAgoOneHour = moment(nowRecapture).subtract({days: 31, hours: 1, minutes: 10}).toDate();
+    TwoMonthsAgo = moment(nowRecapture).subtract({days: 60, hours: 23, minutes: 50}).toDate();
+    TwoMonthsAgoOneHour = moment(nowRecapture).subtract({days: 61, hours: 1, minutes: 10}).toDate();
+    ThreeMonthsAgo = moment(nowRecapture).subtract({days: 90, hours: 23, minutes: 50}).toDate();
+    ThreeMonthsAgoOneHour = moment(nowRecapture).subtract({days: 91, hours: 1, minutes: 10}).toDate();
+    FourMonthsAgo = moment(nowRecapture).subtract({days: 120, hours: 23, minutes: 50}).toDate();
+    FourMonthsAgoOneHour = moment(nowRecapture).subtract({days: 121, hours: 1, minutes: 10}).toDate();
 
     var findAffectedUsersRecapture = function(beforeTime, afterTime, cb){
       var query = {
@@ -37,7 +45,7 @@ var worker = function(job, done){
             'flags.recaptureEmailsPhase': {
               $exists: false
             }
-          }, 
+          },
 
           {
             'flags.recaptureEmailsPhase': {
@@ -52,7 +60,7 @@ var worker = function(job, done){
       if(lastIdRecapture){
         query._id = {
           $gt: lastIdRecapture
-        } 
+        }
       }
 
       habitrpgUsers.find(query, {sort: {_id: 1}, limit: limit, fields: ['_id', 'auth', 'profile', 'lastCron']}, function(err, docs){
@@ -117,7 +125,16 @@ var worker = function(job, done){
           emailType = '10-days-recapture'
           break;
         case 4: // One month ago
-          emailType = '1-month-recapture'
+          emailType = '1-month-recapture-temporary'
+          break;
+        case 5: // Two months ago
+          emailType = '2-months-recapture'
+          break;
+        case 6: // Three months ago
+          emailType = '3-months-recapture'
+          break;
+        case 7: // Four months ago
+          emailType = '4-months-recapture'
           break;
       }
 
@@ -126,7 +143,7 @@ var worker = function(job, done){
         {
           _id: {
             $in: ids
-          } 
+          }
         },
         {
           $set: {
@@ -180,6 +197,18 @@ var worker = function(job, done){
           execQueryRecapture(OneMonthAgo, OneMonthAgoOneHour);
           break;
         case 4:
+          phaseRecapture = 5;
+          execQueryRecapture(TwoMonthsAgo, TwoMonthsAgoOneHour);
+          break;
+        case 5:
+          phaseRecapture = 6;
+          execQueryRecapture(ThreeMonthsAgo, ThreeMonthsAgoOneHour);
+          break;
+        case 6:
+          phaseRecapture = 7;
+          execQueryRecapture(FourMonthsAgo, FourMonthsAgoOneHour);
+          break;
+        case 7:
           phaseRecapture = 0;
 
           queue.create('sendBatchEmails', {
@@ -212,7 +241,7 @@ var worker = function(job, done){
             'flags.recaptureEmailsPhase': {
               $exists: false
             }
-          }, 
+          },
 
           {
             'flags.recaptureEmailsPhase': {
@@ -227,7 +256,7 @@ var worker = function(job, done){
       if(lastIdOneDay){
         query._id = {
           $gt: lastIdOneDay
-        } 
+        }
       }
 
       habitrpgUsers.find(query, {sort: {_id: 1}, limit: limit, fields: ['_id', 'auth', 'profile', 'lastCron']}, function(err, docs){
@@ -293,7 +322,7 @@ var worker = function(job, done){
         {
           _id: {
             $in: ids
-          } 
+          }
         },
         {
           $set: {
@@ -364,6 +393,6 @@ module.exports = function(parentQueue, parentDb, parentBaseUrl){
   queue = parentQueue; // Pass queue from parent module
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseurl from parent module
-  
+
   return worker;
 }
