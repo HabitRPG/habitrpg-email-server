@@ -128,13 +128,13 @@ var worker = function(job, done){
           emailType = '1-month-recapture-temporary'
           break;
         case 5: // Two months ago
-          emailType = '2-months-recapture'
+          emailType = '2-months-plus-recapture'
           break;
         case 6: // Three months ago
-          emailType = '3-months-recapture'
+          emailType = '2-months-plus-recapture'
           break;
         case 7: // Four months ago
-          emailType = '4-months-recapture'
+          emailType = '2-months-plus-recapture'
           break;
       }
 
