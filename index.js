@@ -40,7 +40,7 @@ var queue = kue.createQueue({
   redis: kueRedisOpts
 });
 
-queue.process('email', 10, require('./workers/email'));
+queue.process('email', 20, require('./workers/email'));
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue, db, baseUrl));
 queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, baseUrl));
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
