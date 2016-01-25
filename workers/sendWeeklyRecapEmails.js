@@ -38,7 +38,7 @@ var worker = function(job, done){
 
     habitrpgUsers.find(query, {
       sort: {_id: 1},
-      limit: 10,
+      limit: 5,
       fields: ['_id', 'auth', 'profile', 'lastCron', 'history', 'habits', 'dailys', 'todos', 'flags.weeklyRecapEmailsPhase']
   }, function(err, docs){
     if(err) return done(err);
@@ -370,7 +370,7 @@ var worker = function(job, done){
       }
     }, function(err){
       if(err) return done(err);
-      if(docs.length === 10){
+      if(docs.length === 5){
         findAffectedUsers();
       }else{
         queue.create('sendWeeklyRecapEmails')
