@@ -11,7 +11,7 @@ nconf
 
 var app = express();
 
-var baseUrl = 'https://habitrpg.com';
+var baseUrl = 'https://habitica.com';
 
 var db = monk(nconf.get('MONGODB_URL'));
 db.options.multi = true;
