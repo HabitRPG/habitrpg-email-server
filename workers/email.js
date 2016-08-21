@@ -1,9 +1,20 @@
+/* 
+  READ ME FIRST!
+
+  This code was initially written to work with Mandrill.com API
+  Now we've migrated to Sparkpost.com and its API.
+
+  The input data sent from the website remained the same.
+  So we process the data to make it suitable for Sparkpost.
+
+*/
+
 var fs = require('fs'),
     nconf = require('nconf');
-    mandrill = require('mandrill-api'),
+    Sparkpost = require('sparkpost'),
     _ = require('lodash');
 
-var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
+var sparkpostClient = new Sparkpost(nconf.get('SPARKPOST_API_KEY'));
 
 var standardReplyTo = nconf.get('STANDARD_REPLY_TO_ADDR');
 var orgsReplyTo = nconf.get('ORGS_REPLY_TO_ADDR');
@@ -35,6 +46,7 @@ module.exports = function(job, done){
   var replyToAddress = standardReplyTo; // For beta and production
 
   if(!job.data.variables) job.data.variables = [];
+  if(!job.data.personalVariables) job.data.personalVariables = [];
   var baseUrlI = _.findIndex(job.data.variables, {name: 'BASE_URL'});
   var baseUrl;
 
@@ -73,27 +85,61 @@ module.exports = function(job, done){
 
   // If it's an object there is only one email to send, otherwise
   // the same one to multiple users
+
   var toArr = job.data.to.email ? [job.data.to] : job.data.to;
-  mandrillClient.messages.sendTemplate({
-    template_name: job.data.emailType, // template_name === tag === emailType
-    template_content: [], // must be supplied even if not used
-    message: {
-      to: toArr,
-      'headers': {
-        'Reply-To': replyToAddress
-      },
-      global_merge_vars: job.data.variables,
-      merge_vars: job.data.personalVariables,
-      //google_analytics_domains: ['habitica.com'],
-      from_email: 'messengers@habitica.com',
-      from_name: 'Habitica',
-      track_opens: true,
-      preserve_recipients: false,
-      tags: job.data.tags ? job.data.tags.concat([job.data.emailType]) : [job.data.emailType]
+  toArr = toArr.map(function (item) {
+    return {
+      address: {
+        email: item.email,
+        name: item.name,
+      }
+    };
+  });
+
+  // Mandrill -> Sparkpost migration
+  // Variables are stored in a map {varName: varContent}
+  // varName MUST be lowercase
+  var globalSubstitutionData = {};
+
+  job.data.personalVariables.forEach(function (item) {
+    var toUser = toArr.find(function (user) {
+      return user.address && user.address.email === item.rcpt;
+    });
+
+    if (toUser) {
+      toUser.substitution_data = {};
+
+      if (item.vars) {
+        item.vars.forEach(function (variable) {
+          if (variable.name) toUser.substitution_data[variable.name.toLowerCase()] = variable.content;
+        });
+      }
     }
-  }, function(r){
-    done(null, r);
-  }, function(e){
-    done(e);
+  });
+
+  job.data.variables.forEach(function (item) {
+    if (item.name) globalSubstitutionData[item.name.toLowerCase()] = item.content;
+  });
+
+  sparkpostClient.transmissions.send({
+    transmissionBody: {
+      options: {
+        open_tracking: true,
+        click_tracking: true,
+        transactional: true,
+      },
+      campaign_id: job.data.emailType,
+      content: {
+        template_id: job.data.emailType, // template_name === tag === emailType
+      },
+      substitution_data: globalSubstitutionData,
+      recipients: toArr,
+    },
+  }, function(err, result){
+    if (err) {
+      done(err);
+    } else {
+      done(null, result);
+    }
   });
 };
