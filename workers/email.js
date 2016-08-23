@@ -137,6 +137,7 @@ module.exports = function(job, done){
     },
   }, function(err, result){
     if (err) {
+      console.log(err);
       done(err);
     } else {
       done(null, result);
