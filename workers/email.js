@@ -121,6 +121,10 @@ module.exports = function(job, done){
     if (item.name) globalSubstitutionData[item.name.toLowerCase()] = item.content;
   });
 
+  if (toArr.length === 0) {
+    return done();
+  }
+
   sparkpostClient.transmissions.send({
     transmissionBody: {
       options: {
