@@ -137,7 +137,7 @@ module.exports = function(job, done){
     },
   }, function(err, result){
     if (err) {
-      console.log(err);
+      console.log(err, toArr, job.data, globalSubstitutionData);
       done(err);
     } else {
       done(null, result);
