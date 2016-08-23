@@ -141,10 +141,15 @@ module.exports = function(job, done){
     },
   }, function(err, result){
     if (err) {
-      console.log(err, toArr, job.data, globalSubstitutionData);
-      done(err);
+      if (err.errors && err.errors[0] && err.errors[0].code === '1902') { // global suppression list https://support.sparkpost.com/customer/portal/articles/2038351-554-5-7-1---recipient-address-was-suppressed-due-to-system-policy?b_id=7411
+        console.log('email in global suppression list', toArr);
+        done();  
+      } else {
+        console.log(err, toArr, job.data, globalSubstitutionData);
+        done(err);
+      }
     } else {
-      done(null, result);
+      done(); // success
     }
   });
 };
