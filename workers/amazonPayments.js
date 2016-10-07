@@ -56,7 +56,7 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
-        // console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
+        console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
@@ -101,7 +101,7 @@ var worker = function(job, done){
               }
             }
             
-            console.log('authorizing')
+            console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
               AuthorizationReferenceId: uuid.v4().substring(0, 32),
@@ -124,6 +124,7 @@ var worker = function(job, done){
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
                 // Cancel the subscription on main server
 
+                console.log('Cancelling');
                 return request({
                   url: 'https://habitica.com/amazon/subscribe/cancel',
                   method: 'GET',
@@ -132,8 +133,8 @@ var worker = function(job, done){
                     _id: user._id,
                     apiToken: user.apiToken
                   }
-                }, function(error, response){
-                  console.log(err);
+                }, function(error, response, body){
+                  console.log(err, body);
                   // FIXME do we want to send an error here? just at the beginning to check
                   if(!error && response.statusCode === 200){
                     return cb(err);
