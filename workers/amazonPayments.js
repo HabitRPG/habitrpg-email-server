@@ -56,7 +56,7 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
-        console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
+        // console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
@@ -75,12 +75,12 @@ var worker = function(job, done){
 
         async.eachSeries(docs, function(user, cb){
           try{
-            console.log('Processing', user._id);
+            // console.log('Processing', user._id);
             var plan = subscriptionBlocks[user.purchased.plan.planId];
             var lastBillingDate = moment.utc(user.purchased.plan.lastBillingDate);
 
             if(!plan){
-              return cb(new Error('Plan ' + user.purchased.plan.planId + ' does not exists. User ' + user._id))
+              throw new Error('Plan ' + user.purchased.plan.planId + ' does not exists. User ' + user._id);
             }
 
             // For diff() to work we must adjust the number of days in case oneMonthAgo has less
@@ -96,11 +96,12 @@ var worker = function(job, done){
 
               // We check plan.months - 1 because we're comparing with one month ago
               if(oneMonthAgo.diff(lastBillingDate, 'months') < (plan.months - 1)){
-                console.log('returning because not this month')
+                // console.log('returning because not this month')
                 return cb();
               }
             }
             
+            console.log('authorizing')
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
               AuthorizationReferenceId: uuid.v4().substring(0, 32),
@@ -117,6 +118,7 @@ var worker = function(job, done){
                 StoreName: 'Habitica'
               }
             }, function(err, amzRes){
+              console.log(err);
               // TODO should expire only in case of failed payment
               // otherwise retry
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
@@ -131,6 +133,7 @@ var worker = function(job, done){
                     apiToken: user.apiToken
                   }
                 }, function(error, response){
+                  console.log(err);
                   // FIXME do we want to send an error here? just at the beginning to check
                   if(!error && response.statusCode === 200){
                     return cb(err);
