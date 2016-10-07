@@ -56,7 +56,7 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
-        console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
+        console.log('AMAZON PAYMENTS, found n users', docs.length)
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
@@ -118,14 +118,14 @@ var worker = function(job, done){
                 StoreName: 'Habitica'
               }
             }, function(err, amzRes){
-              console.log(err, JSON.stringify(amzRes, null, 2));
+              console.log(err, JSON.stringify(amzRes, null, 2), JSON.stringify(user, null, 2));
               // TODO should expire only in case of failed payment
               // otherwise retry
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
                 // Cancel the subscription on main server
 
                 console.log('Cancelling');
-                return request({
+                request({
                   url: 'https://habitica.com/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
@@ -134,30 +134,30 @@ var worker = function(job, done){
                     apiToken: user.apiToken
                   }
                 }, function(error, response, body){
-                  console.log(err, body);
+                  console.log('error cancelling', error, body);
                   // FIXME do we want to send an error here? just at the beginning to check
                   if(!error && response.statusCode === 200){
-                    return cb(err);
+                    return cb(error);
                   }
 
-                  return cb(error);
+                  cb(error);
                 });
 
+              } else {
+                habitrpgUsers.update(
+                  {
+                    _id: user._id
+                  },
+                  {
+                    $set: {
+                      'purchased.plan.lastBillingDate': jobStartDate.toDate()
+                    }
+                  }, function(e){
+                    if(e) return cb(e);
+
+                    return cb();
+                  });
               }
-
-              habitrpgUsers.update(
-                {
-                  _id: user._id
-                },
-                {
-                  $set: {
-                    'purchased.plan.lastBillingDate': jobStartDate.toDate()
-                  }
-                }, function(e){
-                  if(e) return cb(e);
-
-                  return cb();
-                });
             });
 
           }catch(e){
@@ -166,6 +166,7 @@ var worker = function(job, done){
             cb(e);
           }
         }, function(err){
+          console.log('terminating', err);
           if(err) return done(err);
           if(docs.length === 10){
             findAffectedUsers();
