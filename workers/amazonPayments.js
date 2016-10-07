@@ -140,9 +140,8 @@ var worker = function(job, done){
                     return cb(error);
                   }
 
-                  cb(error);
+                  cb(error || body); // if there's an error or response.statucCode !== 200
                 });
-
               } else {
                 habitrpgUsers.update(
                   {
