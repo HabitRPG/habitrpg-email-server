@@ -118,7 +118,7 @@ var worker = function(job, done){
                 StoreName: 'Habitica'
               }
             }, function(err, amzRes){
-              console.log(err, amzRes);
+              console.log(err, JSON.stringify(amzRes, null, 2));
               // TODO should expire only in case of failed payment
               // otherwise retry
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
