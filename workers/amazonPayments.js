@@ -101,14 +101,6 @@ var worker = function(job, done){
               }
             }
 
-            amzPayment.offAmazonPayments.getBillingAgreementDetails({
-              AmazonBillingAgreementId: user.purchased.plan.customerId,
-            }, function (error, result) {
-              console.log('get billing agreement details')
-
-              console.log(error, result);
-            })
-            return cb();
             console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
@@ -126,13 +118,12 @@ var worker = function(job, done){
                 StoreName: 'Habitica'
               }
             }, function(err, amzRes){
-              console.log(err, JSON.stringify(amzRes, null, 2), JSON.stringify(user, null, 2));
               // TODO should expire only in case of failed payment
               // otherwise retry
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
                 // Cancel the subscription on main server
 
-                console.log('Cancelling');
+                console.log('Cancelling', user._id, user.purchased.plan.customerId, amzRes);
                 request({
                   url: 'https://habitica.com/amazon/subscribe/cancel',
                   method: 'GET',
