@@ -106,7 +106,7 @@ var worker = function(job, done){
             }, function (error, result) {
               console.log('get billing agreement details')
 
-              console.log(error, JSON.stringify(result, null, 2));
+              console.log(error, result);
             })
             return cb();
             console.log('Authorizing');
