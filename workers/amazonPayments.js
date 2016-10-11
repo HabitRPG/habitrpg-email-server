@@ -104,7 +104,7 @@ var worker = function(job, done){
             amzPayment.offAmazonPayments.getBillingAgreementDetails({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
             }, function (error, result) {
-              console.log('get billing agreement details')!
+              console.log('get billing agreement details')
 
               console.log(error, JSON.stringify(result, null, 2));
             })
