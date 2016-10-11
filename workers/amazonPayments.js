@@ -100,7 +100,14 @@ var worker = function(job, done){
                 return cb();
               }
             }
-            
+
+            amzPayment.offAmazonPayments.getBillingAgreementDetails({
+              AmazonBillingAgreementId: user.purchased.plan.customerId,
+            }, function (error, result) {
+              console.log('get billing agreement details')!
+
+              console.log(error, JSON.stringify(result, null, 2));
+            })
             console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
