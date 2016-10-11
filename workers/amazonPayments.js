@@ -108,6 +108,7 @@ var worker = function(job, done){
 
               console.log(error, JSON.stringify(result, null, 2));
             })
+            return cb();
             console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
