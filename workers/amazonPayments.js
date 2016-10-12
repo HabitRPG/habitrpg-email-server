@@ -125,7 +125,7 @@ var worker = function(job, done){
 
                 console.log('Cancelling', user._id, user.purchased.plan.customerId, amzRes);
                 request({
-                  url: 'https://habitica.com/amazon/subscribe/cancel',
+                  url: 'https://habitrpg-gamma.herokuapp.com/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
                     noRedirect: 'true',
