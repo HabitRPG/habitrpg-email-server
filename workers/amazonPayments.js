@@ -56,7 +56,7 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
-        console.log('AMAZON PAYMENTS, found n users', docs.length, docs)
+        console.log('AMAZON PAYMENTS, found n users', docs.length)
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
@@ -75,12 +75,12 @@ var worker = function(job, done){
 
         async.eachSeries(docs, function(user, cb){
           try{
-            console.log('Processing', user._id);
+            // console.log('Processing', user._id);
             var plan = subscriptionBlocks[user.purchased.plan.planId];
             var lastBillingDate = moment.utc(user.purchased.plan.lastBillingDate);
 
             if(!plan){
-              return cb(new Error('Plan ' + user.purchased.plan.planId + ' does not exists. User ' + user._id))
+              throw new Error('Plan ' + user.purchased.plan.planId + ' does not exists. User ' + user._id);
             }
 
             // For diff() to work we must adjust the number of days in case oneMonthAgo has less
@@ -96,11 +96,12 @@ var worker = function(job, done){
 
               // We check plan.months - 1 because we're comparing with one month ago
               if(oneMonthAgo.diff(lastBillingDate, 'months') < (plan.months - 1)){
-                console.log('returning because not this month')
+                // console.log('returning because not this month')
                 return cb();
               }
             }
-            
+
+            console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
               AuthorizationReferenceId: uuid.v4().substring(0, 32),
@@ -122,7 +123,8 @@ var worker = function(job, done){
               if(err || amzRes.AuthorizationDetails.AuthorizationStatus.State === 'Declined'){
                 // Cancel the subscription on main server
 
-                return request({
+                console.log('Cancelling', user._id, user.purchased.plan.customerId, amzRes);
+                request({
                   url: 'https://habitica.com/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
@@ -130,30 +132,30 @@ var worker = function(job, done){
                     _id: user._id,
                     apiToken: user.apiToken
                   }
-                }, function(error, response){
+                }, function(error, response, body){
+                  console.log('error cancelling', error, body);
                   // FIXME do we want to send an error here? just at the beginning to check
                   if(!error && response.statusCode === 200){
-                    return cb(err);
+                    return cb(error);
                   }
 
-                  return cb(error);
+                  cb(error || body); // if there's an error or response.statucCode !== 200
                 });
+              } else {
+                habitrpgUsers.update(
+                  {
+                    _id: user._id
+                  },
+                  {
+                    $set: {
+                      'purchased.plan.lastBillingDate': jobStartDate.toDate()
+                    }
+                  }, function(e){
+                    if(e) return cb(e);
 
+                    return cb();
+                  });
               }
-
-              habitrpgUsers.update(
-                {
-                  _id: user._id
-                },
-                {
-                  $set: {
-                    'purchased.plan.lastBillingDate': jobStartDate.toDate()
-                  }
-                }, function(e){
-                  if(e) return cb(e);
-
-                  return cb();
-                });
             });
 
           }catch(e){
@@ -162,6 +164,7 @@ var worker = function(job, done){
             cb(e);
           }
         }, function(err){
+          console.log('terminating', err);
           if(err) return done(err);
           if(docs.length === 10){
             findAffectedUsers();
