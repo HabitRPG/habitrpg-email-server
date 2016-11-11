@@ -1,19 +1,8 @@
-var nconf = require('nconf');
-var monk = require('monk');
-
-nconf
-  .argv()
-  .env()
-  .file({ file: __dirname + '/../config.json' });
-
-var db = monk(nconf.get('MONGODB_URL'));
-// @TODO: Remove above
-
 var async = require('async');
 var uuid = require('uuid');
 var moment = require('moment');
-var ObjectId = require('mongodb').ObjectID;
 var amazonPayment = require('../libs/amazonPayments');
+var request = require('request');
 
 var plan = {
   price: 3,
@@ -21,7 +10,9 @@ var plan = {
 };
 var pageLimit = 10;
 
-var db, queue, habitrpgUsers, jobStartDate;
+var db, queue, habitrpgUsers, jobStartDate, habitGroups;
+
+var SUBSCRIPTION_CANCEL_URL = 'https://habitica.com/amazon/subscribe/cancel';
 
 function scheduleNextQueue()
 {
@@ -34,27 +25,23 @@ function scheduleNextQueue()
   });
 }
 
-function cancelSubscription()
+function cancelSubscription(group)
 {
-  // Cancel the subscription on main server
-  console.log('Cancelling', user._id, user.purchased.plan.customerId, amzRes);
-  request({
-    url: 'https://habitica.com/amazon/subscribe/cancel',
-    method: 'GET',
-    qs: {
-      noRedirect: 'true',
-      _id: user._id,
-      apiToken: user.apiToken
-    }
-  }, function(error, response, body){
-    console.log('error cancelling', error, body);
-    // FIXME do we want to send an error here? just at the beginning to check
-    if(!error && response.statusCode === 200){
-      return cb(error);
-    }
+  habitrpgUsers.findOne({ _id: group.leader }, { castIds: false })
+    .then(function (user) {
 
-    cb(error || body); // if there's an error or response.statucCode !== 200
-  });
+      request({
+        url: SUBSCRIPTION_CANCEL_URL = '?groupId=' + group._id,
+        method: 'GET',
+        qs: {
+          noRedirect: 'true',
+          _id: user._id,
+          apiToken: user.apiToken
+        }
+      }, function(error, response, body) {
+        console.log('error cancelling', error, body);
+      });
+    });
 }
 
 function chargeGroup (group)
@@ -82,7 +69,7 @@ function chargeGroup (group)
     // otherwise retry
 
     if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') {
-      cancelSubscription();
+      cancelSubscription(group);
       return;
     }
 
@@ -96,7 +83,7 @@ function chargeGroup (group)
     console.log(result);
   })
   .catch(function (err) {
-    console.log("sdf", err);
+    console.log(err);
     //@TODO: Check for cancel error
     //  cancelSubscription()
   });
@@ -110,8 +97,7 @@ function processGroupsWithAmazonPayment(groups)
   }
 
   async.eachSeries(groups, function iteratee(group, callback) {
-    console.log(group.purchased.plan.lastBillingDate)
-    chargeGroup(group, callback);
+    chargeGroup(group);
     callback();
   }, function done() {
     if (groups.length === pageLimit) {
@@ -142,7 +128,7 @@ function chargeAmazonGroups(lastId)
   habitGroups.find(query, {
     sort: {_id: 1},
     limit: pageLimit,
-    fields: ['_id', 'purchased.plan', 'memberCount']
+    fields: ['_id', 'purchased.plan', 'memberCount', 'leader']
   })
   .then(processGroupsWithAmazonPayment)
   .catch(function (err) {
@@ -162,13 +148,10 @@ var worker = function(job, done)
   }
 
   habitGroups = db.get('groups');
+  habitrpgUsers = db.get('users');
   chargeAmazonGroups();
   done();
 }
-
-worker(null, function () {
-  console.log("Done")
-});
 
 module.exports = function(parentQueue, parentDb) {
   // Pass db and queue from parent module
