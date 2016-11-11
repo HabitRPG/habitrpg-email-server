@@ -44,6 +44,7 @@ queue.process('email', 30, require('./workers/email'));
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue, db, baseUrl));
 queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, baseUrl));
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
+queue.process('amazonGroupPlanPayments', require('./workers/amazonGroupPlanPayments')(queue, db));
 
 queue.promote();
 

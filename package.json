@@ -9,20 +9,21 @@
     "node": "^4.2.1"
   },
   "dependencies": {
-    "amazon-payments": "0.0.4",
-    "async": "~1.3.0",
-    "aws-sdk": "~2.1.24",
-    "basic-auth-connect": "~1.0.0",
-    "canvas": "~1.2.1",
-    "express": "~4.13.0",
-    "kue": "~0.8.12",
-    "lodash": "~3.10.0",
-    "mandrill-api": "~1.0.40",
-    "moment": "~2.10.3",
-    "monk": "~1.0.1",
+    "amazon-payments": "*",
+    "async": "*",
+    "aws-sdk": "*",
+    "basic-auth-connect": "*",
+    "bluebird": "^3.4.6",
+    "canvas": "*",
+    "express": "*",
+    "kue": "*",
+    "lodash": "*",
+    "mandrill-api": "*",
+    "moment": "*",
+    "monk": "*",
     "nchart": "git://github.com/HabitRPG/nchart#master",
-    "nconf": "~0.6.9",
-    "request": "^2.58.0",
-    "uuid": "~2.0.1"
+    "nconf": "*",
+    "request": "*",
+    "uuid": "*"
   }
 }
