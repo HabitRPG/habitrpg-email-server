@@ -1,10 +1,11 @@
 var groupSubscriptionManager = require('../libs/groupSubscriptionManager');
+var amazonPayment = require('../libs/amazonPayments');
 
 var db, queue;
 
 var worker = function(job, done)
 {
-  groupSubscriptionManager.setUp(db, queue);
+  groupSubscriptionManager.init(db, queue, done, amazonPayment);
   done();
 }
 

@@ -3,9 +3,7 @@ var uuid = require('uuid');
 var moment = require('moment');
 var request = require('request');
 
-var amazonPayment = require('../libs/amazonPayments');
-
-var db, queue, habitrpgUsers, jobStartDate, habitGroups;
+var db, queue, amazonPayment, done, habitrpgUsers, jobStartDate, habitGroups;
 
 var plan = {
   price: 3,
@@ -18,21 +16,20 @@ var SUBSCRIPTION_CANCEL_URL = 'https://habitica.com/amazon/subscribe/cancel';
 function scheduleNextQueue()
 {
   queue.create('amazonGroupPlanPayments')
-  .priority('critical')
-  .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-  .attempts(5)
-  .save(function(err){
-    return err ? done(err) : done();
-  });
+    .priority('critical')
+    .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
+    .attempts(5)
+    .save(function(err){
+      return err ? done(err) : done();
+    });
 }
 
 function cancelSubscription(group)
 {
   habitrpgUsers.findOne({ _id: group.leader }, { castIds: false })
     .then(function (user) {
-
       request({
-        url: SUBSCRIPTION_CANCEL_URL = '?groupId=' + group._id,
+        url: SUBSCRIPTION_CANCEL_URL + '?groupId=' + group._id,
         method: 'GET',
         qs: {
           noRedirect: 'true',
@@ -45,7 +42,7 @@ function cancelSubscription(group)
     });
 }
 
-function chargeGroup (group)
+function chargeGroup (group, callback)
 {
   var price = plan.price * (plan.quantity + group.memberCount - 1);
 
@@ -68,7 +65,6 @@ function chargeGroup (group)
   .then(function(response) {
     // TODO should expire only in case of failed payment
     // otherwise retry
-
     if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') {
       cancelSubscription(group);
       return;
@@ -81,10 +77,11 @@ function chargeGroup (group)
     );
   })
   .then(function (result) {
-    console.log(result);
+    callback();
   })
   .catch(function (err) {
     console.log(err);
+    callback();
     //@TODO: Check for cancel error
     //  cancelSubscription()
   });
@@ -98,9 +95,8 @@ function processGroupsWithAmazonPayment(groups)
   }
 
   async.eachSeries(groups, function iteratee(group, callback) {
-    chargeGroup(group);
-    callback();
-  }, function done() {
+    chargeGroup(group, callback);
+  }, function finished() {
     if (groups.length === pageLimit) {
       var lastGroup = groups[groups.length - 1];
       chargeAmazonGroups(lastGroup._id);
@@ -138,10 +134,12 @@ function chargeAmazonGroups(lastId)
 }
 
 //@TODO: Constructor?
-function setUp(dbInc, queueInc)
+function init(dbInc, queueInc, doneInc, amazonPaymentInc)
 {
   db = dbInc;
   queue = queueInc;
+  done = doneInc;
+  amazonPayment = amazonPaymentInc;
 
   jobStartDate = moment.utc();
   isLastDayOfMonth = jobStartDate.daysInMonth() === jobStartDate.date();
@@ -158,9 +156,5 @@ function setUp(dbInc, queueInc)
 }
 
 module.exports = {
-  setUp: setUp,
-  chargeAmazonGroups: chargeAmazonGroups,
-  processGroupsWithAmazonPayment: processGroupsWithAmazonPayment,
-  chargeGroup: chargeGroup,
-  cancelSubscription: cancelSubscription,
+  init: init,
 };

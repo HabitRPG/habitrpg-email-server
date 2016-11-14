@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "scripts": {
     "start": "node ./index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha tests/"
   },
   "engines": {
     "node": "^4.2.1"
@@ -25,5 +25,10 @@
     "nconf": "*",
     "request": "*",
     "uuid": "*"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "sinon": "^1.17.6",
+    "sinon-stub-promise": "^4.0.0"
   }
 }
