@@ -1,18 +1,9 @@
-// import amazonPayments from 'amazon-payments';
-// import nconf from 'nconf';
-// import common from '../../common';
-// import Bluebird from 'bluebird';
-// import {
-//   BadRequest,
-// } from './errors';
-
 var nconf = require('nconf');
 var amazonPayments = require('amazon-payments');
 var Bluebird = require('bluebird');
 
 // TODO better handling of errors
 
-// var i18n = common.i18n;
 var IS_PROD = nconf.get('NODE_ENV') === 'production';
 
 var amzPayment = amazonPayments.connect({
@@ -37,7 +28,7 @@ var authorizeOnBillingAgreement = (inputSet) => {
   return new Promise((resolve, reject) => {
     amzPayment.offAmazonPayments.authorizeOnBillingAgreement(inputSet, (err, response) => {
       if (err) return reject(err);
-      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject(new BadRequest(i18n.t('paymentNotSuccessful')));
+      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject());
       return resolve(response);
     });
   });
@@ -47,7 +38,7 @@ var authorize = (inputSet) => {
   return new Promise((resolve, reject) => {
     amzPayment.offAmazonPayments.authorize(inputSet, (err, response) => {
       if (err) return reject(err);
-      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject(new BadRequest(i18n.t('paymentNotSuccessful')));
+      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject());
       return resolve(response);
     });
   });
