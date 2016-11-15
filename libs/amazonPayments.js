@@ -28,7 +28,7 @@ var authorizeOnBillingAgreement = (inputSet) => {
   return new Promise((resolve, reject) => {
     amzPayment.offAmazonPayments.authorizeOnBillingAgreement(inputSet, (err, response) => {
       if (err) return reject(err);
-      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject());
+      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject();
       return resolve(response);
     });
   });
@@ -38,7 +38,7 @@ var authorize = (inputSet) => {
   return new Promise((resolve, reject) => {
     amzPayment.offAmazonPayments.authorize(inputSet, (err, response) => {
       if (err) return reject(err);
-      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject());
+      if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') return reject();
       return resolve(response);
     });
   });
