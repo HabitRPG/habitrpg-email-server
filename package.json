@@ -23,7 +23,9 @@
     "nchart": "git://github.com/HabitRPG/nchart#master",
     "nconf": "^0.8.4",
     "request": "^2.78.0",
-    "uuid": "^2.0.3"
+    "uuid": "^2.0.3",
+    "push-notify": "habitrpg/push-notify#v1.2.0",
+    "sprintf-js": "^1.0.3"
   },
   "devDependencies": {
     "chai": "^3.5.0",
