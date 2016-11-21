@@ -1,6 +1,9 @@
 language: node_js
 node_js:
   - "6"
+services:
+  - redis-server
+  - mongodb
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev build-essential g++
