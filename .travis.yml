@@ -4,3 +4,4 @@ node_js:
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libcairo2-dev libjpeg-dev libpango1.0-dev libgif-dev build-essential g++
+  - npm install -g mocha
