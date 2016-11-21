@@ -3,7 +3,7 @@
   "AUTH_USER": "admin",
   "AUTH_PASSWORD": "password",
   "MANDRILL_API_KEY": "1234567890",
-  "MONGODB_URL": "mongodb://mongodb-url",
+  "MONGODB_URL": "mongodb://localhost/habitrpg",
   "REDIS_PORT": 6379,
   "REDIS_HOST": "127.0.0.1",
   "STANDARD_REPLY_TO_ADDR": "an@email.address",
