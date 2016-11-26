@@ -5,6 +5,8 @@ var request = require('request');
 
 var db, queue, amazonPayment, done, habitrpgUsers, jobStartDate, habitGroups;
 
+var paymentDescription = 'Group Subscription Payment';
+
 var plan = {
   price: 3,
   quantity: 3,
@@ -26,7 +28,7 @@ function scheduleNextQueue()
 
 function cancelSubscription(group)
 {
-  habitrpgUsers.findOne({ _id: group.leader }, { castIds: false })
+  habitrpgUsers.findOne({ _id: group.leader }, { castIds: false, fields: ['_id', 'apiToken'] })
     .then(function (user) {
       request({
         url: SUBSCRIPTION_CANCEL_URL + '?groupId=' + group._id,
@@ -53,10 +55,10 @@ function chargeGroup (group, callback)
       CurrencyCode: 'USD',
       Amount: price,
     },
-    SellerAuthorizationNote: 'Habitica Subscription Payment',
+    SellerAuthorizationNote: paymentDescription,
     TransactionTimeout: 0,
     CaptureNow: true,
-    SellerNote: 'Habitica Subscription Payment',
+    SellerNote: paymentDescription,
     SellerOrderAttributes: {
       SellerOrderId: uuid.v4(),
       StoreName: 'Habitica'
