@@ -58,7 +58,7 @@ function generateGroups(groupsCollection)
 describe('GroupSubscriptionManager', function () {
   var groups, groupsCollection;
 
-  var authorizeOnBillingAgreementSpy;
+  var authorizeOnBillingAgreementSpy, requestSpy;
   var amazonResponse = {
     AuthorizationDetails: {
       AuthorizationStatus: {
@@ -72,6 +72,10 @@ describe('GroupSubscriptionManager', function () {
     authorizeOnBillingAgreementSpy
       .returnsPromise()
       .resolves(amazonResponse);
+
+    requestSpy = function (data, callback) {
+      callback();
+    };
 
     groupsCollection = db.get('groups');
     generateGroups(groupsCollection)
@@ -91,14 +95,14 @@ describe('GroupSubscriptionManager', function () {
     groupSubscriptionManager.init(db, queue, function () {
       expect(queueSpy.callCount).equals(1);
       done();
-    }, amazonPayments);
+    }, amazonPayments, requestSpy);
   });
 
   it('should charge a group', function (done) {
     groupSubscriptionManager.init(db, queue, function () {
       expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
       done();
-    }, amazonPayments);
+    }, amazonPayments, requestSpy);
   });
 
   it('should not charge a group twice in the same month', function (done) {
@@ -107,8 +111,8 @@ describe('GroupSubscriptionManager', function () {
       groupSubscriptionManager.init(db, queue, function () {
         expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
         done();
-      }, amazonPayments);
-    }, amazonPayments);
+      }, amazonPayments, requestSpy);
+    }, amazonPayments, requestSpy);
   });
 
   it('should not charge a terminated group', function (done) {
@@ -120,7 +124,7 @@ describe('GroupSubscriptionManager', function () {
       groupSubscriptionManager.init(db, queue, function () {
         expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS - 1);
         done();
-      }, amazonPayments);
+      }, amazonPayments, requestSpy);
     });
   });
 
@@ -132,7 +136,7 @@ describe('GroupSubscriptionManager', function () {
       expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
       sinon.restore(db.collections.groups.find);
       done();
-    }, amazonPayments);
+    }, amazonPayments, requestSpy);
   });
 
   it('should cancel a subscription of amazon is Declined', function (done) {
@@ -150,6 +154,6 @@ describe('GroupSubscriptionManager', function () {
       expect(dbSpy.callCount).equals(NUMBER_OF_GROUPS);
       sinon.restore(db.collections.users.findOne);
       done();
-    }, amazonPayments);
+    }, amazonPayments, requestSpy);
   });
 });
