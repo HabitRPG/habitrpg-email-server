@@ -1,4 +1,3 @@
-var async = require('async');
 var uuid = require('uuid');
 var moment = require('moment');
 
@@ -47,11 +46,11 @@ function cancelSubscription(group)
   });
 }
 
-function chargeGroup (group, callback)
+function chargeGroup (group)
 {
   var price = plan.price * (plan.quantity + group.memberCount - 1);
 
-  amazonPayment.authorizeOnBillingAgreement({
+  return amazonPayment.authorizeOnBillingAgreement({
     AmazonBillingAgreementId: group.purchased.plan.customerId,
     AuthorizationReferenceId: uuid.v4().substring(0, 32),
     AuthorizationAmount: {
@@ -79,15 +78,6 @@ function chargeGroup (group, callback)
       { $set: { 'purchased.plan.lastBillingDate': jobStartDate.toDate() } },
       { castIds: false }
     );
-  })
-  .then(function (result) {
-    callback();
-  })
-  .catch(function (err) {
-    console.log(err);
-    callback(err);
-    //@TODO: Check for cancel error
-    //  cancelSubscription()
   });
 }
 
@@ -98,16 +88,22 @@ function processGroupsWithAmazonPayment(groups)
     return;
   }
 
-  async.eachSeries(groups, function iteratee(group, callback) {
-    chargeGroup(group, callback);
-  }, function finished() {
-    if (groups.length === pageLimit) {
-      var lastGroup = groups[groups.length - 1];
-      chargeAmazonGroups(lastGroup._id);
-    } else {
-      scheduleNextQueue();
-    }
+  var groupPaymentPromises = groups.map(function(group) {
+     return chargeGroup(group);
   });
+
+  Promise.all(groupPaymentPromises)
+    .then(function () {
+      if (groups.length === pageLimit) {
+        var lastGroup = groups[groups.length - 1];
+        chargeAmazonGroups(lastGroup._id);
+      } else {
+        scheduleNextQueue();
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 };
 
 function chargeAmazonGroups(lastId)
