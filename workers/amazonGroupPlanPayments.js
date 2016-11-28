@@ -7,7 +7,6 @@ var db, queue;
 var worker = function(job, done)
 {
   groupSubscriptionManager.init(db, queue, done, amazonPayment, request);
-  done();
 }
 
 module.exports = function(parentQueue, parentDb) {
