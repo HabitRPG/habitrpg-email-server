@@ -102,6 +102,7 @@ function processGroupsWithAmazonPayment(groups)
       }
     })
     .catch(function (err) {
+      done(err);
       console.log(err);
     });
 };
