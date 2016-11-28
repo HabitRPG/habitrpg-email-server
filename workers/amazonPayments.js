@@ -44,7 +44,7 @@ var worker = function(job, done){
     if(lastId){
       query._id = {
         $gt: lastId
-      } 
+      }
     }
 
     console.log('Run query', query);
@@ -87,7 +87,7 @@ var worker = function(job, done){
             // days than lastBillingDate, just for more than 1 month plans
             // because for them it's already adjusted
             if(plan.months !== 1){
-              if(oneMonthAgo.daysInMonth() === oneMonthAgo.date() && 
+              if(oneMonthAgo.daysInMonth() === oneMonthAgo.date() &&
                 lastBillingDate.daysInMonth() > oneMonthAgo.daysInMonth()) {
 
                   lastBillingDate.date(oneMonthAgo.date());
@@ -198,8 +198,8 @@ var worker = function(job, done){
 
 module.exports = function(parentQueue, parentDb){
   // Pass db and queue from parent module
-  db = parentDb; 
+  db = parentDb;
   queue = parentQueue;
-  
+
   return worker;
 }
