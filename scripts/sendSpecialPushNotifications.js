@@ -1,7 +1,7 @@
 var request = require('request');
 var moment = require('moment');
 
-const sendDate = moment("2016-11-20 14:00").utc();
+const sendDate = moment("2016-12-08 13:20").utc();
 
 const notificationBuckets = [
   {

@@ -37,7 +37,7 @@ if (APN_ENABLED) {
         configureApn(cert, key);
       });
   } else {
-    configureApn('../cert.pem', '../key.pem');
+    configureApn('./cert.pem', './key.pem');
   }
 }
 
@@ -47,9 +47,9 @@ function configureApn(cert, key) {
     cert,
   });
 
-  apn.on('error', err => logger.error('APN error', err));
+  apn.on('error', err => console.log('APN error', err));
   apn.on('transmissionError', (errorCode, notification, device) => {
-    logger.error('APN transmissionError', errorCode, notification, device);
+    console.log('APN transmissionError', errorCode, notification, device);
   });
 }
 
@@ -84,7 +84,7 @@ function sendNotification (user, details = {}) {
 
           fcmSender.send(message, {
             registrationTokens: [pushDevice.regId],
-          }, 10, (err) => logger.error('FCM Error', err));
+          }, 10, (err) => console.log('FCM Error', err));
         }
         break;
 

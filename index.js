@@ -47,8 +47,6 @@ queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
 queue.process('amazonGroupPlanPayments', require('./workers/amazonGroupPlanPayments')(queue, db));
 queue.process('sendSpecialPushNotifications', require('./workers/sendSpecialPushNotifications')(queue, db));
 
-queue.promote();
-
 queue.on('job complete', function(id, result){
   kue.Job.get(id, function(err, job){
     if(err) return;
@@ -67,16 +65,16 @@ queue.on('job failed', function(){
 queue.watchStuckJobs();
 
 process.once('uncaughtException', function(err){
-  queue.shutdown(function(err2){
+  queue.shutdown(9500, function(err2){
     process.exit(0);
-  }, 9500);
+  });
 });
 
 process.once('SIGTERM', function(sig){
-  queue.shutdown(function(err) {
+  queue.shutdown(9500, function(err) {
     console.log('Kue is shutting down.', err || '');
     process.exit(0);
-  }, 9500);
+  });
 });
 
 app.use(require('basic-auth-connect')(nconf.get('AUTH_USER'), nconf.get('AUTH_PASSWORD')));
