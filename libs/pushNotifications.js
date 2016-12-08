@@ -4,20 +4,20 @@ var Bluebird = require('bluebird');
 var gcmLib = require('node-gcm'); // works with FCM notifications too
 var AWS = require('aws-sdk');
 
-const FCM_API_KEY = nconf.get('PUSH_CONFIGS:FCM_SERVER_API_KEY');
+var FCM_API_KEY = nconf.get('PUSH_CONFIGS:FCM_SERVER_API_KEY');
 
-const fcmSender = FCM_API_KEY ? new gcmLib.Sender(FCM_API_KEY) : undefined;
+var fcmSender = FCM_API_KEY ? new gcmLib.Sender(FCM_API_KEY) : undefined;
 
-let apn;
+var apn;
 
 // Load APN certificate and key from S3
-const APN_ENABLED = nconf.get('PUSH_CONFIGS:APN_ENABLED') === 'true';
+var APN_ENABLED = nconf.get('PUSH_CONFIGS:APN_ENABLED') === 'true';
 
 
 if (APN_ENABLED) {
   if(nconf.get('NODE_ENV') === 'production') {
-    const S3_BUCKET = nconf.get('S3:bucket');
-    const S3 = new AWS.S3({
+    var S3_BUCKET = nconf.get('S3:bucket');
+    var S3 = new AWS.S3({
       accessKeyId: nconf.get('S3:accessKeyId'),
       secretAccessKey: nconf.get('S3:secretAccessKey'),
     });
@@ -32,8 +32,8 @@ if (APN_ENABLED) {
       }).promise(),
     ])
       .then(([certObj, keyObj]) => {
-        let cert = certObj.Body.toString();
-        let key = keyObj.Body.toString();
+        var cert = certObj.Body.toString();
+        var key = keyObj.Body.toString();
         configureApn(cert, key);
       });
   } else {
@@ -53,21 +53,23 @@ function configureApn(cert, key) {
   });
 }
 
-function sendNotifications(users, details = {}) {
+function sendNotifications(users, details) {
   users.forEach(user => {
     sendNotification(user, details);
   })
 }
 
-function sendNotification (user, details = {}) {
+function sendNotification (user, details) {
   if (!user) throw new Error('User is required.');
-  let pushDevices = user.pushDevices.toObject ? user.pushDevices.toObject() : user.pushDevices;
+  var pushDevices = user.pushDevices;
+
+  if (details === undefined) details = {};
 
   if (!details.identifier) throw new Error('details.identifier is required.');
   if (!details.title) throw new Error('details.title is required.');
   if (!details.message) throw new Error('details.message is required.');
 
-  let payload = details.payload ? details.payload : {};
+  var payload = details.payload ? details.payload : {};
   payload.identifier = details.identifier;
 
   pushDevices.forEach(pushDevice => {
@@ -78,7 +80,7 @@ function sendNotification (user, details = {}) {
         payload.body = details.message;
 
         if (fcmSender) {
-          let message = new gcmLib.Message({
+          var message = new gcmLib.Message({
             data: payload,
           });
 

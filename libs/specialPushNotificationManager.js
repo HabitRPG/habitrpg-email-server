@@ -2,7 +2,7 @@ var sprintf = require('sprintf-js');
 
 var db, queue, pushNotifications, done, habitrpgUsers, notificationBuckets, timezoneQuery;
 
-var pageLimit = 5;
+var pageLimit = 30;
 
 function processUsersWithDevices(users) {
   if (users.length === 0) {
@@ -47,7 +47,7 @@ function processUsersWithDevices(users) {
     var lastUser = users[users.length - 1];
     sendPushnotifications(lastUser._id);
   } else {
-    setTimeout(done, 5000);
+    done();
   }
 };
 
