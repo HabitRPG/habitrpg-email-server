@@ -1,9 +1,13 @@
 var request = require('request');
 var moment = require('moment');
 
-const sendDate = moment("2016-12-08 13:20").utc();
+//Date at which the notifications should be sent. Always use UTC. Adjustments for users in different timezones can
+//be made,by using multime workers with the 'timezoneQueries' variable.
+var sendDate = moment("2016-12-14 11:10+00:00").utc();
 
-const notificationBuckets = [
+//List of the different notifications that are sent.
+//'identifier' will be used as the value in the ABTest field
+var notificationBuckets = [
   {
     identifier: "test1",
     title: "Title 1",
@@ -16,13 +20,16 @@ const notificationBuckets = [
   }
 ];
 
-const timezoneQueries = [
+//Each entry will create a worker, that runs at the specified hour offset. The offset is relative to UTC.
+//The query is a mongodb query value for the 'timezoneOffset' field.
+//p.e. {query: 480, hourOffset: 8} would send a notification to users in PST
+var timezoneQueries = [
   {
     query: {'$gte': -60, '$lte': 0},
-    hourOffset: 1
+    hourOffset: -1
   }, {
     query: -120,
-    hourOffset: 2
+    hourOffset: -2
   }
 ];
 
@@ -33,12 +40,13 @@ timezoneQueries.forEach(timezoneQuery => {
     type: "sendSpecialPushNotifications",
     data: {
       notificationBuckets,
-      timezoneQuery: timezoneQuery.query
+      timezoneQuery: timezoneQuery.query,
+      lastNotificationDate: moment("2016-12-15 00:00+00:00")
     },
     options: {
-      delay: (sendDate.clone().add(timezoneQuery.hourOffset, 'hour').toDate() - new Date())
+      delay: (sendDate.clone().add(timezoneQuery.hourOffset, 'hour').toDate() - moment().utc())
     }
-  })
+  });
 });
 
 request({
