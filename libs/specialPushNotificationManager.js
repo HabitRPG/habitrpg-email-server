@@ -45,7 +45,10 @@ function processUsersWithDevices(users) {
       _ABTest: 'noMessage',
       lastPushNotification: currentTime
     }},{multi: true, castIds: false}
-  );
+  ).catch(function (err) {
+    console.log(err);
+    done(err);
+  });
 
   buckets.forEach(bucket => {
     //Update all users in the bucket, to prevent further processing
@@ -55,7 +58,10 @@ function processUsersWithDevices(users) {
         _ABTest: bucket.identifier,
         lastPushNotification: currentTime
       }},{multi: true, castIds: false}
-    );
+    ).catch(function (err) {
+      console.log(err);
+      done(err);
+    });
 
     bucket.users.forEach(user => {
       var details = {
@@ -63,7 +69,6 @@ function processUsersWithDevices(users) {
         title: bucket.title,
         message: sprintf.sprintf(bucket.message, user.profile.name)
       };
-      console.log(user._id);
       pushNotifications.sendNotification(user, details);
     });
   });
@@ -97,6 +102,7 @@ function sendPushnotifications(lastId) {
     .then(processUsersWithDevices)
     .catch(function (err) {
       console.log(err);
+      done(err);
     });
 }
 
