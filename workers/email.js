@@ -15,6 +15,8 @@ var mapEmailsToPreferences = {
   'new-pm': 'newPM',
   'kicked-from-guild': 'kickedGroup',
   'kicked-from-party': 'kickedGroup',
+  'party-invite-rescinded': 'kickedGroup',
+  'guild-invite-rescinded': 'kickedGroup',
   'won-challenge': 'wonChallenge',
   'gifted-gems': 'giftedGems',
   'gifted-subscription': 'giftedSubscription',
