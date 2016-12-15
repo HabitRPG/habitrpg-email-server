@@ -152,8 +152,8 @@ function init(dbInc, queueInc, doneInc, amazonPaymentInc, requestInc)
     oneMonthAgo = oneMonthAgo.date(oneMonthAgo.daysInMonth());
   }
 
-  habitGroups = db.get('groups');
-  habitrpgUsers = db.get('users');
+  habitGroups = db.get('groups', { castIds: false });
+  habitrpgUsers = db.get('users', { castIds: false });
   chargeAmazonGroups();
 }
 

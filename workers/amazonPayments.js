@@ -26,7 +26,7 @@ var amzPayment = amazonPayments.connect({
 });
 
 var worker = function(job, done){
-  habitrpgUsers = db.get('users');
+  habitrpgUsers = db.get('users', { castIds: false });
 
   var jobStartDate, oneMonthAgo, isLastDayOfMonth;
   var lastId;
