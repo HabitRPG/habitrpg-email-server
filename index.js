@@ -66,6 +66,7 @@ queue.watchStuckJobs();
 
 process.once('uncaughtException', function(err){
   queue.shutdown(9500, function(err2){
+    console.log('Kue is shutting down.', err, err2);
     process.exit(0);
   });
 });
