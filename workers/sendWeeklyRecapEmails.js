@@ -396,10 +396,7 @@ module.exports = function(parentQueue, parentDb, parentBaseUrl){
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseurl from parent module
 
-  habitrpgUsers = db.get('users');
-
-  // FIXME Override the id function as otherwise it always tries to convert to ObjectIds
-  habitrpgUsers.id = function(str){ return str; };
+  habitrpgUsers = db.get('users', { castIds: false });
 
   return worker;
 }

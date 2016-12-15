@@ -16,7 +16,7 @@ var phaseRecapture = 0; // 2, 3 or 4, 5, 6, 7 then ends
 var phaseOneDay = 0; // 1, then ends
 
 var worker = function(job, done){
-  habitrpgUsers = db.get('users');
+  habitrpgUsers = db.get('users', { castIds: false });
 
   if(job.data.type == 'sendRecaptureEmails'){
     nowRecapture = new Date();
