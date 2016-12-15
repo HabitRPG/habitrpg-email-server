@@ -85,7 +85,7 @@ function sendPushnotifications(lastId) {
   var query = {
     pushDevices: {'$gt': []},
     'preferences.timezoneOffset': timezoneQuery,
-    $or: [{lastPushNotification: {$ne: null}}, {lastPushNotification: {$lt: lastNotificationDate}}]
+    $or: [{lastPushNotification: null}, {lastPushNotification: {$lt: lastNotificationDate}}]
   };
 
   if (lastId) {

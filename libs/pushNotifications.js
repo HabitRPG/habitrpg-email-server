@@ -45,6 +45,7 @@ function configureApn(cert, key) {
   apn = pushNotify.apn({
     key,
     cert,
+    production: true,
   });
 
   apn.on('error', err => console.log('APN error', err));
