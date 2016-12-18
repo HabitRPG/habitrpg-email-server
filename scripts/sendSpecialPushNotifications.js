@@ -3,7 +3,7 @@ var moment = require('moment');
 
 //Date at which the notifications should be sent. Always use UTC. Adjustments for users in different timezones can
 //be made,by using multime workers with the 'timezoneQueries' variable.
-var sendDate = moment("2016-12-14 11:10+00:00").utc();
+var sendDate = moment("2016-12-18 16:10+00:00").utc();
 
 //List of the different notifications that are sent.
 //'identifier' will be used as the value in the ABTest field
@@ -41,7 +41,8 @@ timezoneQueries.forEach(timezoneQuery => {
     data: {
       notificationBuckets,
       timezoneQuery: timezoneQuery.query,
-      lastNotificationDate: moment("2016-12-15 00:00+00:00")
+      lastNotificationDate: moment('2016-12-16 00:00+00:00').utc(),
+      lastLoginDate: moment('2016-11-01')
     },
     options: {
       delay: (sendDate.clone().add(timezoneQuery.hourOffset, 'hour').toDate() - moment().utc())

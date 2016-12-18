@@ -1,13 +1,11 @@
 var sprintf = require('sprintf-js');
 var moment = require('moment');
 
-var db, queue, pushNotifications, done, habitrpgUsers, notificationBuckets, timezoneQuery, lastNotificationDate;
+var db, queue, pushNotifications, done, habitrpgUsers, notificationBuckets, timezoneQuery, lastNotificationDate, lastLoginDate;
 
 var pageLimit = 30;
 
 function processUsersWithDevices(users) {
-  console.log(users);
-  console.log(done);
   if (users.length === 0) {
     done();
     return;
@@ -85,6 +83,7 @@ function sendPushnotifications(lastId) {
   var query = {
     pushDevices: {'$gt': []},
     'preferences.timezoneOffset': timezoneQuery,
+    'auth.timestamps.loggedin': {'$gte': lastLoginDate},
     $or: [{lastPushNotification: null}, {lastPushNotification: {$lt: lastNotificationDate}}]
   };
 
@@ -107,7 +106,7 @@ function sendPushnotifications(lastId) {
 }
 
 //@TODO: Constructor?
-function run(dbInc, queueInc, doneInc, pushNotificationsInc, notificationBucketsInc, timezoneQueryInc, lastNotificationDateInc) {
+function run(dbInc, queueInc, doneInc, pushNotificationsInc, notificationBucketsInc, timezoneQueryInc, lastNotificationDateInc, lastLoginDateInc) {
   db = dbInc;
   queue = queueInc;
   done = doneInc;
@@ -115,7 +114,7 @@ function run(dbInc, queueInc, doneInc, pushNotificationsInc, notificationBuckets
   notificationBuckets = notificationBucketsInc;
   timezoneQuery = timezoneQueryInc;
   lastNotificationDate = moment(lastNotificationDateInc).toDate();
-  console.log(lastNotificationDate);
+  lastLoginDate = moment(lastLoginDateInc).toDate();
 
   habitrpgUsers = db.get('users');
   sendPushnotifications();
