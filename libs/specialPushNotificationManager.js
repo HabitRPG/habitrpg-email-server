@@ -41,34 +41,30 @@ function processUsersWithDevices(users) {
       _id: {$in: noMessageUsers.map(function(user){return user._id})}
     }, {$set: {
       _ABTest: 'noMessage',
-      lastPushNotification: currentTime
+      _lastPushNotification: currentTime
     }},{multi: true, castIds: false}
-  ).catch(function (err) {
+  ).then(() => { // after the first promise that sets some users' _ABtest to noMessage
+    return Promise.all(buckets.map(bucket => {
+      return habitrpgUsers.update({
+          _id: {$in: bucket.users.map(user => user._id)}
+        }, {$set: {
+          _ABTest: bucket.identifier,
+          _lastPushNotification: currentTime
+        }}, {multi: true, castIds: false}
+      ).then(() => {
+        bucket.users.map(user => {
+          var details = {
+            identifier: "wonChallenge", //We still need a generic notification type for android.
+            title: bucket.title,
+            message: sprintf.sprintf(bucket.message, user.profile.name)
+          };
+          pushNotifications.sendNotification(user, details);
+        });
+      });
+    }));
+  }).catch(function (err) {
     console.log(err);
     done(err);
-  });
-
-  buckets.forEach(bucket => {
-    //Update all users in the bucket, to prevent further processing
-    habitrpgUsers.update({
-        _id: {$in: bucket.users.map(function(user){return user._id})}
-      }, {$set: {
-        _ABTest: bucket.identifier,
-        lastPushNotification: currentTime
-      }},{multi: true, castIds: false}
-    ).catch(function (err) {
-      console.log(err);
-      done(err);
-    });
-
-    bucket.users.forEach(user => {
-      var details = {
-        identifier: "wonChallenge", //We still need a generic notification type for android.
-        title: bucket.title,
-        message: sprintf.sprintf(bucket.message, user.profile.name)
-      };
-      pushNotifications.sendNotification(user, details);
-    });
   });
 
   if (users.length === pageLimit) {
@@ -84,7 +80,7 @@ function sendPushnotifications(lastId) {
     pushDevices: {'$gt': []},
     'preferences.timezoneOffset': timezoneQuery,
     'auth.timestamps.loggedin': {'$gte': lastLoginDate},
-    $or: [{lastPushNotification: null}, {lastPushNotification: {$lt: lastNotificationDate}}]
+    $or: [{_lastPushNotification: null}, {_lastPushNotification: {$lt: lastNotificationDate}}]
   };
 
   if (lastId) {
