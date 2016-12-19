@@ -15,5 +15,15 @@
   "AMAZON_PAYMENTS_SELLER_ID": "",
   "AMAZON_PAYMENTS_CLIENT_ID": "",
   "AMAZON_PAYMENTS_MWS_KEY": "",
-  "AMAZON_PAYMENTS_MWS_SECRET": ""
+  "AMAZON_PAYMENTS_MWS_SECRET": "",
+  "S3":{
+      "bucket":"bucket",
+      "accessKeyId":"accessKeyId",
+      "secretAccessKey":"secretAccessKey"
+  },
+  "PUSH_CONFIGS": {
+      "GCM_SERVER_API_KEY": "",
+      "APN_ENABLED": "true",
+      "FCM_SERVER_API_KEY": ""
+  }
 }
