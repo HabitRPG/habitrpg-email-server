@@ -3,3 +3,7 @@ TODO
 config.json
 npm-debug.log
 .DS_Store
+/key.pem
+/dump.rdb
+/cert.pem
+/.idea
