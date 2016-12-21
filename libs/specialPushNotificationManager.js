@@ -133,7 +133,7 @@ function run(dbInc,
   testUserIDs = testUserIDsInc;
   isDryRun = dryRunInc;
 
-  habitrpgUsers = db.get('users');
+  habitrpgUsers = db.get('users', { castIds: false });
   sendPushnotifications();
 }
 
