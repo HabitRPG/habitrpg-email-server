@@ -41,8 +41,9 @@ timezoneQueries.forEach(timezoneQuery => {
     data: {
       notificationBuckets,
       timezoneQuery: timezoneQuery.query,
-      lastNotificationDate: moment('2016-12-16 00:00+00:00').utc(),
-      lastLoginDate: moment('2016-11-01')
+      lastNotificationDate: moment('2016-12-20 00:00+00:00').utc(),
+      lastLoginDate: moment('2016-11-01'),
+      testUserIDs: ['368f4f3e-71fa-4224-8d98-eeb66079efdf', ]
     },
     options: {
       delay: (sendDate.clone().add(timezoneQuery.hourOffset, 'hour').toDate() - moment().utc())
