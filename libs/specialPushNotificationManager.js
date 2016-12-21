@@ -1,7 +1,7 @@
 var sprintf = require('sprintf-js');
 var moment = require('moment');
 
-var db, queue, pushNotifications, done, habitrpgUsers, notificationBuckets, timezoneQuery, lastNotificationDate, lastLoginDate;
+var db, queue, pushNotifications, done, habitrpgUsers, notificationBuckets, timezoneQuery, lastNotificationDate, lastLoginDate, testUserIDs, isDryRun;
 
 var pageLimit = 30;
 
@@ -58,8 +58,13 @@ function processUsersWithDevices(users) {
             title: bucket.title,
             message: sprintf.sprintf(bucket.message, user.profile.name)
           };
-          pushNotifications.sendNotification(user, details);
+          if (!isDryRun) {
+            pushNotifications.sendNotification(user, details);
+          }
         });
+        if (isDryRun) {
+          console.log("Would send notification to ", bucket.users.length, " users");
+        }
       });
     }));
   }).catch(function (err) {
@@ -88,12 +93,17 @@ function sendPushnotifications(lastId) {
       $gt: lastId
     }
   }
+  if (testUserIDs) {
+    query._id = {
+      $in: testUserIDs
+    }
+  }
 
   habitrpgUsers.find(query, {
     sort: {_id: 1},
     limit: pageLimit,
     fields: ['_id', 'pushDevices', 'profile']
-  })
+  }, {castIds: false})
     .then(processUsersWithDevices)
     .catch(function (err) {
       console.log(err);
@@ -102,7 +112,16 @@ function sendPushnotifications(lastId) {
 }
 
 //@TODO: Constructor?
-function run(dbInc, queueInc, doneInc, pushNotificationsInc, notificationBucketsInc, timezoneQueryInc, lastNotificationDateInc, lastLoginDateInc) {
+function run(dbInc,
+             queueInc,
+             doneInc,
+             pushNotificationsInc,
+             notificationBucketsInc,
+             timezoneQueryInc,
+             lastNotificationDateInc,
+             lastLoginDateInc,
+             testUserIDsInc,
+             dryRunInc) {
   db = dbInc;
   queue = queueInc;
   done = doneInc;
@@ -111,6 +130,8 @@ function run(dbInc, queueInc, doneInc, pushNotificationsInc, notificationBuckets
   timezoneQuery = timezoneQueryInc;
   lastNotificationDate = moment(lastNotificationDateInc).toDate();
   lastLoginDate = moment(lastLoginDateInc).toDate();
+  testUserIDs = testUserIDsInc;
+  isDryRun = dryRunInc;
 
   habitrpgUsers = db.get('users');
   sendPushnotifications();

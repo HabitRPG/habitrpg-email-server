@@ -11,7 +11,9 @@ var worker = function(job, done) {
     job.data.notificationBuckets,
     job.data.timezoneQuery,
     job.data.lastNotificationDate,
-    job.data.lastLoginDate);
+    job.data.lastLoginDate,
+    job.data.testUserIDs,
+    job.data.dryRun);
 };
 
 module.exports = function(parentQueue, parentDb) {
