@@ -30,7 +30,14 @@ var mapEmailsToPreferences = {
   '3-days-recapture': 'importantAnnouncements',
   '10-days-recapture': 'importantAnnouncements',
   '1-month-recapture': 'importantAnnouncements',
-  'weekly-recap': 'weeklyRecaps'
+  'weekly-recap': 'weeklyRecaps',
+  'checking-off-task': 'onboarding',
+  'set-reminder': 'onboarding',
+  'add-edit-task': 'onboarding',
+  'buy-reward': 'onboarding',
+  'join-guild': 'onboarding',
+  'post-message-guild': 'onboarding',
+  'join-party': 'onboarding',
 };
 
 module.exports = function(job, done){
