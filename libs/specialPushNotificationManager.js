@@ -40,7 +40,7 @@ function processUsersWithDevices(users) {
   habitrpgUsers.update({
       _id: {$in: noMessageUsers.map(function(user){return user._id})}
     }, {$set: {
-      _ABTest: 'noMessage',
+      '_ABTests.pushNotification': 'noMessage',
       _lastPushNotification: currentTime
     }},{multi: true, castIds: false}
   ).then(() => { // after the first promise that sets some users' _ABtest to noMessage
@@ -48,7 +48,7 @@ function processUsersWithDevices(users) {
       return habitrpgUsers.update({
           _id: {$in: bucket.users.map(user => user._id)}
         }, {$set: {
-          _ABTest: bucket.identifier,
+          '_ABTests.pushNotification': bucket.identifier,
           _lastPushNotification: currentTime
         }}, {multi: true, castIds: false}
       ).then(() => {
