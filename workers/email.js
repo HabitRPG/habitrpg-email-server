@@ -31,13 +31,13 @@ var mapEmailsToPreferences = {
   '10-days-recapture': 'importantAnnouncements',
   '1-month-recapture': 'importantAnnouncements',
   'weekly-recap': 'weeklyRecaps',
-  'checking-off-task': 'onboarding',
-  'set-reminder': 'onboarding',
-  'add-edit-task': 'onboarding',
-  'buy-reward': 'onboarding',
-  'join-guild': 'onboarding',
-  'post-message-guild': 'onboarding',
-  'join-party': 'onboarding',
+  'onboarding-check-off-task-1': 'onboarding',
+  'onboarding-set-reminder-1': 'onboarding',
+  'onboarding-add-edit-task-1': 'onboarding',
+  'onboarding-buy-reward-1': 'onboarding',
+  'onboarding-join-guild-1': 'onboarding',
+  'onboarding-post-message-guild-1': 'onboarding',
+  'onboarding-join-party-1': 'onboarding',
 };
 
 module.exports = function(job, done){
