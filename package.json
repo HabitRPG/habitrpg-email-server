@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "scripts": {
     "start": "node ./index.js",
-    "test": "mocha tests/",
+    "test": "npm run lint && mocha tests/",
     "lint": "eslint --ext .js ."
   },
   "engines": {
