@@ -10,5 +10,3 @@ workers/amazonPayments.js
 workers/sendBatchEmails.js
 workers/sendSpecialPushNotifications.js
 workers/sendWeeklyRecapEmails.js
-index.js
-utils.js
