@@ -311,7 +311,7 @@ function findAffectedUsers ({twoWeeksAgo, lastUserId}) {
       return processUser(user);
     }));
   }).then(() => {
-    if (usersFoundNumber < USERS_BATCH) {
+    if (usersFoundNumber === USERS_BATCH) {
       return findAffectedUsers({ // Find and process another batch of users
         twoWeeksAgo,
         lastUserId,
@@ -323,6 +323,8 @@ function findAffectedUsers ({twoWeeksAgo, lastUserId}) {
 }
 
 function scheduleNextJob () {
+  console.log('Scheduling new job');
+
   return new Promise((resolve, reject) => {
     queue
       .create('sendOnboardingEmails')
@@ -351,6 +353,9 @@ function onboardingEmailsWorker (job, done) {
     lastUserId,
   })
   .then(scheduleNextJob) // All users have been processed, schedule the next job
+  .then(() => {
+    done();
+  })
   .catch(err => { // The processing errored, crash the job and log the error
     console.log('Error while sending onboarding emails.', err);
     done(err);
