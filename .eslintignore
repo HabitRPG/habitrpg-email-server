@@ -1,0 +1,12 @@
+node_modules
+
+# Exclude file that have to be ported to the new code style
+tests/*
+libs/*
+scripts/*
+workers/email.js
+workers/amazonGroupPlanPayments.js
+workers/amazonPayments.js
+workers/sendBatchEmails.js
+workers/sendSpecialPushNotifications.js
+workers/sendWeeklyRecapEmails.js

@@ -282,12 +282,15 @@ var worker = function(job, done){
         var email, name;
 
         // Code taken from habitrpg/src/controllers/payments.js
-        if(user.auth.local){
+        if (user.auth.local) {
           email = user.auth.local.email;
           name = user.profile.name || user.auth.local.username;
-        }else if(user.auth.facebook && user.auth.facebook.emails && user.auth.facebook.emails[0] && user.auth.facebook.emails[0].value){
+        } else if (user.auth.facebook && user.auth.facebook.emails && user.auth.facebook.emails[0] && user.auth.facebook.emails[0].value){
           email = user.auth.facebook.emails[0].value;
           name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
+        } else if (user.auth.google && user.auth.google.emails && user.auth.google.emails[0] && user.auth.google.emails[0].value) {
+          email = user.auth.google.emails[0].value;
+          name = user.profile.name || user.auth.google.displayName || user.auth.google.username;
         }
 
         // Here so that new users are not ignored
