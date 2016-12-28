@@ -144,7 +144,7 @@ function sendEmail (email, user) {
     return new Promise((resolve, reject) => {
       queue.create('email', {
         emailType: `onboarding-${mapEmailCodeToEmail[email[0]]}-1`, // needed to correctly match the template
-        to: toData,
+        to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
         personalVariables: getPersonalVariables(toData),
