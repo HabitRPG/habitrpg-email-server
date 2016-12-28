@@ -61,7 +61,11 @@ queue.on('job complete', (id) => {
 queue.on('job failed', () => {
   let args = Array.prototype.slice.call(arguments);
   args.unshift('Error processing job.');
-  console.error(...JSON.stringify(args));
+  try {
+    console.error(...JSON.stringify(args));
+  } catch (e) {
+    console.error('Impossible to convert error to JSON', e);
+  }
 });
 
 queue.watchStuckJobs();
