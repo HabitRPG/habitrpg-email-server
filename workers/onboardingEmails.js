@@ -176,11 +176,14 @@ function sendEmail (email, user) {
 // date indicates when the last email was sent.
 
 function processUser (user) {
+  let yesterday = moment().subtract(24, 'hours');
   let lastOnboarding = user.flags.onboardingEmailsPhase;
   let lastEmail;
   let lastPhase;
 
-  if (!lastOnboarding) {
+  if (moment(user.auth.timestamps.created).isAfter(yesterday)) { // Do not send email until 24 hours after account creation
+    return;
+  } else if (!lastOnboarding) {
     lastEmail = mapEmailCodeToEmail['1'];
   } else {
     let lastOnboardingSplit = lastOnboarding.split('-');
@@ -189,10 +192,8 @@ function processUser (user) {
     lastPhase = lastOnboardingSplit[1];
     let lastDate = moment(Number(lastOnboardingSplit[2]));
 
-    let yesterday = moment().subtract(24, 'hours');
-
-    if (lastDate.isAfter(yesterday) || moment(user.auth.timestamps.created).isAfter(yesterday)) {
-      return; // Wait 24 hours between an email and the next or 24 hours after account creation
+    if (lastDate.isAfter(yesterday)) {
+      return; // Wait 24 hours between an email and the next
     }
   }
 
