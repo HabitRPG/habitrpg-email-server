@@ -12,7 +12,7 @@ let dbGroups;
 let db;
 
 function hasCheckedOffTask (user) {
-  dbTasks.find({
+  return dbTasks.find({
     userId: user._id,
   }, {
     fields: ['completed', 'history'],
@@ -24,7 +24,7 @@ function hasCheckedOffTask (user) {
 }
 
 function hasAddedEditedTask (user) {
-  dbTasks.find({
+  return dbTasks.find({
     userId: user._id,
   }, {
     fields: ['createdAt'],
@@ -36,7 +36,7 @@ function hasAddedEditedTask (user) {
 }
 
 function hasSetReminder (user) {
-  dbTasks.find({
+  return dbTasks.find({
     userId: user._id,
   }, {
     fields: ['reminders'],
@@ -65,7 +65,7 @@ function hasJoinedGuild (user) {
 }
 
 function hasPostedGuildMessage (user) {
-  dbGroups.find({
+  return dbGroups.find({
     $in: user.guilds || [],
   }).then(guilds => {
     return guilds.some(guild => { // check if any message in guilds the user belongs to has been sent by the user
