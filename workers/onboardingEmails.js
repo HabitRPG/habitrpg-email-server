@@ -139,6 +139,8 @@ function sendEmail (email, user) {
   }).then(() => {
     let toData = getToData(user);
 
+    console.log('Sending onboarding email: ', `onboarding-${mapEmailCodeToEmail[email[0]]}-1`, ' to: ', user._id);
+
     return new Promise((resolve, reject) => {
       queue.create('email', {
         emailType: `onboarding-${mapEmailCodeToEmail[email[0]]}-1`, // needed to correctly match the template
