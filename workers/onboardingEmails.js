@@ -187,7 +187,7 @@ function processUser (user) {
 
     lastEmail = mapEmailCodeToEmail[lastOnboardingSplit[0]];
     lastPhase = lastOnboardingSplit[1];
-    let lastDate = moment(lastOnboardingSplit[2]);
+    let lastDate = moment(Number(lastOnboardingSplit[2]));
 
     let yesterday = moment().subtract(24, 'hours');
 
