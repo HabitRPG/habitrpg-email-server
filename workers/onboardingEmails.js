@@ -42,7 +42,7 @@ function hasSetReminder (user) {
     fields: ['reminders'],
   }).then(tasks => {
     return tasks.some(task => { // check if any reminder on tasks has been set by the user
-      return task.reminders ? tasks.reminders.length > 0 : false;
+      return task.reminders ? task.reminders.length > 0 : false;
     });
   });
 }
