@@ -41,7 +41,7 @@ let queue = kue.createQueue({
 queue.process('email', 30, require('./workers/email'));
 
 queue.process('sendBatchEmails', require('./workers/sendBatchEmails')(queue, db, BASE_URL));
-queue.process('sendOnboardingEmails', require('./workers/sendOnboardingEmails')(queue, db, BASE_URL));
+queue.process('sendOnboardingEmails', require('./workers/onboardingEmails')(queue, db, BASE_URL));
 // queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, BASE_URL));
 
 queue.process('sendSpecialPushNotifications', require('./workers/sendSpecialPushNotifications')(queue, db));
