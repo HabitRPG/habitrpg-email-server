@@ -177,33 +177,38 @@ function sendEmail (email, user) {
 
 function processUser (user) {
   let lastOnboarding = user.flags.onboardingEmailsPhase;
+  let lastEmail;
+  let lastPhase;
 
   if (!lastOnboarding) {
-    return sendEmail('1-a', user);
+    lastEmail = mapEmailCodeToEmail['1'];
+  } else {
+    let lastOnboardingSplit = lastOnboarding.split('-');
+
+    lastEmail = mapEmailCodeToEmail[lastOnboardingSplit[0]];
+    lastPhase = lastOnboardingSplit[1];
+    let lastDate = moment(lastOnboardingSplit[2]);
+
+    let yesterday = moment().subtract(24, 'hours');
+
+    if (lastDate.isAfter(yesterday) || moment(user.auth.timestamps.created).isAfter(yesterday)) {
+      return; // Wait 24 hours between an email and the next or 24 hours after account creation
+    }
   }
 
-  let [lastEmail, lastPhase, lastDate] = lastOnboarding.split('-');
-
-  lastDate = moment(lastDate);
-  lastEmail = mapEmailCodeToEmail[lastEmail];
-
-  let yesterday = moment().subtract(24, 'hours');
-
-  if (lastDate.isAfter(yesterday) || moment(user.auth.timestamps.created).isAfter(yesterday)) {
-    return; // Wait 24 hours between an email and the next or 24 hours after account creation
-  }
 
   let emailToSend;
 
   switch (lastEmail) {
     case 'check-off-task':
-      if (lastPhase !== 'a') return sendEmail('2-a', user); // already got two emails, next one
+      // lastPhase can be undefined if no email has been sent yet
+      if (lastPhase && lastPhase !== 'a') return sendEmail('2-a', user); // already got two emails, next one
 
       return hasCheckedOffTask(user).then(hasCheckedTask => {
         if (hasCheckedTask) { // next onboarding, has set reminder
           emailToSend = '2-a';
-        } else { // send again the same email
-          emailToSend = '1-b';
+        } else {
+          emailToSend = !lastPhase ? '1-a' : '1-b'; // send the first onboarding email
         }
 
         return sendEmail(emailToSend, user);
