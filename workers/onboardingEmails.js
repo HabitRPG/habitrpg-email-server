@@ -330,7 +330,7 @@ function scheduleNextJob () {
     queue
       .create('sendOnboardingEmails')
       .priority('critical')
-      .delay(moment().add({hours: 1}).toDate() - new Date()) // schedule another job, 1 hour from now
+      .delay(moment().add({hours: 6}).toDate() - new Date()) // schedule another job, 1 hour from now
       .attempts(5)
       .save(err => {
         if (err) {
