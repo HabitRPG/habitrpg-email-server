@@ -363,7 +363,7 @@ function scheduleNextJob () {
 
 function onboardingEmailsWorker (job, done) {
   let jobStartDate = new Date();
-  let twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
+  let twoWeeksAgo = moment(jobStartDate).subtract(2, 'days').toDate();
   let lastUserId; // id of the last processed user
 
   console.log('Start sending onboarding emails.');
