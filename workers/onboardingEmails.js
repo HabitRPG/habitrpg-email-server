@@ -127,8 +127,8 @@ const steps = [
 
 let mapCodeToEmail = {
   1: 'check-off-task',
-  2: 'set-reminder',
-  3: 'add-edit-task',
+  2: 'add-edit-task',
+  3: 'set-reminder',
   4: 'buy-reward',
   5: 'join-guild',
   6: 'post-message-guild',
@@ -245,9 +245,9 @@ function hasCompletedStep (user, lastStep, lastPhase) {
     }
 
     // first check if the step has any requirement
-    let hasRequirement = steps[stepToSend].requires;
-    if (hasRequirement) { // see if requirement is fulfilled
-      steps[hasRequirement].check(user).then(hasCompletedRequirement => {
+    let requirement = steps[stepToSend].requires;
+    if (requirement) { // see if requirement is fulfilled
+      steps[requirement].check(user).then(hasCompletedRequirement => {
         if (hasCompletedRequirement) return sendEmail(user, `${stepToSend}-${phaseToSend}`); // send email
         // try next email because requirement is not fulfilled
         return hasCompletedStep(user, stepToSend + 1);
