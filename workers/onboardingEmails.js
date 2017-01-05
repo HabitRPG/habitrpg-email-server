@@ -247,14 +247,14 @@ function hasCompletedStep (user, lastStep, lastPhase) {
     // first check if the step has any requirement
     let requirement = steps[stepToSend].requires;
     if (requirement) { // see if requirement is fulfilled
-      steps[requirement].check(user).then(hasCompletedRequirement => {
+      return steps[requirement].check(user).then(hasCompletedRequirement => {
         if (hasCompletedRequirement) return sendEmail(user, `${stepToSend}-${phaseToSend}`); // send email
         // try next email because requirement is not fulfilled
         return hasCompletedStep(user, stepToSend + 1);
       });
+    } else {
+      return sendEmail(user, `${stepToSend}-${phaseToSend}`);
     }
-
-    return sendEmail(user, `${stepToSend}-${phaseToSend}`);
   });
 }
 
