@@ -1,7 +1,7 @@
 const moment = require('moment');
 const utils = require('../utils');
 
-const USERS_BATCH = 5;
+const USERS_BATCH = 10;
 
 // Defined later
 let queue;
