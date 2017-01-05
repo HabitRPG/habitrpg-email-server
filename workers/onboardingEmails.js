@@ -11,76 +11,121 @@ let dbTasks;
 let dbGroups;
 let db;
 
-function hasCheckedOffTask (user) {
-  return dbTasks.find({
-    userId: user._id,
-  }, {
-    fields: ['completed', 'history'],
-  }).then(tasks => {
-    return tasks.some(task => { // check if the user scored a task (history record exist or task is completed)
-      return task.completed || task.history && task.history.length > 0;
-    });
-  });
-}
+// check: a function (must be a promise) to check if each user has completed a step
+// requires: optional string, if the steps requires the completion of a previous one
+const steps = [
+  false, // 0, we want steps to start from index 1
 
-function hasAddedEditedTask (user) {
-  return dbTasks.find({
-    userId: user._id,
-  }, {
-    fields: ['createdAt'],
-  }).then(tasks => {
-    return tasks.some(task => { // check if the user added a task (except the ones created at the same time of the account)
-      return moment(task.createdAt).isAfter(moment(user.auth.timestamps.created).add(1, 'minutes'));
-    });
-  });
-}
-
-function hasSetReminder (user) {
-  return dbTasks.find({
-    userId: user._id,
-  }, {
-    fields: ['reminders'],
-  }).then(tasks => {
-    return tasks.some(task => { // check if any reminder on tasks has been set by the user
-      return task.reminders ? task.reminders.length > 0 : false;
-    });
-  });
-}
-
-function hasBoughtReward (user) {
-  let owned = user.items.gear.owned;
-  let ownedKeys = Object.keys(owned);
-
-  // Skip special items and the ones set to false
-  // See if the user bought anything else (at least one item set to true)
-  return ownedKeys
-    .filter(k => k.indexOf('_special_'))
-    .every(k => {
-      return !owned[k]; // !false -> true -> OK because means not bought
-    });
-}
-
-function hasJoinedGuild (user) {
-  return user.guilds && user.guilds.length > 0;
-}
-
-function hasPostedGuildMessage (user) {
-  return dbGroups.find({
-    $in: user.guilds || [],
-  }).then(guilds => {
-    return guilds.some(guild => { // check if any message in guilds the user belongs to has been sent by the user
-      return (guild.chat || []).some(msg => {
-        return msg ? msg.uuid === user._id : false;
+  // 1
+  {
+    check: function hasCheckedOffTask (user) {
+      return dbTasks.find({
+        userId: user._id,
+      }, {
+        fields: ['completed', 'history'],
+      }).then(tasks => {
+        return tasks.some(task => { // check if the user scored a task (history record exist or task is completed)
+          return task.completed || task.history && task.history.length > 0;
+        });
       });
-    });
-  });
-}
+    },
+    requires: null,
+  },
 
-function hasJoinedParty (user) {
-  return Boolean(user.party._id);
-}
+  // 2
+  {
+    check: function hasAddedEditedTask (user) {
+      return dbTasks.find({
+        userId: user._id,
+      }, {
+        fields: ['createdAt'],
+      }).then(tasks => {
+        return tasks.some(task => { // check if the user added a task (except the ones created at the same time of the account)
+          return moment(task.createdAt).isAfter(moment(user.auth.timestamps.created).add(1, 'minutes'));
+        });
+      });
+    },
+    requires: null,
+  },
 
-let mapEmailCodeToEmail = {
+  // 3
+  {
+    check: function hasSetReminder (user) {
+      return dbTasks.find({
+        userId: user._id,
+      }, {
+        fields: ['reminders'],
+      }).then(tasks => {
+        return tasks.some(task => { // check if any reminder on tasks has been set by the user
+          return task.reminders ? task.reminders.length > 0 : false;
+        });
+      });
+    },
+    requires: null,
+  },
+
+  // 4
+  {
+    check: function hasBoughtReward (user) {
+      // Return a promise even if no async op is necessary for consistency
+      return new Promise(resolve => {
+        let owned = user.items.gear.owned;
+        let ownedKeys = Object.keys(owned);
+
+        // Skip special items and the ones set to false
+        // See if the user bought anything else (at least one item set to true)
+        let result = ownedKeys
+          .filter(k => k.indexOf('_special_'))
+          .every(k => {
+            return !owned[k]; // !false -> true -> OK because means not bought
+          });
+
+        resolve(result);
+      });
+    },
+    requires: 1,
+  },
+
+  // 5
+  {
+    check: function hasJoinedGuild (user) {
+      // Return a promise even if no async op is necessary for consistency
+      return new Promise(resolve => {
+        resolve(user.guilds && user.guilds.length > 0);
+      });
+    },
+    requires: null,
+  },
+
+  // 6
+  {
+    check: function hasPostedGuildMessage (user) {
+      return dbGroups.find({
+        $in: user.guilds || [],
+      }).then(guilds => {
+        return guilds.some(guild => { // check if any message in guilds the user belongs to has been sent by the user
+          return (guild.chat || []).some(msg => {
+            return msg ? msg.uuid === user._id : false;
+          });
+        });
+      });
+    },
+    requires: 5,
+  },
+
+  // 7
+  {
+    check: function hasJoinedParty (user) {
+      // Return a promise even if no async op is necessary for consistency
+      return new Promise(resolve => {
+        resolve(Boolean(user.party._id));
+      });
+    },
+    requires: null,
+  },
+];
+
+let mapCodeToEmail = {
   1: 'check-off-task',
   2: 'set-reminder',
   3: 'add-edit-task',
@@ -129,7 +174,7 @@ function getPersonalVariables (toData) {
   }];
 }
 
-function sendEmail (email, user) {
+function sendEmail (user, email) {
   return dbUsers.update({ // update user to signal that the email has been sent
     _id: user._id,
   }, {
@@ -139,11 +184,11 @@ function sendEmail (email, user) {
   }).then(() => {
     let toData = getToData(user);
 
-    console.log('Sending onboarding email: ', `onboarding-${mapEmailCodeToEmail[email[0]]}-1`, ' to: ', user._id);
+    console.log('Sending onboarding email: ', `onboarding-${mapCodeToEmail[email[0]]}-1`, ' to: ', user._id);
 
     return new Promise((resolve, reject) => {
       queue.create('email', {
-        emailType: `onboarding-${mapEmailCodeToEmail[email[0]]}-1`, // needed to correctly match the template
+        emailType: `onboarding-${mapCodeToEmail[email[0]]}-1`, // needed to correctly match the template
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
@@ -157,6 +202,59 @@ function sendEmail (email, user) {
         resolve();
       });
     });
+  });
+}
+
+// user has received all possible emails, set it to the latest possible step and phase
+function stopOnboarding (user) {
+  return dbUsers.update({ // update user to signal that the email has been sent
+    _id: user._id,
+  }, {
+    $set: {
+      // length - 2 and not - 1 to account for the first element in the steps array being empty
+      'flags.onboardingEmailsPhase': `${steps.length - 2}-b-${Date.now()}`,
+    },
+  });
+}
+
+// see if user has completed step and in case send email
+function hasCompletedStep (user, lastStep, lastPhase) {
+  let step = steps[lastStep];
+  let stepToSend;
+  let phaseToSend;
+
+  step.check(user).then(result => {
+    if (result === false) { // user has not completed last step
+      if (lastPhase === undefined) { // hasn't received any email yet
+        // send first email (lastPhase undefined means no email received) with phase a
+        stepToSend = lastStep;
+        phaseToSend = 'a';
+      } else if (lastPhase === 'b') { // has already received two emails
+        if (lastStep === 7) return stopOnboarding(user); // has received all emails, stop
+        return hasCompletedStep(user, lastStep + 1); // try next email
+      } else if (lastPhase === 'a') {
+        // re-send current email with phase b
+        stepToSend = lastStep;
+        phaseToSend = 'b';
+      } else { // something went wrong
+        throw new Error(`Invalid onboarding email for user ${user._id}.`);
+      }
+    } else { // has completed step
+      if (lastStep === 7) return stopOnboarding(user); // has received all emails, stop
+      return hasCompletedStep(user, lastStep + 1); // try next email
+    }
+
+    // first check if the step has any requirement
+    let hasRequirement = steps[stepToSend].requires;
+    if (hasRequirement) { // see if requirement is fulfilled
+      steps[hasRequirement].check(user).then(hasCompletedRequirement => {
+        if (hasCompletedRequirement) return sendEmail(user, `${stepToSend}-${phaseToSend}`); // send email
+        // try next email because requirement is not fulfilled
+        return hasCompletedStep(user, stepToSend + 1);
+      });
+    }
+
+    return sendEmail(user, `${stepToSend}-${phaseToSend}`);
   });
 }
 
@@ -174,21 +272,20 @@ function sendEmail (email, user) {
 // The number indicates the last email sent,
 // phase is 'a' or 'b' and indicated if the first or second email for the phase was sent
 // date indicates when the last email was sent.
-
 function processUser (user) {
   let yesterday = moment().subtract(24, 'hours');
   let lastOnboarding = user.flags.onboardingEmailsPhase;
-  let lastEmail;
-  let lastPhase;
+  let lastStep;
+  let lastPhase = undefined; // eslint-disable-line no-undef-init
 
   if (moment(user.auth.timestamps.created).isAfter(yesterday)) { // Do not send email until 24 hours after account creation
     return;
   } else if (!lastOnboarding) {
-    lastEmail = mapEmailCodeToEmail['1'];
+    lastStep = 1;
   } else {
     let lastOnboardingSplit = lastOnboarding.split('-');
 
-    lastEmail = mapEmailCodeToEmail[lastOnboardingSplit[0]];
+    lastStep = Number(lastOnboardingSplit[0]);
     lastPhase = lastOnboardingSplit[1];
     let lastDate = moment(Number(lastOnboardingSplit[2]));
 
@@ -197,87 +294,9 @@ function processUser (user) {
     }
   }
 
+  if (lastStep === 7 && lastPhase === 'b') return; // user has got all possible emails
 
-  let emailToSend;
-
-  switch (lastEmail) {
-    case 'check-off-task':
-      // lastPhase can be undefined if no email has been sent yet
-      if (lastPhase && lastPhase !== 'a') return sendEmail('2-a', user); // already got two emails, next one
-
-      return hasCheckedOffTask(user).then(hasCheckedTask => {
-        if (hasCheckedTask) { // next onboarding, has set reminder
-          emailToSend = '2-a';
-        } else {
-          emailToSend = !lastPhase ? '1-a' : '1-b'; // send the first onboarding email
-        }
-
-        return sendEmail(emailToSend, user);
-      });
-    case 'set-reminder':
-      if (lastPhase !== 'a') return sendEmail('3-a', user); // already got two emails, next one
-
-      return hasSetReminder(user).then(hasReminder => {
-        if (hasReminder) { // next onboarding, has set reminder
-          emailToSend = '3-a';
-        } else { // send again the same email
-          emailToSend = '2-b';
-        }
-
-        return sendEmail(emailToSend, user);
-      });
-    case 'add-edit-task':
-      if (lastPhase !== 'a') return sendEmail('4-a', user); // already got two emails, next one
-
-      return hasAddedEditedTask(user).then(hasTask => {
-        if (hasTask) { // next onboarding, has added task
-          emailToSend = user.stats.gp > 0 ? '4-a' : '5-a'; // has enough gold to buy a reward? email 4 otherwise skip it
-        } else { // send again the same email
-          emailToSend = '3-b';
-        }
-
-        return sendEmail(emailToSend, user);
-      });
-    case 'buy-reward':
-      if (hasBoughtReward(user) || lastPhase !== 'a') { // next onboarding, has bought reward or already got 2 emails
-        emailToSend = '5-a';
-      } else { // send again the same email
-        emailToSend = '5-b';
-      }
-
-      return sendEmail(emailToSend, user);
-    case 'join-guild':
-      if (hasJoinedGuild(user)) { // next onboarding, has joined guild
-        emailToSend = '6-a';
-      } else if (lastPhase === 'a') { // send again the same email
-        emailToSend = '5-b';
-      } else { // if the 5-b has already been sent, skip 6 since it requires a guild
-        emailToSend = '7-a';
-      }
-
-      return sendEmail(emailToSend, user);
-    case 'post-message-guild':
-      if (lastPhase !== 'a') return sendEmail('7-a', user); // already got two emails, next one
-
-      return hasPostedGuildMessage(user).then(hasPosted => {
-        if (hasPosted) { // next onboarding, has posted message
-          emailToSend = '7-a';
-        } else { // send again the same email
-          emailToSend = '6-b';
-        }
-
-        return sendEmail(emailToSend, user);
-      });
-    case 'join-party':
-      // onboarding finished, has joined a party or already got 2 emails about it
-      if (hasJoinedParty(user) || lastPhase !== 'a') {
-        return;
-      } else { // send again the same email
-        return sendEmail('7-b', user);
-      }
-    default:
-      throw new Error(`Invalid last email ${lastEmail} for user ${user._id}`);
-  }
+  return hasCompletedStep(user, lastStep, lastPhase);
 }
 
 function findAffectedUsers ({twoWeeksAgo, lastUserId}) {
