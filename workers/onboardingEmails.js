@@ -211,8 +211,8 @@ function stopOnboarding (user) {
     _id: user._id,
   }, {
     $set: {
-      // length - 2 and not - 1 to account for the first element in the steps array being empty
-      'flags.onboardingEmailsPhase': `${steps.length - 2}-b-${Date.now()}`,
+      // length - 1 to account for the first element in the steps array being empty
+      'flags.onboardingEmailsPhase': `${steps.length - 1}-b-${Date.now()}`,
     },
   });
 }
@@ -223,7 +223,7 @@ function hasCompletedStep (user, lastStep, lastPhase) {
   let stepToSend;
   let phaseToSend;
 
-  step.check(user).then(result => {
+  return step.check(user).then(result => {
     if (result === false) { // user has not completed last step
       if (lastPhase === undefined) { // hasn't received any email yet
         // send first email (lastPhase undefined means no email received) with phase a
