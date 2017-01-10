@@ -101,7 +101,7 @@ const steps = [
   {
     check: function hasPostedGuildMessage (user) {
       return dbGroups.find({
-        $in: user.guilds || [],
+        _id: {$in: user.guilds || []},
       }).then(guilds => {
         return guilds.some(guild => { // check if any message in guilds the user belongs to has been sent by the user
           return (guild.chat || []).some(msg => {
