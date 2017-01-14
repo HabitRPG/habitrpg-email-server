@@ -1,6 +1,7 @@
 const moment = require('moment');
 const utils = require('../utils');
-
+const _ = require('lodash');
+const pushNotifications = require('../libs/pushNotifications');
 const USERS_BATCH = 10;
 
 // Defined later
@@ -74,13 +75,15 @@ const steps = [
 
         // Skip special items and the ones set to false
         // See if the user bought anything else (at least one item set to true)
-        let result = ownedKeys
+        let hasNotBoughtAReward = ownedKeys
           .filter(k => k.indexOf('_special_'))
           .every(k => {
             return !owned[k]; // !false -> true -> OK because means not bought
           });
 
-        resolve(result);
+        let hasBoughtAReward = !hasNotBoughtAReward;
+
+        resolve(hasBoughtAReward);
       });
     },
     requires: 1,
@@ -133,6 +136,65 @@ let mapCodeToEmail = {
   5: 'join-guild',
   6: 'post-message-guild',
   7: 'join-party',
+};
+
+const pushNotificationsMap = {
+  1: {
+    title: 'Check off a task!',
+    messages: [
+      'Hey <%= name %>! Don\'t forget to check off tasks to earn gold and experience!',
+      'Have you done any tasks yet, <%= name %>? Don\'t forget to check them off for gold and experience!',
+      '<%= name %>, want gold and experience? Do a task and check it off!',
+    ],
+  },
+  2: {
+    title: 'Customize your tasks!',
+    messages: [
+      'Hi <%= name %>, customize your task list by adding or editing tasks!',
+      'Hi <%= name %>, what tasks do you want to add? Make some new ones, or edit existing ones!',
+      'Hi <%= name %>, don\'t forget to customize your tasks! What do you want to work on?',
+    ],
+  },
+  3: {
+    title: 'Set a task reminder!',
+    messages: [
+      '<%= name %>, do you want us to remind you about your tasks? Just tap to add a reminder!',
+      'Hi <%= name %>! Don\'t forget to set reminders for your tasks so you remember to do them. Just tap a task to add one.',
+      'Hi <%= name %>! Don\'t forget to add reminders for your task so you can earn gold and experience! Just tap a task to add one.',
+    ],
+  },
+  4: {
+    title: 'Buy a reward!',
+    messages: [
+      '<%= name %>, you have new rewards waiting for you! Go spend your hard-earned gold.',
+      'Hi <%= name %>, don\'t forget to spend your hard-earned gold on rewards!',
+      'Have you seen the rewards you can earn by completing your tasks? Go check them out!',
+    ],
+  },
+  5: {
+    title: 'Check out guilds!',
+    messages: [
+      'Hi <% name %>! Try joining a Guild for support!',
+      'Hi <% name %>, get support with your tasks by joining a Guild!',
+      'Hey <% name %>! If you want support in your quest for self-improvement, you should check out some Guilds.',
+    ],
+  },
+  6: {
+    title: 'Post in your guild!',
+    messages: [
+      'Hi <%= name %>, don\'t be shy! Introduce yourself to the members of the <%= guildName %> Guild.',
+      'Hi <%= name %>, have you posted in the <%= guildName %> Guild yet? People are eager to share tips!',
+      'Hi <%= name %>, don\'t forget to post a message in the <%= guildName %> Guild to introduce yourself and get motivated!',
+    ],
+  },
+  7: {
+    title: 'Join a Party with friends!',
+    messages: [
+      '<%= name %>, don\'t quest alone! Invite your friends to battle monsters with you.',
+      '<%= name %>, want to battle monsters with your friends? Invite them to be in a party with you!',
+      'Hi <%= name %>, invite your friends to your party to stay accountable and fight monsters!',
+    ],
+  },
 };
 
 // TODO abstract
@@ -205,6 +267,51 @@ function sendEmail (user, email) {
   });
 }
 
+function sendPushNotification (user, notification) {
+  // step-phase
+  let step = notification[0];
+  let phase = notification[2];
+
+  let notificationDetails = pushNotificationsMap[step];
+  let random = _.random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
+  let version = ['A', 'B', 'C', 'D'][random];
+
+  return dbUsers.update({ // update user to signal that the email has been sent
+    _id: user._id,
+  }, {
+    $set: {
+      'flags.onboardingEmailsPhase': `${notification}-${Date.now()}`,
+      '_ABTests.onboardingPushNotification': `Onboarding-Step${step}-Phase${phase}-Version${version}`,
+    },
+  }).then(() => {
+    let toData = getToData(user);
+
+    console.log('Sending onboarding notifications: ', `onboarding-${mapCodeToEmail[notification[0]]}-1`, ' to: ', user._id);
+
+    if (version === 'D') return; // Version D means no push notification
+
+    if (step === 6) { // load guild info
+      return dbGroups.findOne({
+        _id: {$in: user.guilds || []},
+      }, 'name').then(guild => {
+        pushNotifications.sendNotification(user, {
+          identifier: `onboarding-${notification}`,
+          title: notificationDetails.title,
+          message: _.template(notificationDetails.messages[random], _.assign({guildName: guild.name}, toData))(),
+        });
+      });
+    } else {
+      pushNotifications.sendNotification(user, {
+        identifier: `onboarding-${notification}`,
+        title: notificationDetails.title,
+        message: _.template(notificationDetails.messages[random], toData)(),
+      });
+    }
+
+    return;
+  });
+}
+
 // user has received all possible emails, set it to the latest possible step and phase
 function stopOnboarding (user) {
   return dbUsers.update({ // update user to signal that the email has been sent
@@ -253,7 +360,9 @@ function hasCompletedStep (user, lastStep, lastPhase) {
         return hasCompletedStep(user, stepToSend + 1);
       });
     } else {
-      return sendEmail(user, `${stepToSend}-${phaseToSend}`);
+      return phaseToSend === 'a' ?
+        sendPushNotification(user, `${stepToSend}-${phaseToSend}`) :
+        sendEmail(user, `${stepToSend}-${phaseToSend}`);
     }
   });
 }
