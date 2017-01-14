@@ -294,7 +294,6 @@ function sendPushNotification (user, notification) {
       return dbGroups.findOne({
         _id: {$in: user.guilds || []},
       }, 'name').then(guild => {
-        console.log('notification title', notificationDetails.title, 'message', _.template(notificationDetails.messages[random])(_.assign({guildName: guild.name}, toData)));
         pushNotifications.sendNotification(user, {
           identifier: `onboarding-${notification}`,
           title: notificationDetails.title,
@@ -302,7 +301,6 @@ function sendPushNotification (user, notification) {
         });
       });
     } else {
-      console.log('notification title', notificationDetails.title, 'message', _.template(notificationDetails.messages[random])(toData));
       pushNotifications.sendNotification(user, {
         identifier: `onboarding-${notification}`,
         title: notificationDetails.title,
