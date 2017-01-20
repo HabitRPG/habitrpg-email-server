@@ -29,6 +29,7 @@
     "request": "^2.78.0",
     "sprintf-js": "^1.0.3",
     "uuid": "^2.0.3"
+    "in-app-purchase": "^1.1.6"
   },
   "devDependencies": {
     "chai": "^3.5.0",

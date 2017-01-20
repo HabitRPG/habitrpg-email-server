@@ -10,8 +10,11 @@ nconf
   .env()
   .file({ file: `${__dirname  }/config.json` });
 
-const app = express();
-const db = monk(nconf.get('MONGODB_URL'));
+var app = express();
+
+var baseUrl = nconf.get("HABITICA_URL");
+
+var db = monk(nconf.get('MONGODB_URL'));
 db.options.multi = true;
 
 const BASE_URL = 'https://habitica.com';
@@ -47,6 +50,7 @@ queue.process('sendOnboardingEmails', require('./workers/onboardingEmails')(queu
 queue.process('sendSpecialPushNotifications', require('./workers/sendSpecialPushNotifications')(queue, db));
 
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
+queue.process('googlePayments', require('./workers/googlePayments')(queue, db));
 queue.process('amazonGroupPlanPayments', require('./workers/amazonGroupPlanPayments')(queue, db));
 
 queue.on('job complete', (id) => {
