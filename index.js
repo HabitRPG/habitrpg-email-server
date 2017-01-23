@@ -10,9 +10,9 @@ nconf
   .env()
   .file({ file: `${__dirname  }/config.json` });
 
-let app = express();
+const app = express();
 
-let db = monk(nconf.get('MONGODB_URL'));
+const db = monk(nconf.get('MONGODB_URL'));
 db.options.multi = true;
 
 const BASE_URL = 'https://habitica.com';

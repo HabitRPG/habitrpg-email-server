@@ -1,24 +1,14 @@
-let nconf = require('nconf');
-let moment = require('moment');
-let request = require('request');
-let async = require('async');
-let iap = require('in-app-purchase');
-
+const nconf = require('nconf');
+const moment = require('moment');
+const request = require('request');
+const async = require('async');
+const iap = require('in-app-purchase');
+const subscriptions = require('../libs/subscriptions');
+const USERS_BATCH = 10;
 // Defined later
 let db;
 let queue;
 let habitrpgUsers;
-/* eslint-disable camelcase */
-
-// TODO fetch from api
-let subscriptionBlocks = {
-  basic_earned: {months: 1, price: 5},
-  basic_3mo: {months: 3, price: 15},
-  basic_6mo: {months: 6, price: 30},
-  google_6mo: {months: 6, price: 24, discount: true, original: 30},
-  basic_12mo: {months: 12, price: 48},
-};
-/* eslint-enable camelcase */
 
 iap.config({
   // This is the path to the directory containing iap-sanbox/iap-live files
@@ -29,24 +19,23 @@ iap.config({
   googleClientSecret: nconf.get('PLAY_API_CLIENT_SECRET'),
 });
 
-function processUser (user, cb, jobStartDate, nextScheduledCheck) {
-  try {
-    let plan = subscriptionBlocks[user.purchased.plan.planId];
+function processUser (user, jobStartDate, nextScheduledCheck) {
+  let plan = subscriptions.blocks[user.purchased.plan.planId];
 
-    if (!plan) {
-      throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
-    }
-
+  if (!plan) {
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
+  }
+  return new Promise((resolve, reject) => {
     iap.validate(iap.GOOGLE, user.purchased.plan.additionalData, (error, response) => {
       if (error) {
-        return cb(error);
+        return reject(error);
       }
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
         if (subscription.expirationDate < jobStartDate) {
           request({
-            url: `${nconf.get('HABITICA_URL')}/iap/android/subscribe/cancel`,
+            url: `${nconf.get('BASE_URL')}/iap/android/subscribe/cancel`,
             method: 'GET',
             qs: {
               noRedirect: 'true',
@@ -55,10 +44,10 @@ function processUser (user, cb, jobStartDate, nextScheduledCheck) {
             },
           }, (habitError, habitResponse, body) => {
             if (!habitError && habitResponse.statusCode === 200) {
-              return cb(habitError);
+              return reject(habitError);
             }
 
-            cb(habitError || body); // if there's an error or response.statucCode !== 200
+            reject(habitError || body); // if there's an error or response.statucCode !== 200
           });
         } else {
           let d = nextScheduledCheck;
@@ -75,18 +64,33 @@ function processUser (user, cb, jobStartDate, nextScheduledCheck) {
                 'purchased.plan.nextBillingDate': subscription.expirationDate,
               },
             }, e => {
-              if (e) return cb(e);
+              if (e) return reject(e);
 
-              return cb();
+              return resolve();
             });
         }
       }
     });
-  } catch (e) {
-    // TODO mark subscription as expired?
-    console.error(e, 'ERROR PROCESSING GOOGLE PAYMENT for user ', user._id);
-    cb(e);
-  }
+  });
+}
+
+function scheduleNextJob () {
+  console.log('Scheduling new job');
+
+  return new Promise((resolve, reject) => {
+    queue
+      .create('googlePayments')
+      .priority('critical')
+      .delay(moment().add({hours: 6}).toDate() - new Date()) // schedule another job, 1 hour from now
+      .attempts(5)
+      .save(err => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+  });
 }
 
 function worker (job, done) {
@@ -114,47 +118,27 @@ function worker (job, done) {
 
     console.log('Run query', query);
 
-    habitrpgUsers.find(query, {
+    let usersFoundNumber;
+
+    return habitrpgUsers.find(query, {
       sort: {_id: 1},
-      limit: 10,
+      limit: USERS_BATCH,
       fields: ['_id', 'apiToken', 'purchased.plan'],
-    }, (err, docs) => {
-      if (err) return done(err);
+    })
+      .then(users => {
+        console.log("Google: Found n users", users.length);
+        usersFoundNumber = users.length;
+        lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-      console.log('GOOGLE PAYMENTS, found n users', docs.length);
-
-      // When there are no users to process, schedule next job & end this one
-      if (docs.length === 0) {
-        queue.create('googlePayments')
-          .priority('critical')
-          .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-          .attempts(5)
-          .save(queueErr => {
-            return queueErr ? done(queueErr) : done();
-          });
-
-        return;
+        return Promise.all(users.map(user => {
+          return processUser(user, jobStartDate, nextScheduledCheck);
+        }));
+      }).then(() => {
+      if (usersFoundNumber === USERS_BATCH) {
+        return findAffectedUsers();
+      } else {
+        return; // Finish the job
       }
-
-      lastId = docs.length > 0 ? docs[docs.length - 1]._id : null;
-
-      async.eachSeries(docs, (user, cb) => {
-        processUser(user, cb, jobStartDate, nextScheduledCheck);
-      }, eachSeriesError => {
-        console.log('terminating', eachSeriesError);
-        if (eachSeriesError) return done(eachSeriesError);
-        if (docs.length === 10) {
-          findAffectedUsers();
-        } else {
-          queue.create('googlePayments')
-            .priority('critical')
-            .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-            .attempts(5)
-            .save(queueError => {
-              return queueError ? done(queueError) : done();
-            });
-        }
-      });
     });
   }
   console.log('Start fetching subscriptions due with Google Payments.');
@@ -165,7 +149,15 @@ function worker (job, done) {
     if (error) {
       done(error);
     }
-    findAffectedUsers();
+    findAffectedUsers()
+      .then(scheduleNextJob) // All users have been processed, schedule the next job
+      .then(() => {
+        done();
+      })
+      .catch(err => { // The processing errored, crash the job and log the error
+        console.log('Error while sending onboarding emails.', err);
+        done(err);
+      });
   });
 }
 module.exports = function work (parentQueue, parentDb) {
