@@ -1,7 +1,6 @@
 const nconf = require('nconf');
 const moment = require('moment');
 const request = require('request');
-const async = require('async');
 const iap = require('in-app-purchase');
 const subscriptions = require('../libs/subscriptions');
 const USERS_BATCH = 10;
@@ -126,7 +125,7 @@ function worker (job, done) {
       fields: ['_id', 'apiToken', 'purchased.plan'],
     })
       .then(users => {
-        console.log("Google: Found n users", users.length);
+        console.log('Google: Found n users', users.length);
         usersFoundNumber = users.length;
         lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
@@ -134,12 +133,12 @@ function worker (job, done) {
           return processUser(user, jobStartDate, nextScheduledCheck);
         }));
       }).then(() => {
-      if (usersFoundNumber === USERS_BATCH) {
-        return findAffectedUsers();
-      } else {
-        return; // Finish the job
-      }
-    });
+        if (usersFoundNumber === USERS_BATCH) {
+          return findAffectedUsers();
+        } else {
+          return; // Finish the job
+        }
+      });
   }
   console.log('Start fetching subscriptions due with Google Payments.');
   jobStartDate = moment.utc();
