@@ -43,7 +43,7 @@ function processUser (user, jobStartDate, nextScheduledCheck) {
             },
           }, (habitError, habitResponse, body) => {
             if (!habitError && habitResponse.statusCode === 200) {
-              return reject(habitError);
+              return resolve();
             }
 
             reject(habitError || body); // if there's an error or response.statucCode !== 200
@@ -147,12 +147,11 @@ function worker (job, done) {
   iap.setup(error => {
     if (error) {
       done(error);
+      return;
     }
     findAffectedUsers()
       .then(scheduleNextJob) // All users have been processed, schedule the next job
-      .then(() => {
-        done();
-      })
+      .then(done)
       .catch(err => { // The processing errored, crash the job and log the error
         console.log('Error while sending onboarding emails.', err);
         done(err);
