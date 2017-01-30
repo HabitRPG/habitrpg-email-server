@@ -15,7 +15,7 @@ const app = express();
 const db = monk(nconf.get('MONGODB_URL'));
 db.options.multi = true;
 
-const BASE_URL = 'https://habitica.com';
+const BASE_URL = nconf.get('BASE_URL');
 
 AWS.config.update({
   accessKeyId: nconf.get('AWS_ACCESS_KEY'),
