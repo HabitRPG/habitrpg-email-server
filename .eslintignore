@@ -2,7 +2,10 @@ node_modules
 
 # Exclude file that have to be ported to the new code style
 tests/*
-libs/*
+libs/amazonPayments.js
+libs/groupSubscriptionManager.js
+libs/pushNotifications.js
+libs/specialPushNotificationManager.js
 scripts/*
 workers/email.js
 workers/amazonGroupPlanPayments.js

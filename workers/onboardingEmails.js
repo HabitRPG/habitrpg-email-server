@@ -486,8 +486,8 @@ function onboardingEmailsWorker (job, done) {
     done();
   })
   .catch(err => { // The processing errored, crash the job and log the error
-    console.log('Error while sending onboarding emails.', err);
     done(err);
+    console.log('Error while sending onboarding emails.', err);
   });
 }
 

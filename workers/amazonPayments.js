@@ -5,6 +5,7 @@ var moment = require('moment');
 var request = require('request');
 var async = require('async');
 const subscriptions = require('../libs/subscriptions');
+const BASE_URL = nconf.get('BASE_URL');
 
 // Defined later
 var db, queue, habitrpgUsers;
@@ -117,7 +118,7 @@ var worker = function(job, done){
 
                 console.log('Cancelling', user._id, user.purchased.plan.customerId, amzRes);
                 request({
-                  url: nconf.get("BASE_URL")+'/amazon/subscribe/cancel',
+                  url: BASE_URL+'/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
                     noRedirect: 'true',
