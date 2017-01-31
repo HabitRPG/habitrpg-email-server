@@ -4,6 +4,9 @@ const request = require('request');
 const USERS_BATCH = 10;
 const BASE_URL = nconf.get('BASE_URL');
 const subscriptions = require('../libs/subscriptions');
+const Bluebird = require('bluebird');
+
+let iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 
 function cancelSubscriptionForUser (user) {
   return new Promise((resolve, reject) => {
@@ -17,6 +20,7 @@ function cancelSubscriptionForUser (user) {
       },
     }, (habitError, habitResponse, body) => {
       if (!habitError && habitResponse.statusCode === 200) {
+        console.log('cancelled');
         return resolve();
       }
 
@@ -38,10 +42,6 @@ function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextSchedu
         'purchased.plan.nextPaymentProcessing': nextScheduledCheck,
         'purchased.plan.nextBillingDate': subscription.expirationDate,
       },
-    }, e => {
-      if (e) return reject(e);
-
-      return resolve();
     });
 }
 
@@ -51,24 +51,22 @@ function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
-  return new Promise((resolve, reject) => {
-    iap.validate(iap.GOOGLE, user.purchased.plan.additionalData, (error, response) => {
-      if (error) {
-        return reject(error);
-      }
+  return iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
+    .then((response) => {
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
         if (subscription.expirationDate < jobStartDate) {
+          console.log("cancelling");
           return cancelSubscriptionForUser(user);
         } else {
+          console.log("rescheduling");
           return scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
         }
       } else {
         return cancelSubscriptionForUser(user);
       }
     });
-  });
 }
 
 function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, nextScheduledCheck) {
@@ -102,11 +100,16 @@ function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, nextScheduledCh
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
       return Promise.all(users.map(user => {
+        console.log('processing', user._id);
         return processUser(habitrpgUsers, user, jobStartDate, nextScheduledCheck);
       }));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
+        console.log('more users')
         return findAffectedUsers(lastId, jobStartDate, nextScheduledCheck);
+      } else {
+        console.log('done');
+        return;
       }
     });
 }

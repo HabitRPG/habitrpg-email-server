@@ -49,7 +49,7 @@ function worker (job, done) {
       .then(scheduleNextJob) // All users have been processed, schedule the next job
       .then(done)
       .catch(err => { // The processing errored, crash the job and log the error
-        console.log('Error while sending onboarding emails.', err);
+        console.log('Error while sending processing google payments', err);
         done(err);
       });
   });
