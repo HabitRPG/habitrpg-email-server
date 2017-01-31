@@ -26,25 +26,23 @@ function cancelSubscriptionForUser (user) {
 }
 
 function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
-  return new Promise((resolve, reject) => {
-    if (subscription.expirationDate < nextScheduledCheck) {
-      nextScheduledCheck = subscription.expirationDate;
-    }
-    habitrpgUsers.update(
-      {
-        _id: user._id,
+  if (subscription.expirationDate < nextScheduledCheck) {
+    nextScheduledCheck = subscription.expirationDate;
+  }
+  return habitrpgUsers.update(
+    {
+      _id: user._id,
+    },
+    {
+      $set: {
+        'purchased.plan.nextPaymentProcessing': nextScheduledCheck,
+        'purchased.plan.nextBillingDate': subscription.expirationDate,
       },
-      {
-        $set: {
-          'purchased.plan.nextPaymentProcessing': nextScheduledCheck,
-          'purchased.plan.nextBillingDate': subscription.expirationDate,
-        },
-      }, e => {
-        if (e) return reject(e);
+    }, e => {
+      if (e) return reject(e);
 
-        return resolve();
-      });
-  });
+      return resolve();
+    });
 }
 
 function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
@@ -66,6 +64,8 @@ function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
         } else {
           return scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
         }
+      } else {
+        return cancelSubscriptionForUser(user);
       }
     });
   });
