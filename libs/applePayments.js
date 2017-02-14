@@ -13,7 +13,7 @@ api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
   return new Promise((resolve, reject) => {
     request({
-      url: `${BASE_URL}/iap/android/subscribe/cancel`,
+      url: `${BASE_URL}/iap/ios/subscribe/cancel`,
       method: 'GET',
       qs: {
         noRedirect: 'true',
@@ -52,18 +52,16 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
-  return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
+  return api.iapValidate(iap.APPLE, user.purchased.plan.additionalData)
     .then((response) => {
-      console.log('validated');
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
-        let subscription = purchaseDataList[0];
-        if (subscription.expirationDate < jobStartDate) {
-          return api.cancelSubscriptionForUser(user);
-        } else {
-          return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+        for (index in purchaseDataList) {
+          let subscription = purchaseDataList[index];
+          if (subscription.expirationDate > jobStartDate) {
+            return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+          }
         }
-      } else {
         return api.cancelSubscriptionForUser(user);
       }
     });
@@ -71,7 +69,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
 
 api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, nextScheduledCheck) {
   let query = {
-    'purchased.plan.paymentMethod': 'Google',
+    'purchased.plan.paymentMethod': 'Apple',
     'purchased.plan.dateTerminated': null,
 
     'purchased.plan.nextPaymentProcessing': {
@@ -95,7 +93,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     fields: ['_id', 'apiToken', 'purchased.plan'],
   })
     .then(users => {
-      console.log('Google: Found n users', users.length);
+      console.log('Apple: Found n users', users.length);
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 

@@ -49,6 +49,7 @@ queue.process('sendSpecialPushNotifications', require('./workers/sendSpecialPush
 
 queue.process('amazonPayments', require('./workers/amazonPayments')(queue, db));
 queue.process('googlePayments', require('./workers/googlePayments')(queue, db));
+queue.process('applePayments', require('./workers/applePayments')(queue, db));
 queue.process('amazonGroupPlanPayments', require('./workers/amazonGroupPlanPayments')(queue, db));
 
 queue.on('job complete', (id) => {
