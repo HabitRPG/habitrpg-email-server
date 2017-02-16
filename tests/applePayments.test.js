@@ -17,18 +17,6 @@ nconf
 
 const db = monk(nconf.get('MONGODB_URL'));
 
-const kueRedisOpts = {
-  port: nconf.get('REDIS_PORT'),
-  host: nconf.get('REDIS_HOST')
-};
-
-const queue = kue.createQueue({
-  disableSearch: true,
-  redis: kueRedisOpts
-});
-
-// @TODO Move the above to a global setup file
-
 const moment = require('moment');
 const applePayments = require('../libs/applePayments');
 const NUMBER_OF_USERS = 20;

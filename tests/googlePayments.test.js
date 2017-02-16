@@ -17,13 +17,6 @@ nconf
 
 const db = monk(nconf.get('MONGODB_URL'));
 
-const kueRedisOpts = {
-  port: nconf.get('REDIS_PORT'),
-  host: nconf.get('REDIS_HOST')
-};
-
-// @TODO Move the above to a global setup file
-
 const moment = require('moment');
 const googlePayments = require('../libs/googlePayments');
 const NUMBER_OF_USERS = 20;
