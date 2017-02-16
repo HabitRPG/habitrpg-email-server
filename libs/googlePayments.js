@@ -6,15 +6,13 @@ const BASE_URL = nconf.get('BASE_URL');
 const subscriptions = require('../libs/subscriptions');
 const Bluebird = require('bluebird');
 
-api = {};
+let api = {};
 
 api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 
 api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
   return new Promise((resolve, reject) => {
-    request({
-      url: `${BASE_URL}/iap/android/subscribe/cancel`,
-      method: 'GET',
+    request.get(`${BASE_URL}/iap/android/subscribe/cancel`, {
       qs: {
         noRedirect: 'true',
         _id: user._id,
@@ -54,7 +52,6 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   }
   return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then((response) => {
-      console.log('validated');
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
@@ -104,7 +101,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       }));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
-        return api.findAffectedUsers(lastId, jobStartDate, nextScheduledCheck);
+        return api.findAffectedUsers(habitrpgUsers, lastId, jobStartDate, nextScheduledCheck);
       } else {
         return;
       }

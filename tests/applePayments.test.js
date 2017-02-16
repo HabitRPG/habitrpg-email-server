@@ -22,10 +22,15 @@ const kueRedisOpts = {
   host: nconf.get('REDIS_HOST')
 };
 
+const queue = kue.createQueue({
+  disableSearch: true,
+  redis: kueRedisOpts
+});
+
 // @TODO Move the above to a global setup file
 
 const moment = require('moment');
-const googlePayments = require('../libs/googlePayments');
+const applePayments = require('../libs/applePayments');
 const NUMBER_OF_USERS = 20;
 
 function generateUsers (usersCollection, jobStartDate)
@@ -34,7 +39,7 @@ function generateUsers (usersCollection, jobStartDate)
   for (let i = 0; i < NUMBER_OF_USERS; i += 1) {
     usersToInsert.push({
       purchased: { plan: {
-        paymentMethod: 'Google',
+        paymentMethod: 'Apple',
         dateTerminated: null,
         planId: "basic_3mo",
         nextPaymentProcessing: jobStartDate.toDate()
@@ -43,19 +48,19 @@ function generateUsers (usersCollection, jobStartDate)
   }
 
   return usersCollection.insert(usersToInsert);
-}
+};
 
-describe('GooglePayments', function () {
+describe('ApplePayments', () => {
   let users, userIds, usersCollection;
   let jobStartDate, nextCheckDate;
 
   let iapValidateStub, iapIsValidatedStub, iapGetPurchaseDataStub, requestGetStub;
 
-  beforeEach(function (done) {
+  beforeEach(done => {
     jobStartDate = moment.utc();
     nextCheckDate = jobStartDate.clone().add({days: 7});
 
-    iapValidateStub = sinon.stub(googlePayments, 'iapValidate')
+    iapValidateStub = sinon.stub(applePayments, 'iapValidate')
       .returnsPromise().resolves({});
     iapIsValidatedStub = sinon.stub(iapModule, 'isValidated')
       .returns(true);
@@ -68,7 +73,7 @@ describe('GooglePayments', function () {
 
     usersCollection = db.get('users', { castIds: false });
     generateUsers(usersCollection, jobStartDate)
-      .then (function (doc) {
+      .then (doc => {
         users = doc;
         userIds = [];
         for (let index in users) {
@@ -79,17 +84,17 @@ describe('GooglePayments', function () {
       });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     usersCollection.remove({ _id : { $in: userIds } });
-    sinon.restore(googlePayments.iapValidate);
+    sinon.restore(applePayments.iapValidate);
     sinon.restore(iapModule.validate);
     sinon.restore(iapModule.isValidated);
     sinon.restore(iapModule.getPurchaseData);
     sinon.restore(requestModule.get);
   });
 
-  it('processes all users', function (done) {
-    googlePayments.findAffectedUsers(usersCollection, null, jobStartDate, nextCheckDate).
+  it('processes all users', done => {
+    applePayments.findAffectedUsers(usersCollection, null, jobStartDate, nextCheckDate).
       then(() => {
       expect(iapValidateStub.callCount).equals(NUMBER_OF_USERS);
       expect(requestGetStub.callCount).equals(0);
@@ -106,16 +111,16 @@ describe('GooglePayments', function () {
         done(err);
       });
     }).catch(err => { // The processing errored, crash the job and log the error
-        done(err);
-      });
+      done(err);
+    });
   });
 
-  it('cancels ended subscription', function () {
+  it('cancels ended subscription', () => {
     let user = users[0];
     sinon.restore(iapModule.getPurchaseData);
     iapGetPurchaseDataStub = sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().subtract({day: 1}).toDate()}]);
-    googlePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).
+    applePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).
     then(() => {
       expect(iapValidateStub.callCount).equals(1);
       expect(requestGetStub.callCount).equals(1);
@@ -131,7 +136,7 @@ describe('GooglePayments', function () {
       {$set: {'purchased.plan.dateTerminated': moment.utc()}},
       {castIds: false}
     ).then(() => {
-      googlePayments.findAffectedUsers(usersCollection, null, jobStartDate, nextCheckDate)
+      applePayments.findAffectedUsers(usersCollection, null, jobStartDate, nextCheckDate)
         .then(() => {
           expect(iapValidateStub.callCount).equals(NUMBER_OF_USERS-1);
           expect(requestGetStub.callCount).equals(0);
@@ -145,7 +150,7 @@ describe('GooglePayments', function () {
     sinon.restore(iapModule.getPurchaseData);
     iapGetPurchaseDataStub = sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: expectedDate}]);
-    googlePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).
+    applePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).
     then(() => {
       expect(iapValidateStub.callCount).equals(1);
       expect(requestGetStub.callCount).equals(1);
