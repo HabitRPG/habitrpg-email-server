@@ -1,10 +1,11 @@
 const nconf = require('nconf');
 const iap = require('in-app-purchase');
 const request = require('request');
-const USERS_BATCH = 10;
-const BASE_URL = nconf.get('BASE_URL');
 const subscriptions = require('../libs/subscriptions');
 const Bluebird = require('bluebird');
+
+const USERS_BATCH = 10;
+const BASE_URL = nconf.get('BASE_URL');
 
 let api = {};
 
