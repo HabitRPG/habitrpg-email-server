@@ -4,18 +4,11 @@ var nconf = require('nconf');
 var moment = require('moment');
 var request = require('request');
 var async = require('async');
+const subscriptions = require('../libs/subscriptions');
+const BASE_URL = nconf.get('BASE_URL');
 
 // Defined later
 var db, queue, habitrpgUsers;
-
-// TODO fetch from api
-var subscriptionBlocks = {
-  basic_earned: {months:1, price:5},
-  basic_3mo: {months:3, price:15},
-  basic_6mo: {months:6, price:30},
-  google_6mo: {months:6, price:24, discount:true, original:30},
-  basic_12mo: {months:12, price:48}
-};
 
 var amzPayment = amazonPayments.connect({
   environment: amazonPayments.Environment[nconf.get('NODE_ENV') === 'production' ? 'Production' : 'Sandbox'],
@@ -76,7 +69,7 @@ var worker = function(job, done){
         async.eachSeries(docs, function(user, cb){
           try{
             // console.log('Processing', user._id);
-            var plan = subscriptionBlocks[user.purchased.plan.planId];
+            var plan = subscriptions.blocks[user.purchased.plan.planId];
             var lastBillingDate = moment.utc(user.purchased.plan.lastBillingDate);
 
             if(!plan){
@@ -125,7 +118,7 @@ var worker = function(job, done){
 
                 console.log('Cancelling', user._id, user.purchased.plan.customerId, amzRes);
                 request({
-                  url: 'https://habitica.com/amazon/subscribe/cancel',
+                  url: BASE_URL+'/amazon/subscribe/cancel',
                   method: 'GET',
                   qs: {
                     noRedirect: 'true',
