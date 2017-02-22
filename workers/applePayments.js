@@ -1,4 +1,3 @@
-const nconf = require('nconf');
 const moment = require('moment');
 const applePayments = require('../libs/applePayments');
 const iap = require('in-app-purchase');
@@ -6,11 +5,6 @@ const iap = require('in-app-purchase');
 let db;
 let queue;
 let habitrpgUsers;
-
-iap.config({
-  // This is the path to the directory containing iap-sanbox/iap-live files
-  applePassword: nconf.get('ITUNES_SHARED_SECRET'),
-});
 
 function scheduleNextJob () {
   console.log('Scheduling new job');

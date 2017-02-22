@@ -1,20 +1,11 @@
-const nconf = require('nconf');
 const moment = require('moment');
 const googlePayments = require('../libs/googlePayments');
+
 const iap = require('in-app-purchase');
 // Defined later
 let db;
 let queue;
 let habitrpgUsers;
-
-iap.config({
-  // This is the path to the directory containing iap-sanbox/iap-live files
-  googlePublicKeyPath: nconf.get('IAP_GOOGLE_KEYDIR'),
-  googleAccToken: nconf.get('PLAY_API_ACCESS_TOKEN'),
-  googleRefToken: nconf.get('PLAY_API_REFRESH_TOKEN'),
-  googleClientID: nconf.get('PLAY_API_CLIENT_ID'),
-  googleClientSecret: nconf.get('PLAY_API_CLIENT_SECRET'),
-});
 
 function scheduleNextJob () {
   console.log('Scheduling new job');
