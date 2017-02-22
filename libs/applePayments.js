@@ -30,8 +30,10 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
 };
 
 api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
-  if (subscription.expirationDate < nextScheduledCheck) {
+  if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
     nextScheduledCheck = subscription.expirationDate;
+  } else {
+    nextScheduledCheck = nextScheduledCheck.toDate()
   }
   return habitrpgUsers.update(
     {
@@ -39,8 +41,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
     },
     {
       $set: {
-        'purchased.plan.nextPaymentProcessing': nextScheduledCheck.toDate(),
-        'purchased.plan.nextBillingDate': subscription.expirationDate,
+        'purchased.plan.nextPaymentProcessing': nextScheduledCheck,
       },
     });
 };
