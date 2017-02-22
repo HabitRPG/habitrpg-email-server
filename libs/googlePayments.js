@@ -39,7 +39,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
     },
     {
       $set: {
-        'purchased.plan.nextPaymentProcessing': nextScheduledCheck,
+        'purchased.plan.nextPaymentProcessing': nextScheduledCheck.toDate(),
         'purchased.plan.nextBillingDate': subscription.expirationDate,
       },
     });
