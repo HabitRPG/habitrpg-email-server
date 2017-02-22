@@ -4,7 +4,7 @@ const monk = require('monk');
 const url = require('url');
 const nconf = require('nconf');
 const AWS = require('aws-sdk');
-const iap = require('in-app-purchases');
+const iap = require('in-app-purchase');
 
 nconf
   .argv()
