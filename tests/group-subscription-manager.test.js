@@ -116,7 +116,7 @@ describe('GroupSubscriptionManager', () => {
   it('should not charge a terminated group', (done) => {
     groupsCollection.update(
       {_id: groups[0]._id},
-      {$set: {'purchased.plan.dateTerminated': moment.utc()}},
+      {$set: {'purchased.plan.dateTerminated': moment.utc()}}
     ).then(() => {
       groupSubscriptionManager.init(db, queue, () => {
         expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS - 1);
