@@ -24,13 +24,13 @@ function generateUsers (usersCollection, jobStartDate) {
   return usersCollection.insert(usersToInsert);
 }
 
-describe('GooglePayments', function () {
-  let users, userIds, usersCollection;
+describe('GooglePayments', () => {
+  let users, userIds;
   let jobStartDate, nextCheckDate;
-
   let iapValidateStub, requestGetStub;
+  let usersCollection = db.get('users', { castIds: false });
 
-  beforeEach(function () {
+  beforeEach(() => {
     jobStartDate = moment.utc();
     nextCheckDate = jobStartDate.clone().add({days: 7});
 
@@ -45,7 +45,6 @@ describe('GooglePayments', function () {
     sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);
 
-    usersCollection = db.get('users', { castIds: false });
     return generateUsers(usersCollection, jobStartDate).then(function (doc) {
       users = doc;
       userIds = [];
@@ -57,7 +56,7 @@ describe('GooglePayments', function () {
     });
   });
 
-  afterEach(function () {
+  afterEach(() => {
     usersCollection.remove({ _id: { $in: userIds } });
     sinon.restore(googlePayments.iapValidate);
     sinon.restore(iapModule.validate);
@@ -66,7 +65,7 @@ describe('GooglePayments', function () {
     sinon.restore(requestModule.get);
   });
 
-  it('processes all users', function () {
+  it('processes all users', () => {
     return googlePayments.findAffectedUsers(usersCollection, null, jobStartDate, nextCheckDate).then(() => {
       expect(iapValidateStub.callCount).equals(NUMBER_OF_USERS);
       expect(requestGetStub.callCount).equals(0);
@@ -81,7 +80,7 @@ describe('GooglePayments', function () {
     });
   });
 
-  it('cancels ended subscription', function () {
+  it('cancels ended subscription', () => {
     let user = users[0];
 
     sinon.restore(iapModule.getPurchaseData);

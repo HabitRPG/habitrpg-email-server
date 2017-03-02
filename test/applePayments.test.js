@@ -26,10 +26,10 @@ function generateUsers (usersCollection, jobStartDate) {
 }
 
 describe('ApplePayments', () => {
-  let users, userIds, usersCollection;
+  let users, userIds;
   let jobStartDate, nextCheckDate;
-
   let iapValidateStub, requestGetStub;
+  let usersCollection = db.get('users', { castIds: false });
 
   beforeEach(() => {
     jobStartDate = moment.utc();
@@ -44,7 +44,6 @@ describe('ApplePayments', () => {
     sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);
 
-    usersCollection = db.get('users', { castIds: false });
     return generateUsers(usersCollection, jobStartDate).then(doc => {
       users = doc;
       userIds = [];
