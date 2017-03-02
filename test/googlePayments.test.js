@@ -40,7 +40,7 @@ describe('GooglePayments', function () {
       .returns(true);
 
     requestGetStub = sinon.stub(requestModule, 'get')
-      .yields(null, null, '');
+      .yields(null, {statusCode: 200}, '');
 
     sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);

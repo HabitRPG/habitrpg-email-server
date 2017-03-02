@@ -1,6 +1,9 @@
 const kue = require('kue');
 const monk = require('monk');
 const nconf = require('nconf');
+const moment = require('moment');
+const groupSubscriptionManager = require('../libs/groupSubscriptionManager');
+const amazonPayments = require('../libs/amazonPayments');
 
 let db = monk(nconf.get('MONGODB_URL'));
 
@@ -14,12 +17,7 @@ let queue = kue.createQueue({
   redis: kueRedisOpts,
 });
 
-// @TODO Move the above to a global setup file
-
-let moment = require('moment');
-let groupSubscriptionManager = require('../libs/groupSubscriptionManager');
-let amazonPayments = require('../libs/amazonPayments');
-let NUMBER_OF_GROUPS = 20;
+const NUMBER_OF_GROUPS = 20;
 
 function generateGroups (groupsCollection) {
   let jobStartDate = moment.utc();

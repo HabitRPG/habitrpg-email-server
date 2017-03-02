@@ -3,7 +3,6 @@ const requestModule = require('request');
 const monk = require('monk');
 const nconf = require('nconf');
 
-
 const db = monk(nconf.get('MONGODB_URL'));
 
 const moment = require('moment');
@@ -32,26 +31,28 @@ describe('ApplePayments', () => {
 
   let iapValidateStub, requestGetStub;
 
-  beforeEach(done => {
+  beforeEach(() => {
     jobStartDate = moment.utc();
     nextCheckDate = jobStartDate.clone().add({days: 7});
 
     iapValidateStub = sinon.stub(applePayments, 'iapValidate').returnsPromise().resolves({});
-    requestGetStub = sinon.stub(requestModule, 'get').yields(null, null, '');
+
+    requestGetStub = sinon.stub(requestModule, 'get')
+      .yields(null, {statusCode: 200}, '');
     sinon.stub(iapModule, 'isValidated').returns(true);
-    sinon.stub(iapModule, 'getPurchaseData').returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);
+
+    sinon.stub(iapModule, 'getPurchaseData')
+      .returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);
 
     usersCollection = db.get('users', { castIds: false });
-    generateUsers(usersCollection, jobStartDate)
-      .then(doc => {
-        users = doc;
-        userIds = [];
-        for (let index in users) {
-          let user = users[index];
-          userIds.push(user._id);
-        }
-        done();
-      });
+    return generateUsers(usersCollection, jobStartDate).then(doc => {
+      users = doc;
+      userIds = [];
+      for (let index in users) {
+        let user = users[index];
+        userIds.push(user._id);
+      }
+    });
   });
 
   afterEach(() => {

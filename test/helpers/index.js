@@ -2,14 +2,15 @@
 /* eslint-disable global-require */
 /* eslint-disable no-process-env */
 
+const nconf = require('nconf');
+const sinonStubPromise = require('sinon-stub-promise');
+
 //------------------------------
 // Global modules
 //------------------------------
 global.chai = require('chai');
-chai.use(require('sinon-chai'));
 global.expect = chai.expect;
 global.sinon = require('sinon');
-let sinonStubPromise = require('sinon-stub-promise');
 sinonStubPromise(global.sinon);
 global.sandbox = sinon.sandbox.create();
 

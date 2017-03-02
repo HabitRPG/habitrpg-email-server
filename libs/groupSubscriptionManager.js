@@ -1,7 +1,7 @@
 var uuid = require('uuid');
 var moment = require('moment');
 
-var db, queue, amazonPayment, request, done, habitrpgUsers, jobStartDate, habitGroups;
+var db, queue, amazonPayment, request, done, habitrpgUsers, jobStartDate, habitGroups, isLastDayOfMonth, oneMonthAgo;
 
 var paymentDescription = 'Group Subscription Payment';
 
