@@ -33,7 +33,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
   if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
     nextScheduledCheck = subscription.expirationDate;
   } else {
-    nextScheduledCheck = nextScheduledCheck.toDate()
+    nextScheduledCheck = nextScheduledCheck.toDate();
   }
   return habitrpgUsers.update(
     {

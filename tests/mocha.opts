@@ -1,0 +1,7 @@
+--colors
+--reporter spec
+--timeout 8000
+--check-leaks
+--growl
+--globals io
+--require ./test/helpers/index.js

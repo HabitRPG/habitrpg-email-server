@@ -1,48 +1,36 @@
-// @TODO Move the below to a global setup file
-var chai = require('chai');
-var sinon = require('sinon');
-var sinonStubPromise = require('sinon-stub-promise');
-sinonStubPromise(sinon);
-var expect = chai.expect;
-var kue = require('kue'),
-    monk = require('monk'),
-    nconf = require('nconf');
+const kue = require('kue');
+const monk = require('monk');
+const nconf = require('nconf');
 
-nconf
-  .argv()
-  .env()
-  .file({ file: __dirname + '/../config.json' });
+let db = monk(nconf.get('MONGODB_URL'));
 
-var db = monk(nconf.get('MONGODB_URL'));
-
-var kueRedisOpts = {
+let kueRedisOpts = {
   port: nconf.get('REDIS_PORT'),
-  host: nconf.get('REDIS_HOST')
+  host: nconf.get('REDIS_HOST'),
 };
 
-var queue = kue.createQueue({
+let queue = kue.createQueue({
   disableSearch: true,
-  redis: kueRedisOpts
+  redis: kueRedisOpts,
 });
 
 // @TODO Move the above to a global setup file
 
-var moment = require('moment');
-var groupSubscriptionManager = require('../libs/groupSubscriptionManager');
-var amazonPayments = require('../libs/amazonPayments');
-var NUMBER_OF_GROUPS = 20;
+let moment = require('moment');
+let groupSubscriptionManager = require('../libs/groupSubscriptionManager');
+let amazonPayments = require('../libs/amazonPayments');
+let NUMBER_OF_GROUPS = 20;
 
-function generateGroups(groupsCollection)
-{
-  var jobStartDate = moment.utc();
-  var oneMonthAgo = moment.utc(jobStartDate).subtract(1, 'months');
+function generateGroups (groupsCollection) {
+  let jobStartDate = moment.utc();
+  let oneMonthAgo = moment.utc(jobStartDate).subtract(1, 'months');
 
-  var groupsToInsert = [];
-  for (var i = 0; i < NUMBER_OF_GROUPS; i += 1) {
+  let groupsToInsert = [];
+  for (let i = 0; i < NUMBER_OF_GROUPS; i += 1) {
     groupsToInsert.push({
       leader: '3102aaed-7e2f-4555-8152-3e9ea20af8c2',
       type: 'guild',
-      name: 'testing' + i,
+      name: `testing${  i}`,
       purchased: { plan: {
         paymentMethod: 'Amazon Payments',
         dateTerminated: null,
@@ -53,13 +41,13 @@ function generateGroups(groupsCollection)
   }
 
   return groupsCollection.insert(groupsToInsert);
-};
+}
 
 describe('GroupSubscriptionManager', function () {
-  var groups, groupsCollection;
+  let groups, groupsCollection;
 
-  var authorizeOnBillingAgreementSpy, requestSpy;
-  var amazonResponse = {
+  let authorizeOnBillingAgreementSpy, requestSpy;
+  let amazonResponse = {
     AuthorizationDetails: {
       AuthorizationStatus: {
         State: 'Open',
@@ -79,19 +67,19 @@ describe('GroupSubscriptionManager', function () {
 
     groupsCollection = db.get('groups');
     generateGroups(groupsCollection)
-      .then (function (doc) {
+      .then(function (doc) {
         groups = doc;
         done();
       });
   });
 
-  afterEach(function() {
+  afterEach(function () {
     groupsCollection.remove({});
     sinon.restore(amazonPayments.authorizeOnBillingAgreement);
   });
 
   it('should schedule the next queue when finished', function (done) {
-    var queueSpy = sinon.spy(kue.Job.prototype, 'save');
+    let queueSpy = sinon.spy(kue.Job.prototype, 'save');
     groupSubscriptionManager.init(db, queue, function () {
       expect(queueSpy.callCount).equals(1);
       done();
@@ -120,7 +108,7 @@ describe('GroupSubscriptionManager', function () {
       {_id: groups[0]._id},
       {$set: {'purchased.plan.dateTerminated': moment.utc()}},
       {castIds: false}
-    ).then(function (result) {
+    ).then(() => {
       groupSubscriptionManager.init(db, queue, function () {
         expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS - 1);
         done();
@@ -129,7 +117,7 @@ describe('GroupSubscriptionManager', function () {
   });
 
   it('should page groups', function (done) {
-    var dbSpy = sinon.spy(db.collections.groups, 'find');
+    let dbSpy = sinon.spy(db.collections.groups, 'find');
 
     groupSubscriptionManager.init(db, queue, function () {
       expect(dbSpy.callCount).equals(3);
@@ -140,7 +128,7 @@ describe('GroupSubscriptionManager', function () {
   });
 
   it('should cancel a subscription of amazon is Declined', function (done) {
-    var dbSpy = sinon.stub(db.collections.users, 'findOne');
+    let dbSpy = sinon.stub(db.collections.users, 'findOne');
     dbSpy
       .returnsPromise()
       .resolves({});
