@@ -70,6 +70,7 @@ function chargeGroup (group)
     // TODO should expire only in case of failed payment
     // otherwise retry
     if (response.AuthorizationDetails.AuthorizationStatus.State === 'Declined') {
+      console.log('Cancelling', group._id, group.purchased.plan.customerId, response);
       return cancelSubscription(group);
     }
 
@@ -78,6 +79,10 @@ function chargeGroup (group)
       { $set: { 'purchased.plan.lastBillingDate': jobStartDate.toDate() } },
       { castIds: false }
     );
+  })
+  .catch((err) => {
+    console.log('Cancelling', group._id, group.purchased.plan.customerId, err);
+    return cancelSubscription(group);
   });
 }
 

@@ -4,6 +4,7 @@ const monk = require('monk');
 const url = require('url');
 const nconf = require('nconf');
 const AWS = require('aws-sdk');
+const iap = require('in-app-purchase');
 
 nconf
   .argv()
@@ -20,6 +21,16 @@ const BASE_URL = nconf.get('BASE_URL');
 AWS.config.update({
   accessKeyId: nconf.get('AWS_ACCESS_KEY'),
   secretAccessKey: nconf.get('AWS_SECRET_KEY'),
+});
+
+iap.config({
+  // This is the path to the directory containing iap-sanbox/iap-live files
+  googlePublicKeyPath: nconf.get('IAP_GOOGLE_KEYDIR'),
+  googleAccToken: nconf.get('PLAY_API_ACCESS_TOKEN'),
+  googleRefToken: nconf.get('PLAY_API_REFRESH_TOKEN'),
+  googleClientID: nconf.get('PLAY_API_CLIENT_ID'),
+  googleClientSecret: nconf.get('PLAY_API_CLIENT_SECRET'),
+  applePassword: nconf.get('ITUNES_SHARED_SECRET'),
 });
 
 let kueRedisOpts = {
