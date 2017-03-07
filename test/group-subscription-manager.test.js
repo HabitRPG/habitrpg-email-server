@@ -1,31 +1,18 @@
-// @TODO Move the below to a global setup file
-const chai = require('chai');
-const sinon = require('sinon');
-const sinonStubPromise = require('sinon-stub-promise');
-const expect = chai.expect;
 const kue = require('kue');
 const monk = require('monk');
 const nconf = require('nconf');
-const path = require('path');
 const moment = require('moment');
 const groupSubscriptionManager = require('../libs/groupSubscriptionManager');
 const amazonPayments = require('../libs/amazonPayments');
 
-sinonStubPromise(sinon);
+let db = monk(nconf.get('MONGODB_URL'));
 
-nconf
-  .argv()
-  .env()
-  .file({ file: path.join(__dirname, '/../config.json') });
-
-const db = monk(nconf.get('MONGODB_URL'));
-
-const kueRedisOpts = {
+let kueRedisOpts = {
   port: nconf.get('REDIS_PORT'),
   host: nconf.get('REDIS_HOST'),
 };
 
-const queue = kue.createQueue({
+let queue = kue.createQueue({
   disableSearch: true,
   redis: kueRedisOpts,
 });
