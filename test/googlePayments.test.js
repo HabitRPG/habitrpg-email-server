@@ -34,10 +34,8 @@ describe('GooglePayments', () => {
     jobStartDate = moment.utc();
     nextCheckDate = jobStartDate.clone().add({days: 7});
 
-    iapValidateStub = sinon.stub(googlePayments, 'iapValidate')
-      .returnsPromise().resolves({});
-    sinon.stub(iapModule, 'isValidated')
-      .returns(true);
+    iapValidateStub = sinon.stub(googlePayments, 'iapValidate').returnsPromise().resolves({});
+    sinon.stub(iapModule, 'isValidated').returns(true);
 
     requestGetStub = sinon.stub(requestModule, 'get')
       .yields(null, {statusCode: 200}, '');
@@ -45,10 +43,9 @@ describe('GooglePayments', () => {
     sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);
 
-    return generateUsers(usersCollection, jobStartDate).then(function (doc) {
+    return generateUsers(usersCollection, jobStartDate).then(doc => {
       users = doc;
       userIds = [];
-
       for (let index in users) {
         let user = users[index];
         userIds.push(user._id);
@@ -82,7 +79,6 @@ describe('GooglePayments', () => {
 
   it('cancels ended subscription', () => {
     let user = users[0];
-
     sinon.restore(iapModule.getPurchaseData);
     sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().subtract({day: 1}).toDate()}]);
@@ -112,12 +108,11 @@ describe('GooglePayments', () => {
 
     sinon.restore(iapModule.getPurchaseData);
     sinon.stub(iapModule, 'getPurchaseData')
-      .returns([{expirationDate: expectedDate}]);
+      .returns([{expirationDate: expectedDate.toDate()}]);
 
     return googlePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).then(() => {
       expect(iapValidateStub.callCount).equals(1);
-      expect(requestGetStub.callCount).equals(1);
-      return usersCollection.find({ _id: { $in: userIds } }, {
+      return usersCollection.find({ _id: user._id }, {
         fields: ['_id', 'purchased.plan'],
       });
     }).then(foundUsers => {

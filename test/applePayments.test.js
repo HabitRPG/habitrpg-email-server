@@ -2,11 +2,10 @@ const iapModule = require('in-app-purchase');
 const requestModule = require('request');
 const monk = require('monk');
 const nconf = require('nconf');
-
-const db = monk(nconf.get('MONGODB_URL'));
-
 const moment = require('moment');
 const applePayments = require('../libs/applePayments');
+
+const db = monk(nconf.get('MONGODB_URL'));
 const NUMBER_OF_USERS = 20;
 
 function generateUsers (usersCollection, jobStartDate) {
@@ -36,10 +35,10 @@ describe('ApplePayments', () => {
     nextCheckDate = jobStartDate.clone().add({days: 7});
 
     iapValidateStub = sinon.stub(applePayments, 'iapValidate').returnsPromise().resolves({});
+    sinon.stub(iapModule, 'isValidated').returns(true);
 
     requestGetStub = sinon.stub(requestModule, 'get')
       .yields(null, {statusCode: 200}, '');
-    sinon.stub(iapModule, 'isValidated').returns(true);
 
     sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().add({day: 8}).toDate()}]);
@@ -81,9 +80,7 @@ describe('ApplePayments', () => {
   it('cancels ended subscription', () => {
     let user = users[0];
     sinon.restore(iapModule.getPurchaseData);
-
-    sinon
-      .stub(iapModule, 'getPurchaseData')
+    sinon.stub(iapModule, 'getPurchaseData')
       .returns([{expirationDate: jobStartDate.clone().subtract({day: 1}).toDate()}]);
 
     return applePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).then(() => {
@@ -111,12 +108,11 @@ describe('ApplePayments', () => {
 
     sinon.restore(iapModule.getPurchaseData);
     sinon.stub(iapModule, 'getPurchaseData')
-      .returns([{expirationDate: expectedDate}]);
+      .returns([{expirationDate: expectedDate.toDate()}]);
 
     return applePayments.processUser(usersCollection, user, jobStartDate, nextCheckDate).then(() => {
       expect(iapValidateStub.callCount).equals(1);
-      expect(requestGetStub.callCount).equals(1);
-      return usersCollection.find({ _id: { $in: userIds } }, {
+      return usersCollection.find({ _id: user._id }, {
         fields: ['_id', 'purchased.plan'],
       });
     }).then(foundUsers => {
