@@ -41,7 +41,8 @@ function worker (job, done) {
       .then(scheduleNextJob) // All users have been processed, schedule the next job
       .then(done)
       .catch(err => { // The processing errored, crash the job and log the error
-        console.log('Error while sending processing google payments', util.inspect(err, false, null));
+        console.log('Error while sending processing google payments', util.inspect(err, {depth: null, showHidden: true}));
+        console.log(JSON.stringify(err, null, 2));
         done(err);
       });
   });
