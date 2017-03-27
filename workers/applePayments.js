@@ -1,6 +1,8 @@
 const moment = require('moment');
 const applePayments = require('../libs/applePayments');
 const iap = require('in-app-purchase');
+const util = require('util');
+
 // Defined later
 let db;
 let queue;
@@ -39,7 +41,7 @@ function worker (job, done) {
       .then(scheduleNextJob) // All users have been processed, schedule the next job
       .then(done)
       .catch(err => { // The processing errored, crash the job and log the error
-        console.log('Error while sending processing apple payments', err);
+        console.log('Error while sending processing apple payments', util.inspect(err, false, null));
         done(err);
       });
   });

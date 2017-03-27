@@ -1,7 +1,8 @@
 const moment = require('moment');
 const googlePayments = require('../libs/googlePayments');
-
+const util = require('util');
 const iap = require('in-app-purchase');
+
 // Defined later
 let db;
 let queue;
@@ -40,7 +41,7 @@ function worker (job, done) {
       .then(scheduleNextJob) // All users have been processed, schedule the next job
       .then(done)
       .catch(err => { // The processing errored, crash the job and log the error
-        console.log('Error while sending processing google payments', err);
+        console.log('Error while sending processing google payments', util.inspect(err, false, null));
         done(err);
       });
   });
