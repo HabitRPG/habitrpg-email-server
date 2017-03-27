@@ -48,15 +48,18 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
+  console.log('processing google sub for ', user._id);
 
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
   return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then((response) => {
+      console.log('called api.iapValidate for', user._id);
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
+        console.log('called api.isValidated(response) for', user._id);
         if (subscription.expirationDate < jobStartDate) {
           return api.cancelSubscriptionForUser(user);
         } else {
