@@ -101,9 +101,9 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-      return Promise.all(users.map(user => {
+      return Bluebird.each(users, (user) => {
         return api.processUser(habitrpgUsers, user, jobStartDate, nextScheduledCheck);
-      }));
+      });
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
         return api.findAffectedUsers(habitrpgUsers, lastId, jobStartDate, nextScheduledCheck);
