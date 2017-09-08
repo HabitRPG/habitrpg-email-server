@@ -67,10 +67,10 @@ module.exports = function(job, done){
 
     job.data.variables.push({
       name: 'EMAIL_SETTINGS_URL',
-      content: '/#/options/settings/notifications'
+      content: '/user/settings/notifications'
     }, {
       name: 'UNSUB_EMAIL_TYPE_URL',
-      content: '/#/options/settings/notifications?unsubFrom=' + mapEmailsToPreferences[job.data.emailType]
+      content: '/user/settings/notifications?unsubFrom=' + mapEmailsToPreferences[job.data.emailType]
     });
   }
 
