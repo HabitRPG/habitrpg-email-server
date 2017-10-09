@@ -75,7 +75,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         return api.cancelSubscriptionForUser(user);
       }
     }).catch(err => {
-      console.log('outputting error');
+      console.log('outputting error for user:', user._id);
       console.log(JSON.stringify(err, null, 4));
 
       throw err;
