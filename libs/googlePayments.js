@@ -55,18 +55,9 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   }
 
   const receipt = user.purchased.plan.additionalData;
-  let originalData = receipt.data;
 
-  console.log('Original data', originalData);
-  originalData = typeof originalData === 'string' ? JSON.parse(originalData) : originalData;
-
-  console.log('Fixing broken receipt', originalData);
-  const dataOrder = ['orderId', 'packageName', 'productId', 'purchaseTime', 'purchaseState', 'purchaseState', 'purchaseToken', 'autoRenewing'];
-  const newData = {};
-
-  dataOrder.forEach((k) => newData[k] = originalData[k]);
-  receipt.data = JSON.stringify(newData);
-  console.log('Fixed data', receipt);
+  console.log('Original data', receipt.data);
+  receipt.data = typeof receipt.data === 'string' ? JSON.parse(receipt.data) : receipt.data;
 
   return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then((response) => {
@@ -85,9 +76,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       }
     }).catch(err => {
       console.log('outputting error');
-      console.log(err, JSON.stringify(err, null, 4));
-      console.log(err.error, JSON.stringify(err.error, null, 4));
-      console.log(err.error.errors, JSON.stringify(err.error.errors, null, 4));
+      console.log(JSON.stringify(err, null, 4));
 
       throw err;
     });
