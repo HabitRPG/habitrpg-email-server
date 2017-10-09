@@ -54,20 +54,19 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
 
-  const originalData = user.purchased.plan.additionalData.data;
+  const receipt = user.purchased.plan.additionalData;
+  let originalData = receipt.data;
 
-  if (typeof originalData !== 'string') {
-    console.log('Fixing broken receipt', originalData);
-    const dataOrder = ['orderId', 'packageName', 'productId', 'purchaseTime', 'purchaseState', 'purchaseState', 'purchaseToken', 'autoRenewing'];
-    const objectReceipt = JSON.parse(originalData.data);
-    const newData = {};
+  console.log('Original data', originalData);
+  originalData = typeof originalData === 'string' ? JSON.parse(originalData) : originalData;
 
-    dataOrder.forEach((k) => newData[k] = objectReceipt[k]);
-    originalData.data = JSON.stringify(newData);
-    console.log('Fixed data', originalData);
-  } else {
-    console.log('correct data', originalData);
-  }
+  console.log('Fixing broken receipt', originalData);
+  const dataOrder = ['orderId', 'packageName', 'productId', 'purchaseTime', 'purchaseState', 'purchaseState', 'purchaseToken', 'autoRenewing'];
+  const newData = {};
+
+  dataOrder.forEach((k) => newData[k] = originalData[k]);
+  receipt.data = JSON.stringify(newData);
+  console.log('Fixed data', receipt);
 
   return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then((response) => {
