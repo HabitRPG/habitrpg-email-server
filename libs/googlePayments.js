@@ -56,16 +56,13 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
 
   const receipt = user.purchased.plan.additionalData;
 
-  console.log('Original data', receipt.data);
   receipt.data = typeof receipt.data === 'string' ? JSON.parse(receipt.data) : receipt.data;
 
   return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then((response) => {
-      console.log('called api.iapValidate for', user._id);
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
-        console.log('called api.isValidated(response) for', user._id);
         if (subscription.expirationDate < jobStartDate) {
           return api.cancelSubscriptionForUser(user);
         } else {
@@ -76,7 +73,8 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       }
     }).catch(err => {
       console.log('outputting error for user:', user._id);
-      console.log(JSON.stringify(err, null, 4));
+      console.log('error', JSON.stringify(err, null, 4));
+      console.log('receipt', JSON.stringify(receipt, null, 4));
 
       // throw err;
     });
@@ -98,7 +96,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     };
   }
 
-  console.log('Run query', query);
+  // console.log('Run query', query);
 
   let usersFoundNumber;
 
@@ -108,7 +106,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     fields: ['_id', 'apiToken', 'purchased.plan'],
   })
     .then(users => {
-      console.log('Google: Found n users', users.length);
+      // console.log('Google: Found n users', users.length);
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
