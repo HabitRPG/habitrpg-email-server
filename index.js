@@ -24,7 +24,7 @@ AWS.config.update({
 });
 
 iap.config({
-  verbose: true,
+  verbose: false,
   // This is the path to the directory containing iap-sanbox/iap-live files
   googlePublicKeyPath: nconf.get('IAP_GOOGLE_KEYDIR'),
   googleAccToken: nconf.get('PLAY_API_ACCESS_TOKEN'),
