@@ -76,7 +76,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       console.log('error', JSON.stringify(err, null, 4));
       console.log('receipt', JSON.stringify(receipt, null, 4));
 
-      // throw err;
+      throw err;
     });
 };
 
@@ -96,7 +96,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     };
   }
 
-  // console.log('Run query', query);
+  console.log('Run query', query);
 
   let usersFoundNumber;
 
@@ -106,7 +106,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     fields: ['_id', 'apiToken', 'purchased.plan'],
   })
     .then(users => {
-      // console.log('Google: Found n users', users.length);
+      console.log('Google: Found n users', users.length);
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
