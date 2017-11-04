@@ -73,6 +73,8 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       }
     }).catch(err => {
       console.log('outputting error for user:', user._id);
+      console.log('date updated', user.purchased.plan.dateUpdated);
+      console.log('date created', user.purchased.plan.dateCreated);
       console.log('error', JSON.stringify(err, null, 4));
       console.log('receipt', JSON.stringify(receipt, null, 4));
 
