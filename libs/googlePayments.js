@@ -76,7 +76,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       console.log('error', JSON.stringify(err, null, 4));
       console.log('receipt', JSON.stringify(receipt, null, 4));
 
-      throw err;
+      // throw err;
     });
 };
 
