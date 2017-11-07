@@ -72,8 +72,13 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         return api.cancelSubscriptionForUser(user);
       }
     }).catch(err => {
-      console.log('cancelling sub for user:', user._id);
-      return api.cancelSubscriptionForUser(user);
+      console.log('erroring user:', user._id);
+      // console.log('date updated', user.purchased.plan.dateUpdated);
+      // console.log('date created', user.purchased.plan.dateCreated);
+      // console.log('error', JSON.stringify(err, null, 4));
+      // console.log('receipt', JSON.stringify(receipt, null, 4));
+
+      // throw err;
     });
 };
 
