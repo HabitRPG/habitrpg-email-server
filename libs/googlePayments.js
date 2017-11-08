@@ -48,7 +48,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
-  // console.log('processing google sub for ', user._id);
+  console.log('Processing google sub for ', user._id);
 
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
@@ -72,13 +72,13 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         return api.cancelSubscriptionForUser(user);
       }
     }).catch(err => {
-      console.log('erroring user:', user._id);
-      // console.log('date updated', user.purchased.plan.dateUpdated);
-      // console.log('date created', user.purchased.plan.dateCreated);
-      // console.log('error', JSON.stringify(err, null, 4));
-      // console.log('receipt', JSON.stringify(receipt, null, 4));
+      console.log('User:', user._id, 'has errorred');
+      console.log('date updated', user.purchased.plan.dateUpdated);
+      console.log('date created', user.purchased.plan.dateCreated);
+      console.log('error', JSON.stringify(err, null, 4));
+      console.log('receipt', JSON.stringify(receipt, null, 4));
 
-      // throw err;
+      throw err;
     });
 };
 
@@ -98,7 +98,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     };
   }
 
-  // console.log('Run query', query);
+  console.log('Run query', query);
 
   let usersFoundNumber;
 
@@ -108,7 +108,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     fields: ['_id', 'apiToken', 'purchased.plan'],
   })
     .then(users => {
-      // console.log('Google: Found n users', users.length);
+      console.log('Google: Found n users', users.length);
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
