@@ -3,6 +3,7 @@ const iap = require('in-app-purchase');
 const request = require('request');
 const subscriptions = require('../libs/subscriptions');
 const Bluebird = require('bluebird');
+const moment = require('moment');
 
 const USERS_BATCH = 10;
 const BASE_URL = nconf.get('BASE_URL');
@@ -32,16 +33,15 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
 api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
   if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
     nextScheduledCheck = subscription.expirationDate;
-  } else {
-    nextScheduledCheck = nextScheduledCheck.toDate();
   }
+
   return habitrpgUsers.update(
     {
       _id: user._id,
     },
     {
       $set: {
-        'purchased.plan.nextPaymentProcessing': nextScheduledCheck,
+        'purchased.plan.nextPaymentProcessing': moment(nextScheduledCheck).toDate(),
       },
     });
 };
