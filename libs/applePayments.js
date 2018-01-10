@@ -48,6 +48,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
+  console.log('Processing Apple sub for user', user._id);
 
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
