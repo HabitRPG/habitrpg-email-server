@@ -17,6 +17,7 @@ function generateUsers (usersCollection, jobStartDate) {
         dateTerminated: null,
         planId: 'basic_3mo',
         nextPaymentProcessing: jobStartDate.toDate(),
+        additionalData: { },
       } },
     });
   }
