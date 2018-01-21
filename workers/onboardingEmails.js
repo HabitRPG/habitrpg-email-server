@@ -12,6 +12,9 @@ let dbTasks;
 let dbGroups;
 let db;
 
+// Currently disabled emails
+const DISABLED_EMAILS = [3, 4, 5, 6];
+
 // check: a function (must be a promise) to check if each user has completed a step
 // requires: optional string, if the steps requires the completion of a previous one
 const steps = [
@@ -245,12 +248,16 @@ function sendEmail (user, email) {
     },
   }).then(() => {
     let toData = getToData(user);
+    const step = email[0];
 
-    console.log('Sending onboarding email: ', `onboarding-${mapCodeToEmail[email[0]]}-1`, ' to: ', user._id);
+    // If the email is disabled, don't send it
+    if (DISABLED_EMAILS.indexOf(step) !== -1) return new Promise((resolve) => resolve());
+
+    console.log('Sending onboarding email: ', `onboarding-${mapCodeToEmail[step]}-1`, ' to: ', user._id);
 
     return new Promise((resolve, reject) => {
       queue.create('email', {
-        emailType: `onboarding-${mapCodeToEmail[email[0]]}-1`, // needed to correctly match the template
+        emailType: `onboarding-${mapCodeToEmail[step]}-1`, // needed to correctly match the template
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
