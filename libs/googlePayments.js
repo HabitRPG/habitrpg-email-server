@@ -72,6 +72,14 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         return api.cancelSubscriptionForUser(user);
       }
     }).catch(err => {
+      // Status:410 means that the subsctiption isn't active anymore
+      console.log(err.message);
+      if (err && err.message === 'Status:410') {
+        return api.cancelSubscriptionForUser(user);
+      } else {
+        throw err;
+      }
+    }).catch(err => {
       console.log('User:', user._id, 'has errorred');
       console.log('date updated', user.purchased.plan.dateUpdated);
       console.log('date created', user.purchased.plan.dateCreated);
