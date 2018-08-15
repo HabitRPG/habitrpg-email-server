@@ -15,11 +15,13 @@ api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
   return new Promise((resolve, reject) => {
     request.get(`${BASE_URL}/iap/android/subscribe/cancel`, {
-      qs: {
-        noRedirect: 'true',
-        _id: user._id,
-        apiToken: user.apiToken,
-      },
+    qs: {
+      noRedirect: 'true',
+    },
+    headers: {
+      'x-api-user': user._id,
+      'x-api-key': user.apiToken,
+    },
     }, (habitError, habitResponse, body) => {
       if (!habitError && habitResponse.statusCode === 200) {
         return resolve();

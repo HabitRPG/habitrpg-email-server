@@ -30,13 +30,16 @@ function cancelSubscription(group)
     habitrpgUsers.findOne({ _id: group.leader }, { castIds: false, fields: ['_id', 'apiToken'] })
       .then(function (user) {
         request({
-          url: SUBSCRIPTION_CANCEL_URL + '?groupId=' + group._id,
+          url: SUBSCRIPTION_CANCEL_URL,
           method: 'GET',
           qs: {
             noRedirect: 'true',
-            _id: user._id,
-            apiToken: user.apiToken
-          }
+            groupId: group._id,
+          },
+          headers: {
+            'x-api-user': user._id,
+            'x-api-key': user.apiToken,
+          },
         }, function(error, response, body) {
           console.log('error cancelling', error, body);
           if (error) reject(error);

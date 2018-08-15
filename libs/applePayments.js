@@ -17,8 +17,10 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
     request.get(`${BASE_URL}/iap/ios/subscribe/cancel`, {
       qs: {
         noRedirect: 'true',
-        _id: user._id,
-        apiToken: user.apiToken,
+      },
+      headers: {
+        'x-api-user': user._id,
+        'x-api-key': user.apiToken,
       },
     }, (habitError, habitResponse, body) => {
       if (!habitError && habitResponse.statusCode === 200) {
