@@ -58,7 +58,6 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
     .then((response) => {
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
-        console.log(typeof purchaseDataList, JSON.stringify(purchaseDataList, null, 4));
         for (let index in purchaseDataList) {
           let subscription = purchaseDataList[index];
           if (subscription.expirationDate > jobStartDate) {
