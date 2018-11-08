@@ -38,6 +38,7 @@ var mapEmailsToPreferences = {
   'onboarding-join-guild-1': 'onboarding',
   'onboarding-post-message-guild-1': 'onboarding',
   'onboarding-join-party-1': 'onboarding',
+  'username-change-follow-up': 'majorUpdates',
 };
 
 module.exports = function(job, done){
