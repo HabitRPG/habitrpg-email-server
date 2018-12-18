@@ -20,6 +20,7 @@ var mapEmailsToPreferences = {
   'won-challenge': 'wonChallenge',
   'gifted-gems': 'giftedGems',
   'gifted-subscription': 'giftedSubscription',
+  'gift-one-get-one': 'giftedSubscription',
   'invited-party': 'invitedParty',
   'invited-guild': 'invitedGuild',
   'quest-started': 'questStarted',
