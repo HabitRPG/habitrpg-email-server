@@ -251,7 +251,7 @@ function sendEmail (user, email) {
     const step = email[0];
 
     // If the email is disabled, don't send it
-    if (DISABLED_EMAILS.indexOf(step) !== -1) return new Promise((resolve) => resolve());
+    if (DISABLED_EMAILS.indexOf(Number(step)) !== -1) return new Promise((resolve) => resolve());
 
     console.log('Sending onboarding email: ', `onboarding-${mapCodeToEmail[step]}-1`, ' to: ', user._id);
 
