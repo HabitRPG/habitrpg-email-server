@@ -68,8 +68,11 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       }
     })
     .catch(err => {
-      console.log(err);
-      throw err;
+      if (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === 21010) {
+        return api.cancelSubscriptionForUser(user);
+      } else {
+        throw err;
+      }
     });
 };
 
