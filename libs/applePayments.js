@@ -66,6 +66,10 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         }
         return api.cancelSubscriptionForUser(user);
       }
+    })
+    .catch(err => {
+      console.log(err);
+      throw err;
     });
 };
 
