@@ -42,6 +42,7 @@ var mapEmailsToPreferences = {
   'username-change-follow-up': 'majorUpdates',
   'weekly-stats-survey-subscribers': 'majorUpdates',
   'weekly-stats-survey': 'majorUpdates',
+  'group-plan-changes': 'majorUpdates',
 };
 
 module.exports = function(job, done){
