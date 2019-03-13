@@ -43,6 +43,7 @@ var mapEmailsToPreferences = {
   'weekly-stats-survey-subscribers': 'majorUpdates',
   'weekly-stats-survey': 'majorUpdates',
   'group-plan-changes': 'majorUpdates',
+  'welcome-v2d': 'onboarding',
 };
 
 module.exports = function(job, done){
