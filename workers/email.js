@@ -21,6 +21,7 @@ var mapEmailsToPreferences = {
   'gifted-subscription': 'giftedSubscription',
   'group-plan-changes': 'majorUpdates',
   'guild-invite-rescinded': 'kickedGroup',
+  'in-app-purchaser-survey': 'majorUpdates',
   'invite-boss-quest': 'invitedQuest',
   'invite-collection-quest': 'invitedQuest',
   'invited-guild': 'invitedGuild',
