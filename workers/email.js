@@ -49,6 +49,7 @@ var mapEmailsToPreferences = {
   'welcome-v2d': 'onboarding',
   'won-challenge': 'wonChallenge',
   //'reminder-to-login': 'remindersToLogin',
+  'subscription-renewal': 'subscriptionReminders'
 };
 
 module.exports = function(job, done){

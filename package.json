@@ -7,8 +7,8 @@
     "lint": "eslint --ext .js ."
   },
   "engines": {
-    "node": "^6.9.1",
-    "npm": "^5.0.0"
+    "node": "^10",
+    "npm": "^6"
   },
   "dependencies": {
     "amazon-payments": "^0.2.7",
@@ -29,6 +29,7 @@
     "push-notify": "github:habitrpg/push-notify#v1.2.0",
     "request": "^2.88.0",
     "sprintf-js": "^1.1.2",
+    "stripe": "^6.34.0",
     "uuid": "^2.0.3"
   },
   "devDependencies": {
