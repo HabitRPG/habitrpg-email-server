@@ -51,6 +51,9 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
 
+  // Skip users with a blocked account
+  if (user.auth.blocked === true) return;
+
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
@@ -99,7 +102,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   return habitrpgUsers.find(query, {
     sort: {_id: 1},
     limit: USERS_BATCH,
-    fields: ['_id', 'apiToken', 'purchased.plan'],
+    fields: ['_id', 'auth', 'apiToken', 'purchased.plan'],
   })
     .then(users => {
       console.log('Apple: Found n users', users.length);
