@@ -31,6 +31,11 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
 
   return new Promise((resolve, reject) => {
     const toData = getToData(user);
+    const personalVariables = getPersonalVariables(toData);
+    personalVariables[0].vars.push({
+      name: 'SUBSCRIPTION_PRICE',
+      content: plan.price,
+    });
 
     if (
       user.preferences.emailNotifications.unsubscribeFromAll !== true &&
@@ -41,7 +46,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
-        personalVariables: getPersonalVariables(toData),
+        personalVariables,
       })
       .priority('high')
       .attempts(5)
