@@ -1,62 +1,88 @@
-const subscriptions = require('../libs/subscriptions');
+const subscriptions = require('../subscriptions');
 const moment = require('moment');
+const emailsLib = require('../email');
+
+const getToData = emailsLib.getToData;
+const getPersonalVariables = emailsLib.getPersonalVariables;
 
 const USERS_BATCH = 10;
 
 let api = {};
 
-api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
-  if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
-    nextScheduledCheck = subscription.expirationDate;
-  }
-
+api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user) {
   return habitrpgUsers.update(
     {
       _id: user._id,
     },
     {
       $set: {
-        'purchased.plan.nextPaymentProcessing': moment(nextScheduledCheck).toDate(),
+        'purchased.plan.lastReminderDate': moment().toDate(),
       },
-    });
+    }
+  );
 };
 
-api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
+api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
 
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
-  return api.iapValidate(iap.APPLE, user.purchased.plan.additionalData)
-    .then((response) => {
-      if (iap.isValidated(response)) {
-        let purchaseDataList = iap.getPurchaseData(response);
-        for (let index in purchaseDataList) {
-          let subscription = purchaseDataList[index];
-          if (subscription.expirationDate > jobStartDate) {
-            return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
-          }
-        }
-        return api.cancelSubscriptionForUser(user);
-      }
-    })
-    .catch(err => {
-      if (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === 21010) {
-        return api.cancelSubscriptionForUser(user);
-      } else {
-        throw err;
-      }
-    });
+
+  return new Promise((resolve, reject) => {
+    const toData = getToData(user);
+
+    if (
+      user.preferences.emailNotifications.unsubscribeFromAll !== true &&
+      user.preferences.emailNotifications.subscriptionReminders !== false
+    ) {
+      queue.create('email', {
+        emailType: 'subscription-renewal',
+        to: [toData],
+        // Manually pass BASE_URL as emails are sent from here and not from the main server
+        variables: [{name: 'BASE_URL', content: baseUrl}],
+        personalVariables: getPersonalVariables(toData),
+      })
+      .priority('high')
+      .attempts(5)
+      .backoff({type: 'fixed', delay: 60 * 1000}) // try again after 60s
+      .save((err) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  }).then(() => {
+    return api.scheduleNextCheckForUser(habitrpgUsers, user);
+  });
 };
 
-api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, nextScheduledCheck) {
+api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
   let query = {
     'purchased.plan.paymentMethod': 'Apple',
     'purchased.plan.dateTerminated': null,
-
-    'purchased.plan.nextPaymentProcessing': {
-      $lte: jobStartDate.toDate(),
-    },
+    $and: [
+      // All users whose nextPaymentProcessing data is in the next week (more or less 12 hours)
+      {
+        'purchased.plan.nextPaymentProcessing': {
+          $lte: moment(jobStartDate.toDate()).add({
+            days: 7,
+            hours: 12,
+          }),
+          $gte: moment(jobStartDate.toDate()).add({
+            days: 6,
+            hours: 12,
+          }),
+        },
+      },
+      // And where lastReminderDate is not recent (25 days to be sure?)
+      {
+        'purchased.plan.lastReminderDate': {
+          $lte: moment(jobStartDate.toDate()).subtract(27, 'days'),
+        },
+      },
+    ],
   };
 
   if (lastId) {
@@ -72,7 +98,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   return habitrpgUsers.find(query, {
     sort: {_id: 1},
     limit: USERS_BATCH,
-    fields: ['_id', 'apiToken', 'purchased.plan'],
+    fields: ['_id', 'auth', 'profile', 'purchased.plan', 'preferences'],
   })
     .then(users => {
       console.log('Apple: Found n users', users.length);
@@ -80,11 +106,11 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
       return Promise.all(users.map(user => {
-        return api.processUser(habitrpgUsers, user, jobStartDate, nextScheduledCheck);
+        return api.processUser(habitrpgUsers, user, queue, baseUrl);
       }));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
-        return api.findAffectedUsers(habitrpgUsers, lastId, jobStartDate, nextScheduledCheck);
+        return api.findAffectedUsers(habitrpgUsers, lastId, jobStartDate, queue, baseUrl);
       } else {
         return;
       }
