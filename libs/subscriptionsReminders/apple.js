@@ -67,27 +67,25 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   let query = {
     'purchased.plan.paymentMethod': 'Apple',
     'purchased.plan.dateTerminated': null,
-    $and: [
-      // All users whose nextPaymentProcessing data is in the next week (more or less 12 hours)
-      {
-        'purchased.plan.nextPaymentProcessing': {
-          $lte: moment(jobStartDate.toDate()).add({
-            days: 7,
-            hours: 12,
-          }),
-          $gte: moment(jobStartDate.toDate()).add({
-            days: 6,
-            hours: 12,
-          }),
-        },
+    // All users whose nextPaymentProcessing data is in the next week (more or less 12 hours)
+    'purchased.plan.nextPaymentProcessing': {
+      $lte: moment(jobStartDate.toDate()).add({
+        days: 7,
+        hours: 12,
+      }),
+      $gte: moment(jobStartDate.toDate()).add({
+        days: 6,
+        hours: 12,
+      }),
+    },
+    // And where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
+    $or: [{
+      'purchased.plan.lastReminderDate': {
+        $lte: moment(jobStartDate.toDate()).subtract(25, 'days'),
       },
-      // And where lastReminderDate is not recent (25 days to be sure?)
-      {
-        'purchased.plan.lastReminderDate': {
-          $lte: moment(jobStartDate.toDate()).subtract(25, 'days'),
-        },
-      },
-    ],
+    }, {
+      'purchased.plan.lastReminderDate': null,
+    }],
   };
 
   if (lastId) {
