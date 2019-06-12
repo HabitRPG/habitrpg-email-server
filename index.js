@@ -65,6 +65,7 @@ queue.process('applePayments', require('./workers/applePayments')(queue, db));
 queue.process('amazonGroupPlanPayments', require('./workers/amazonGroupPlanPayments')(queue, db));
 
 queue.process('applePaymentsReminders', require('./workers/subscriptionsReminders/applePayments')(queue, db));
+queue.process('googlePaymentsReminders', require('./workers/subscriptionsReminders/googlePayments')(queue, db));
 
 queue.on('job complete', (id) => {
   kue.Job.get(id, (err, job) => {
