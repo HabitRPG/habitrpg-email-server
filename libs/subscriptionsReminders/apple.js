@@ -72,16 +72,16 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       $lte: moment(jobStartDate.toDate()).add({
         days: 7,
         hours: 12,
-      }),
+      }).toDate(),
       $gte: moment(jobStartDate.toDate()).add({
         days: 6,
         hours: 12,
-      }),
+      }).toDate(),
     },
     // And where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
     $or: [{
       'purchased.plan.lastReminderDate': {
-        $lte: moment(jobStartDate.toDate()).subtract(25, 'days'),
+        $lte: moment(jobStartDate.toDate()).subtract(25, 'days').toDate(),
       },
     }, {
       'purchased.plan.lastReminderDate': null,
