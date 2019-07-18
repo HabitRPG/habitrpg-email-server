@@ -81,10 +81,19 @@ module.exports = function(job, done){
     job.data.variables.push({
       name: 'EMAIL_SETTINGS_URL',
       content: '/user/settings/notifications'
-    }, {
-      name: 'UNSUB_EMAIL_TYPE_URL',
-      content: '/user/settings/notifications?unsubFrom=' + mapEmailsToPreferences[job.data.emailType]
     });
+
+    if (mapEmailsToPreferences[job.data.emailType]) {
+      job.data.variables.push({
+        name: 'UNSUB_EMAIL_TYPE_URL',
+        content: '/user/settings/notifications?unsubFrom=' + mapEmailsToPreferences[job.data.emailType]
+      });
+    } else {
+      job.data.variables.push({
+        name: 'UNSUB_EMAIL_TYPE_URL',
+        content: '/user/settings/notifications'
+      });
+    }
   }
 
   var replyToAddressVar = _.find(job.data.variables, {name: 'REPLY_TO_ADDRESS'});
