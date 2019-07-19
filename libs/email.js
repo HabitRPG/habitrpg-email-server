@@ -5,15 +5,15 @@ module.exports.getToData = function getToData (user) {
   let name;
 
   // Code taken from habitrpg/src/controllers/payments.js
-  if (user.auth.local) {
+  if (user.auth.local && user.auth.local.email) {
     email = user.auth.local.email;
-    name = user.profile.name || user.auth.local.username;
+    name = user.auth.local.username;
   } else if (user.auth.facebook && user.auth.facebook.emails && user.auth.facebook.emails[0] && user.auth.facebook.emails[0].value) {
     email = user.auth.facebook.emails[0].value;
-    name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
+    name = user.auth.local.username;
   } else if (user.auth.google && user.auth.google.emails && user.auth.google.emails[0] && user.auth.google.emails[0].value) {
     email = user.auth.google.emails[0].value;
-    name = user.profile.name || user.auth.google.displayName || user.auth.google.username;
+    name = user.auth.local.username;
   }
 
   return {email, name, _id: user._id};
