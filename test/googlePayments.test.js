@@ -5,7 +5,7 @@ const nconf = require('nconf');
 const moment = require('moment');
 const googlePayments = require('../libs/googlePayments');
 
-const db = monk(nconf.get('MONGODB_URL'));
+const db = monk(nconf.get('TEST_MONGODB_URL'));
 const NUMBER_OF_USERS = 20;
 
 function generateUsers (usersCollection, jobStartDate) {

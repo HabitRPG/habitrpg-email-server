@@ -1,6 +1,8 @@
 const subscriptions = require('../subscriptions');
 const moment = require('moment');
 const emailsLib = require('../email');
+const iap = require('in-app-purchase');
+const Bluebird = require('bluebird');
 
 const getToData = emailsLib.getToData;
 const getPersonalVariables = emailsLib.getPersonalVariables;
@@ -8,6 +10,8 @@ const getPersonalVariables = emailsLib.getPersonalVariables;
 const USERS_BATCH = 10;
 
 let api = {};
+
+api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 
 api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user) {
   return habitrpgUsers.update(
@@ -22,13 +26,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
   );
 };
 
-api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
-  let plan = subscriptions.blocks[user.purchased.plan.planId];
-
-  if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
-  }
-
+api.sendEmailReminder = function sendEmailReminder (user, plan, queue, baseUrl, habitrpgUsers) {
   return new Promise((resolve, reject) => {
     const toData = getToData(user);
     const personalVariables = getPersonalVariables(toData);
@@ -63,22 +61,60 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
   });
 };
 
+api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, jobStartDate) {
+  let plan = subscriptions.blocks[user.purchased.plan.planId];
+
+  if (!plan) {
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
+  }
+
+  const startDate = moment(jobStartDate.toDate()).add({
+    days: 6,
+    hours: 12,
+  }).toDate();
+
+  const endDate = moment(jobStartDate.toDate()).add({
+    days: 7,
+    hours: 12,
+  }).toDate();
+
+  return api
+    .iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
+    .then((response) => {
+      if (iap.isValidated(response)) {
+        console.log('Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate);
+        console.log('Plan', plan);
+
+        const purchaseDataList = iap.getPurchaseData(response);
+        for (const index in purchaseDataList) {
+          const subscription = purchaseDataList[index];
+          console.log('subscription', subscription, 'expiration date', moment(subscription.expirationDate).toString());
+          if (moment(subscription.expirationDate).isAfter(startDate) && moment(subscription.expirationDate).isBefore(endDate)) {
+            console.log('would send email!\n\n\n\n');
+            // return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
+          }
+
+          console.log('would not send email\n\n\n\n');
+        }
+      }
+    }).catch(err => {
+      console.error('Error', err);
+      console.log('Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate);
+      console.log('Plan', plan);
+
+      if (!err.validatedData || (err.validatedData && err.validatedData.is_retryable === false)) { // eslint-disable-line no-extra-parens
+        throw err;
+      } else {
+        return;
+      }
+    });
+};
+
 api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
   let query = {
     'purchased.plan.paymentMethod': 'Google',
     'purchased.plan.dateTerminated': null,
-    // All users whose nextPaymentProcessing data is in the next week (more or less 12 hours)
-    'purchased.plan.nextPaymentProcessing': {
-      $lte: moment(jobStartDate.toDate()).add({
-        days: 7,
-        hours: 12,
-      }).toDate(),
-      $gte: moment(jobStartDate.toDate()).add({
-        days: 6,
-        hours: 12,
-      }).toDate(),
-    },
-    // And where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
+    // Where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
     $or: [{
       'purchased.plan.lastReminderDate': {
         $lte: moment(jobStartDate.toDate()).subtract(25, 'days').toDate(),

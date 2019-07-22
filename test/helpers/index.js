@@ -13,6 +13,7 @@ global.expect = chai.expect;
 global.sinon = require('sinon');
 sinonStubPromise(global.sinon);
 global.sandbox = sinon.sandbox.create();
+process.env.NODE_ENV = 'test';
 
 nconf
   .argv()

@@ -5,7 +5,7 @@ const moment = require('moment');
 const groupSubscriptionManager = require('../libs/groupSubscriptionManager');
 const amazonPayments = require('../libs/amazonPayments');
 
-let db = monk(nconf.get('MONGODB_URL'));
+let db = monk(nconf.get('TEST_MONGODB_URL'));
 
 let kueRedisOpts = {
   port: nconf.get('REDIS_PORT'),

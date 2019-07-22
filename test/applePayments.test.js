@@ -5,13 +5,14 @@ const nconf = require('nconf');
 const moment = require('moment');
 const applePayments = require('../libs/applePayments');
 
-const db = monk(nconf.get('MONGODB_URL'));
+const db = monk(nconf.get('TEST_MONGODB_URL'));
 const NUMBER_OF_USERS = 20;
 
 function generateUsers (usersCollection, jobStartDate) {
   let usersToInsert = [];
   for (let i = 0; i < NUMBER_OF_USERS; i += 1) {
     usersToInsert.push({
+      auth: {blocked: false},
       purchased: { plan: {
         paymentMethod: 'Apple',
         dateTerminated: null,

@@ -4,6 +4,7 @@
   "AUTH_PASSWORD": "password",
   "MANDRILL_API_KEY": "1234567890",
   "MONGODB_URL": "mongodb://localhost/habitrpg",
+  "TEST_MONGODB_URL":"mongodb://localhost/habitrpg-email-server-test",
   "REDIS_PORT": 6379,
   "REDIS_HOST": "127.0.0.1",
   "BASE_URL": "https://habitica.com",
