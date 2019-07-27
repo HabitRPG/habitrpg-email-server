@@ -50,7 +50,7 @@ var mapEmailsToPreferences = {
   'welcome-v2d': 'onboarding',
   'won-challenge': 'wonChallenge',
   //'reminder-to-login': 'remindersToLogin',
-  'subscription-renewal': 'subscriptionReminders'
+  'subscription-renewal': 'subscriptionReminders',
   'subscription-renewal-apple': 'subscriptionReminders'
 };
 
