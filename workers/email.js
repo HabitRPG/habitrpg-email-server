@@ -51,6 +51,7 @@ var mapEmailsToPreferences = {
   'won-challenge': 'wonChallenge',
   //'reminder-to-login': 'remindersToLogin',
   'subscription-renewal': 'subscriptionReminders'
+  'subscription-renewal-apple': 'subscriptionReminders'
 };
 
 module.exports = function(job, done){

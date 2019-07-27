@@ -40,7 +40,7 @@ api.sendEmailReminder = function sendEmailReminder (user, plan, queue, baseUrl, 
       user.preferences.emailNotifications.subscriptionReminders !== false
     ) {
       queue.create('email', {
-        emailType: 'subscription-renewal',
+        emailType: 'subscription-renewal-apple',
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
