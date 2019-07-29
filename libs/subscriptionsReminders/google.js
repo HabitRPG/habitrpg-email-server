@@ -82,20 +82,20 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     .iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then((response) => {
       if (iap.isValidated(response)) {
-        console.log('Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate);
-        console.log('Plan', plan);
+        // console.log('Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate);
+        // console.log('Plan', plan);
 
         const purchaseDataList = iap.getPurchaseData(response);
         for (const index in purchaseDataList) {
           const subscription = purchaseDataList[index];
           const expirationDate = Number(subscription.expirationDate);
-          console.log('subscription', subscription, 'expiration date', moment(expirationDate).toString());
+          // console.log('subscription', subscription, 'expiration date', moment(expirationDate).toString());
           if (moment(expirationDate).isAfter(startDate) && moment(expirationDate).isBefore(endDate)) {
-            console.log('would send email!\n\n\n\n');
+            // console.log('would send email!\n\n\n\n');
             return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
           }
 
-          console.log('would not send email\n\n\n\n');
+          // console.log('would not send email\n\n\n\n');
         }
       }
     }).catch(err => {
