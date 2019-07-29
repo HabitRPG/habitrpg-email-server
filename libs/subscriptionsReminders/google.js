@@ -88,8 +88,9 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
         const purchaseDataList = iap.getPurchaseData(response);
         for (const index in purchaseDataList) {
           const subscription = purchaseDataList[index];
-          console.log('subscription', subscription, 'expiration date', moment(subscription.expirationDate).toString());
-          if (moment(subscription.expirationDate).isAfter(startDate) && moment(subscription.expirationDate).isBefore(endDate)) {
+          const expirationDate = Number(subscription.expirationDate);
+          console.log('subscription', subscription, 'expiration date', moment(expirationDate).toString());
+          if (moment(expirationDate).isAfter(startDate) && moment(expirationDate).isBefore(endDate)) {
             console.log('would send email!\n\n\n\n');
             return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
           }
