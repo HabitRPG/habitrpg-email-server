@@ -40,7 +40,7 @@ api.sendEmailReminder = function sendEmailReminder (user, plan, queue, baseUrl, 
       user.preferences.emailNotifications.subscriptionReminders !== false
     ) {
       queue.create('email', {
-        emailType: 'subscription-renewal',
+        emailType: 'subscription-renewal-apple',
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
@@ -91,7 +91,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
           console.log('subscription', subscription, 'expiration date', moment(subscription.expirationDate).toString());
           if (moment(subscription.expirationDate).isAfter(startDate) && moment(subscription.expirationDate).isBefore(endDate)) {
             console.log('would send email!\n\n\n\n');
-            // return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
+            return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
           }
 
           console.log('would not send email\n\n\n\n');
@@ -145,7 +145,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
       return Promise.all(users.map(user => {
-        return api.processUser(habitrpgUsers, user, queue, baseUrl);
+        return api.processUser(habitrpgUsers, user, queue, baseUrl, jobStartDate);
       }));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
