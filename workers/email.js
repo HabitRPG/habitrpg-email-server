@@ -20,9 +20,10 @@ var mapEmailsToPreferences = {
   'gifted-gems': 'giftedGems',
   'gifted-subscription': 'giftedSubscription',
   'group-plan-changes': 'majorUpdates',
-  'in-app-purchaser-survey': 'majorUpdates',
+  'group-plans-survey': 'majorUpdates',
   'groups-outage': 'majorUpdates',
   'guild-invite-rescinded': 'kickedGroup',
+  'in-app-purchaser-survey': 'majorUpdates',
   'invite-boss-quest': 'invitedQuest',
   'invite-collection-quest': 'invitedQuest',
   'invited-guild': 'invitedGuild',
@@ -39,6 +40,8 @@ var mapEmailsToPreferences = {
   'onboarding-set-reminder-1': 'onboarding',
   'party-invite-rescinded': 'kickedGroup',
   'quest-started': 'questStarted',
+  'subscription-renewal': 'subscriptionReminders',
+  'subscription-renewal-apple': 'subscriptionReminders',
   'username-change-follow-up': 'majorUpdates',
   'weekly-recap': 'weeklyRecaps',
   'weekly-stats-survey': 'majorUpdates',
@@ -49,9 +52,7 @@ var mapEmailsToPreferences = {
   'welcome-v2c': 'onboarding',
   'welcome-v2d': 'onboarding',
   'won-challenge': 'wonChallenge',
-  //'reminder-to-login': 'remindersToLogin',
-  'subscription-renewal': 'subscriptionReminders',
-  'subscription-renewal-apple': 'subscriptionReminders'
+  //'reminder-to-login': 'remindersToLogin',  
 };
 
 module.exports = function(job, done){
