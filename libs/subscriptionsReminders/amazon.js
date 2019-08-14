@@ -80,17 +80,17 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     hours: 12,
   }).toDate();
 
-  console.log(
+  /* console.log(
     'Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate,
     'last paymentdate', lastBillingDate.toString(),
     'next date', nextBillingDate.toString());
-  console.log('Plan', plan);
+  console.log('Plan', plan);*/
 
   if (nextBillingDate.isAfter(startDate) && nextBillingDate.isBefore(endDate)) {
-    console.log('would send email!\n\n\n\n');
-    // return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
+    // console.log('would send email!\n\n\n\n');
+    return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
   } else {
-    console.log('would not send email');
+    // console.log('would not send email');
   }
 };
 
@@ -124,7 +124,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     fields: ['_id', 'auth', 'profile', 'purchased.plan', 'preferences'],
   })
     .then(users => {
-      console.log('Amazon: Found n users', users.length);
+      console.log('Amazon Payments Reminders: Found n users', users.length);
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
