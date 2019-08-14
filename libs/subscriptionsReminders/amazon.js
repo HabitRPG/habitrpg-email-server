@@ -68,7 +68,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   const lastBillingDate = moment(user.purchased.plan.lastBillingDate);
 
   // Calculate the (rough) next one
-  const nextBillingDate = lastBillingDate.add({months: plan.months});
+  const nextBillingDate = moment(lastBillingDate.toDate()).add({months: plan.months});
 
   const startDate = moment(jobStartDate.toDate()).add({
     days: 6,
