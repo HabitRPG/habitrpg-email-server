@@ -30,6 +30,7 @@ var mapEmailsToPreferences = {
   'invited-party': 'invitedParty',
   'kicked-from-guild': 'kickedGroup',
   'kicked-from-party': 'kickedGroup',
+  'kickstarter-pin-campaign': 'majorUpdates',
   'new-pm': 'newPM',
   'onboarding-add-edit-task-1': 'onboarding',
   'onboarding-buy-reward-1': 'onboarding',
