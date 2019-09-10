@@ -47,5 +47,7 @@ module.exports = function work (parentQueue, parentDb, parentBaseUrl) {
   queue = parentQueue;
   baseUrl = parentBaseUrl;
 
+  console.log('Setting up amazon payments reminders worker.');
+
   return worker;
 };
