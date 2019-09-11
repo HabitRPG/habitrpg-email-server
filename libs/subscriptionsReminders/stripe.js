@@ -101,7 +101,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
         // console.log('would send email!\n\n\n\n');
         return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
       } else {
-        console.log('would not send email');
+        // console.log('would not send email');
       }
     } else {
       // * 1000 because stripe returns timestamps in seconds from 1970 not milliseconds
