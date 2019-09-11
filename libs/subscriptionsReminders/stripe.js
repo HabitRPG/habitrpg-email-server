@@ -75,6 +75,9 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     const subscription = customerSubscriptions.data[0]; // We always have one subscription per customer
     // console.log('customer id', customerId, 'for user', user._id, user.auth.local.username);
     // console.log('subscription data', subscription);
+    if (!subscription) {
+      throw new Error(`User ${user._id} with customerId ${customerId} does not have any subscription.`);
+    }
 
     if (subscription.current_period_end) {
       // * 1000 because stripe returns timestamps in seconds from 1970 not milliseconds
