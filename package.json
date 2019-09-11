@@ -29,7 +29,7 @@
     "push-notify": "github:habitrpg/push-notify#v1.2.0",
     "request": "^2.88.0",
     "sprintf-js": "^1.1.2",
-    "stripe": "^6.34.0",
+    "stripe": "^7.9.0",
     "uuid": "^2.0.3"
   },
   "devDependencies": {

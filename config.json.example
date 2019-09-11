@@ -14,6 +14,7 @@
   "SESSION_SECRET_IV": "aaaaa",
   "AWS_ACCESS_KEY": "accesskey",
   "AWS_SECRET_KEY": "secretKey",
+  "STRIPE_API_KEY": "stripe api key",
   "BLACKLISTED_BASE_URLS": [],
   "AMAZON_PAYMENTS_SELLER_ID": "",
   "AMAZON_PAYMENTS_CLIENT_ID": "",

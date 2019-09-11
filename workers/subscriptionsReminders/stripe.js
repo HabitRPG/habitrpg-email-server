@@ -1,5 +1,5 @@
 const moment = require('moment');
-const amazonReminders = require('../../libs/subscriptionsReminders/amazon');
+const stripeReminders = require('../../libs/subscriptionsReminders/stripe');
 const util = require('util');
 
 // Defined later
@@ -13,7 +13,7 @@ function scheduleNextJob () {
 
   return new Promise((resolve, reject) => {
     queue
-      .create('amazonPaymentsReminders')
+      .create('stripeReminders')
       .priority('critical')
       .delay(moment().add({hours: 6}).toDate() - new Date()) // schedule another job, 1 hour from now
       .attempts(5)
@@ -30,13 +30,13 @@ function scheduleNextJob () {
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
 
-  console.log('Start fetching subscriptions due in the next week with Amazon Payments.');
+  console.log('Start fetching subscriptions due in the next week with Stripe.');
 
-  amazonReminders.findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
+  stripeReminders.findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(scheduleNextJob) // All users have been processed, schedule the next job
     .then(done)
     .catch(err => { // The processing errored, crash the job and log the error
-      console.log('Error while sending reminders for amazon payments subscriptions', util.inspect(err, false, null));
+      console.log('Error while sending reminders for Stripe subscriptions', util.inspect(err, false, null));
       done(err);
     });
 }

@@ -61,7 +61,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   let plan = subscriptions.blocks[user.purchased.plan.planId];
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
   }
 
   // Get the last billing date
