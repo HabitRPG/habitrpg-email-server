@@ -74,6 +74,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       if (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === 21010) {
         return api.cancelSubscriptionForUser(user);
       } else {
+        console.error(`Error processing subscription for user ${user._id}`);
         throw err;
       }
     });
