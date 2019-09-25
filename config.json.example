@@ -20,6 +20,9 @@
   "AMAZON_PAYMENTS_CLIENT_ID": "",
   "AMAZON_PAYMENTS_MWS_KEY": "",
   "AMAZON_PAYMENTS_MWS_SECRET": "",
+  "PAYPAL_MODE": "sandbox",
+  "PAYPAL_CLIENT_ID": "123456789",
+  "PAYPAL_CLIENT_SECRET": "123456789",
   "S3":{
       "bucket":"bucket",
       "accessKeyId":"accessKeyId",

@@ -5,6 +5,7 @@ const url = require('url');
 const nconf = require('nconf');
 const AWS = require('aws-sdk');
 const iap = require('in-app-purchase');
+const paypal = require('paypal-rest-sdk');
 
 nconf
   .argv()
@@ -19,6 +20,12 @@ const db = monk(DB_URL);
 db.options.multi = true;
 
 const BASE_URL = nconf.get('BASE_URL');
+
+paypal.configure({
+  mode: nconf.get('PAYPAL_MODE'), // sandbox or live
+  client_id: nconf.get('PAYPAL_CLIENT_ID'), // eslint-disable-line camelcase
+  client_secret: nconf.get('PAYPAL_CLIENT_SECRET'), // eslint-disable-line camelcase
+});
 
 AWS.config.update({
   accessKeyId: nconf.get('AWS_ACCESS_KEY'),
@@ -70,6 +77,7 @@ queue.process('applePaymentsReminders', require('./workers/subscriptionsReminder
 queue.process('googlePaymentsReminders', require('./workers/subscriptionsReminders/googlePayments')(queue, db));
 queue.process('amazonPaymentsReminders', require('./workers/subscriptionsReminders/amazon')(queue, db));
 queue.process('stripeReminders', require('./workers/subscriptionsReminders/stripe')(queue, db));
+queue.process('paypalReminders', require('./workers/subscriptionsReminders/paypal')(queue, db));
 
 queue.on('job complete', (id) => {
   kue.Job.get(id, (err, job) => {
