@@ -143,11 +143,11 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
       err.response.message && err.response.message.indexOf('Profile ID is not valid for this account.  Please resubmit') !== -1) {
       console.log(`SANDBOX ${user._id} with billing agreement ${billingAgreementId}`);
       return;
-    } else if (
+    /* } else if (
       err && err.httpStatusCode === 400 &&
       err.response.name === 'INVALID_PROFILE_ID') {
       console.log(`INVALID ${user._id} with billing agreement ${billingAgreementId}`);
-      return;
+      return;*/
     } else {
       console.log(`ERROR ${user._id} with billing agreement ${billingAgreementId}`);
       throw err;
