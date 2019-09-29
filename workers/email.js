@@ -72,6 +72,7 @@ module.exports = function(job, done){
   } 
 
   // Exclude some base urls, falling back to the main site
+  // TODO this is a string not an array
   if(blacklistedBaseUrls.indexOf(baseUrl.content) !== -1){
     baseUrl.content = 'https://habitica.com';
   }
