@@ -44,6 +44,7 @@ var mapEmailsToPreferences = {
   'subscription-renewal': 'subscriptionReminders',
   'subscription-renewal-apple': 'subscriptionReminders',
   'username-change-follow-up': 'majorUpdates',
+  'important-subscription-notice': 'majorUpdates',
   'weekly-recap': 'weeklyRecaps',
   'weekly-stats-survey': 'majorUpdates',
   'weekly-stats-survey-subscribers': 'majorUpdates',
@@ -77,7 +78,7 @@ module.exports = function(job, done){
 
   if(baseUrl && baseUrl.content){
     baseUrl = baseUrl.content;
-    if(['https://beta.habitrpg.com', 'https://habitrpg.com', 'https://habititca.com'].indexOf(baseUrl) == -1){
+    if(['https://beta.habitrpg.com', 'https://habitrpg.com', 'https://habitica.com'].indexOf(baseUrl) == -1){
       replyToAddress = orgsReplyTo; // For org plans
     }
 
