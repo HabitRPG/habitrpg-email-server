@@ -79,6 +79,9 @@ queue.process('amazonPaymentsReminders', require('./workers/subscriptionsReminde
 queue.process('stripeReminders', require('./workers/subscriptionsReminders/stripe')(queue, db));
 queue.process('paypalReminders', require('./workers/subscriptionsReminders/paypal')(queue, db));
 
+queue.process('stripeGroupsReminders', require('./workers/subscriptionsReminders/stripeGroups')(queue, db));
+queue.process('amazonGroupsReminders', require('./workers/subscriptionsReminders/amazonGroups')(queue, db));
+
 queue.on('job complete', (id) => {
   kue.Job.get(id, (err, job) => {
     if (err) return;

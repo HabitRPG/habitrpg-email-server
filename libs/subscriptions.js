@@ -7,6 +7,13 @@ let blocks = {
   basic_6mo: {months: 6, price: 30},
   google_6mo: {months: 6, price: 24, discount: true, original: 30},
   basic_12mo: {months: 12, price: 48},
+  group_monthly: {
+    target: 'group',
+    canSubscribe: true,
+    months: 1,
+    price: 9,
+    quantity: 3, // Default quantity for Stripe - The same as having 3 user subscriptions
+  },
 };
 /* eslint-enable camelcase */
 

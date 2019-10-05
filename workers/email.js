@@ -43,6 +43,7 @@ var mapEmailsToPreferences = {
   'quest-started': 'questStarted',
   'subscription-renewal': 'subscriptionReminders',
   'subscription-renewal-apple': 'subscriptionReminders',
+  'group-renewal': 'subscriptionReminders',
   'username-change-follow-up': 'majorUpdates',
   'important-subscription-notice': 'majorUpdates',
   'weekly-recap': 'weeklyRecaps',
