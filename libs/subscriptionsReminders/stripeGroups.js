@@ -25,7 +25,7 @@ api.scheduleNextCheckForGroup = function scheduleNextCheckForGroup (habitrpgGrou
 };
 
 api.getLeaderData = function getLeaderData (group, habitrpgUsers) {
-  console.log('Fetching leader for group', group._id, 'id', group.leader);
+  // console.log('Fetching leader for group', group._id, 'id', group.leader);
   return habitrpgUsers.find({_id: group.leader}, {
     sort: {_id: 1},
     fields: ['_id', 'auth', 'profile', 'preferences'],
@@ -34,7 +34,7 @@ api.getLeaderData = function getLeaderData (group, habitrpgUsers) {
       if (!users || users.length === 0 || users.length > 1) {
         throw new Error(`Cannot find leader for group ${group._id} found ${users.length} results, leader ${group.leader}`);
       }
-      console.log('Found leader for group', group._id, 'id', group.leader);
+      // console.log('Found leader for group', group._id, 'id', group.leader);
 
       return users[0];
     });
@@ -80,7 +80,7 @@ api.sendEmailReminder = function sendEmailReminder (group, subPrice, queue, base
             resolve();
           });
         } else {
-          console.log('would not send email due to preferences');
+          // console.log('would not send email due to preferences');
           resolve();
         }
       });
