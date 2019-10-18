@@ -17,7 +17,6 @@ const app = express();
 const DB_URL = nconf.get('NODE_ENV') === 'test' ? nconf.get('TEST_MONGODB_URL') : nconf.get('MONGODB_URL');
 console.log(DB_URL);
 const db = monk(DB_URL);
-db.options.multi = true;
 
 const BASE_URL = nconf.get('BASE_URL');
 
