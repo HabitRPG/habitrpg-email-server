@@ -142,7 +142,7 @@ api.processGroup = function processGroup (habitrpgGroups, habitrpgUsers, group, 
       }
     } else {
       // * 1000 because stripe returns timestamps in seconds from 1970 not milliseconds
-      throw new Error(`Issue with subscription.current_period_end, value: ${moment(subscription.current_period_end * 1000).toString()} for user ${user._id}`);
+      throw new Error(`Issue with subscription.current_period_end, value: ${moment(subscription.current_period_end * 1000).toString()} for group ${group._id}`);
     }
   }).catch(stripeError => {
     // Catch and ignore errors due to having an account using Stripe test data
