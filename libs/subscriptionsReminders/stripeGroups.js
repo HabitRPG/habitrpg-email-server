@@ -74,7 +74,7 @@ api.sendEmailReminder = function sendEmailReminder (group, subPrice, queue, base
           })
           .priority('high')
           .attempts(5)
-          .backoff({type: 'fixed', delay: 60 * 1000}) // try again after 60s
+          .backoff({type: 'fixed', delay: 30 * 60 * 1000}) // try again after 30 minutes
           .save((err) => {
             if (err) return reject(err);
             resolve();
