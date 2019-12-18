@@ -35,7 +35,7 @@ api.sendEmailReminder = function sendEmailReminder (user, queue, baseUrl, habitr
       user.preferences.emailNotifications.subscriptionReminders !== false
     ) {
       queue.create('email', {
-        emailType: 'gift-subscription-reminder',
+        emailType: 'gift-subscription-reminder', // not actually limited to gift subscriptions
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{name: 'BASE_URL', content: baseUrl}],
@@ -66,7 +66,6 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
 
 api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
   let query = {
-    'purchased.plan.customerId': 'Gift',
     'purchased.plan.dateTerminated': {
       $gt: moment(jobStartDate.toDate()).add({
         days: 6,
@@ -103,7 +102,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
     fields: ['_id', 'auth', 'profile', 'purchased.plan', 'preferences'],
   })
     .then(users => {
-      console.log('Gift Subscriptions Reminders: Found n users', users.length);
+      console.log('Expiring Subscriptions Reminders: Found n users', users.length);
       usersFoundNumber = users.length;
       lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
