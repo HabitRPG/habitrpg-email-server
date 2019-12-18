@@ -57,9 +57,9 @@ api.sendEmailReminder = function sendEmailReminder (user, queue, baseUrl, habitr
 };
 
 api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl) {
-  console.log(
+  /* console.log(
     'Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate,
-    'dateTerminated', user.purchased.plan.dateTerminated);
+    'dateTerminated', user.purchased.plan.dateTerminated); */
 
   api.sendEmailReminder(user, queue, baseUrl, habitrpgUsers);
 };
