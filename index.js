@@ -81,6 +81,8 @@ queue.process('paypalReminders', require('./workers/subscriptionsReminders/paypa
 queue.process('stripeGroupsReminders', require('./workers/subscriptionsReminders/stripeGroups')(queue, db));
 queue.process('amazonGroupsReminders', require('./workers/subscriptionsReminders/amazonGroups')(queue, db));
 
+queue.process('giftReminders', require('./workers/subscriptionsReminders/gift')(queue, db));
+
 queue.on('job complete', (id) => {
   kue.Job.get(id, (err, job) => {
     if (err) return;
