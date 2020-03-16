@@ -14,6 +14,9 @@ module.exports.getToData = function getToData (user) {
   } else if (user.auth.google && user.auth.google.emails && user.auth.google.emails[0] && user.auth.google.emails[0].value) {
     email = user.auth.google.emails[0].value;
     name = user.auth.local.username;
+  } else if (user.auth.apple && user.auth.apple.emails && user.auth.apple.emails[0] && user.auth.apple.emails[0].value) {
+    email = user.auth.apple.emails[0].value;
+    name = user.auth.local.username;
   }
 
   return {email, name, _id: user._id};

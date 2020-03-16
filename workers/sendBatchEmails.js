@@ -93,6 +93,9 @@ var worker = function(job, done){
         } else if (user.auth.google && user.auth.google.emails && user.auth.google.emails[0] && user.auth.google.emails[0].value) {
           email = user.auth.google.emails[0].value;
           name = user.auth.local.username;
+        } else if (user.auth.apple && user.auth.apple.emails && user.auth.apple.emails[0] && user.auth.apple.emails[0].value) {
+          email = user.auth.apple.emails[0].value;
+          name = user.auth.local.username;
         }
         return {'email': email, 'name': name, _id: user._id};
       }).filter(function(data){
@@ -290,10 +293,13 @@ var worker = function(job, done){
           name = user.profile.name || user.auth.local.username;
         } else if (user.auth.facebook && user.auth.facebook.emails && user.auth.facebook.emails[0] && user.auth.facebook.emails[0].value){
           email = user.auth.facebook.emails[0].value;
-          name = user.profile.name || user.auth.facebook.displayName || user.auth.facebook.username;
+          name = user.auth.local.username;
         } else if (user.auth.google && user.auth.google.emails && user.auth.google.emails[0] && user.auth.google.emails[0].value) {
           email = user.auth.google.emails[0].value;
-          name = user.profile.name || user.auth.google.displayName || user.auth.google.username;
+          name = user.auth.local.username;
+        } else if (user.auth.apple && user.auth.apple.emails && user.auth.apple.emails[0] && user.auth.apple.emails[0].value) {
+          email = user.auth.apple.emails[0].value;
+          name = user.auth.local.username;
         }
 
         // Here so that new users are not ignored
