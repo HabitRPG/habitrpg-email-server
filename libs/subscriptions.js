@@ -11,8 +11,8 @@ let blocks = {
     target: 'group',
     canSubscribe: true,
     months: 1,
-    price: 9,
-    quantity: 3, // Default quantity for Stripe - The same as having 3 user subscriptions
+    price: 3, // NOTE: this is the price per user
+    quantity: 3, // Default quantity - The same as having 3 user subscriptions
   },
 };
 /* eslint-enable camelcase */
