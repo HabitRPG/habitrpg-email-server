@@ -72,16 +72,16 @@ queue.process('googlePayments', require('./workers/googlePayments')(queue, db));
 queue.process('applePayments', require('./workers/applePayments')(queue, db));
 queue.process('amazonGroupPlanPayments', require('./workers/amazonGroupPlanPayments')(queue, db));
 
-queue.process('applePaymentsReminders', require('./workers/subscriptionsReminders/applePayments')(queue, db));
-queue.process('googlePaymentsReminders', require('./workers/subscriptionsReminders/googlePayments')(queue, db));
-queue.process('amazonPaymentsReminders', require('./workers/subscriptionsReminders/amazon')(queue, db));
-queue.process('stripeReminders', require('./workers/subscriptionsReminders/stripe')(queue, db));
-queue.process('paypalReminders', require('./workers/subscriptionsReminders/paypal')(queue, db));
+queue.process('applePaymentsReminders', require('./workers/subscriptionsReminders/applePayments')(queue, db, BASE_URL));
+queue.process('googlePaymentsReminders', require('./workers/subscriptionsReminders/googlePayments')(queue, db, BASE_URL));
+queue.process('amazonPaymentsReminders', require('./workers/subscriptionsReminders/amazon')(queue, db, BASE_URL));
+queue.process('stripeReminders', require('./workers/subscriptionsReminders/stripe')(queue, db, BASE_URL));
+queue.process('paypalReminders', require('./workers/subscriptionsReminders/paypal')(queue, db, BASE_URL));
 
-queue.process('stripeGroupsReminders', require('./workers/subscriptionsReminders/stripeGroups')(queue, db));
-queue.process('amazonGroupsReminders', require('./workers/subscriptionsReminders/amazonGroups')(queue, db));
+queue.process('stripeGroupsReminders', require('./workers/subscriptionsReminders/stripeGroups')(queue, db, BASE_URL));
+queue.process('amazonGroupsReminders', require('./workers/subscriptionsReminders/amazonGroups')(queue, db, BASE_URL));
 
-queue.process('expirationReminders', require('./workers/subscriptionsReminders/expiration')(queue, db));
+queue.process('expirationReminders', require('./workers/subscriptionsReminders/expiration')(queue, db, BASE_URL));
 
 queue.on('job complete', (id) => {
   kue.Job.get(id, (err, job) => {
