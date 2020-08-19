@@ -3,9 +3,12 @@ const moment = require('moment');
 const emailsLib = require('../email');
 const util = require('util');
 const paypalSDK = require('paypal-rest-sdk');
+const nconf = require('nconf');
 
 const getToData = emailsLib.getToData;
 const getPersonalVariables = emailsLib.getPersonalVariables;
+
+const BILLING_AGREEMENT_TO_SKIP = nconf.get('PAYPAL_BILLING_AGREEMENT_TO_SKIP');
 
 const USERS_BATCH = 1; // because paypal has an aggressive rate limiting
 
@@ -67,6 +70,9 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
 
   // Users with free subscriptions
   if (user.purchased.plan.customerId === 'habitrpg') return;
+
+  // Skip a billing agreement currently unavailable for processing due to a Paypal bug
+  if (BILLING_AGREEMENT_TO_SKIP && user.purchased.plan.customerId === BILLING_AGREEMENT_TO_SKIP) return;
 
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
