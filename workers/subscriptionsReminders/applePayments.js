@@ -1,4 +1,5 @@
 const moment = require('moment');
+const iap = require('in-app-purchase');
 const appleReminders = require('../../libs/subscriptionsReminders/apple');
 const util = require('util');
 
@@ -32,13 +33,19 @@ function worker (job, done) {
 
   console.log('Start fetching subscriptions due in the next week with Apple Payments.');
 
-  appleReminders.findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
-    .then(scheduleNextJob) // All users have been processed, schedule the next job
-    .then(done)
-    .catch(err => { // The processing errored, crash the job and log the error
-      console.log('Error while sending reminders for apple payments subscriptions', util.inspect(err, false, null));
-      done(err);
-    });
+  iap.setup(error => {
+    if (error) {
+      done(error);
+      return;
+    }
+    appleReminders.findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
+      .then(scheduleNextJob) // All users have been processed, schedule the next job
+      .then(done)
+      .catch(err => { // The processing errored, crash the job and log the error
+        console.log('Error while sending reminders for apple payments subscriptions', util.inspect(err, false, null));
+        done(err);
+      });
+  });
 }
 
 module.exports = function work (parentQueue, parentDb, parentBaseUrl) {

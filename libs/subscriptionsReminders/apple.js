@@ -2,7 +2,6 @@ const subscriptions = require('../subscriptions');
 const moment = require('moment');
 const emailsLib = require('../email');
 const iap = require('in-app-purchase');
-const Bluebird = require('bluebird');
 
 const getToData = emailsLib.getToData;
 const getPersonalVariables = emailsLib.getPersonalVariables;
@@ -10,8 +9,6 @@ const getPersonalVariables = emailsLib.getPersonalVariables;
 const USERS_BATCH = 10;
 
 let api = {};
-
-api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 
 api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user) {
   return habitrpgUsers.update(
@@ -79,7 +76,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   }).toDate();
 
   return api
-    .iapValidate(iap.APPLE, user.purchased.plan.additionalData)
+    .validate(iap.APPLE, user.purchased.plan.additionalData)
     .then((response) => {
       if (iap.isValidated(response)) {
         // console.log('Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate);
