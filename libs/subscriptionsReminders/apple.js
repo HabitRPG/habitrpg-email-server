@@ -75,7 +75,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     hours: 12,
   }).toDate();
 
-  return api
+  return iap
     .validate(iap.APPLE, user.purchased.plan.additionalData)
     .then((response) => {
       if (iap.isValidated(response)) {
