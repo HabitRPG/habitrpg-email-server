@@ -3,14 +3,11 @@ const iap = require('in-app-purchase');
 const request = require('request');
 const subscriptions = require('../libs/subscriptions');
 const moment = require('moment');
-const Bluebird = require('bluebird');
 
 const USERS_BATCH = 10;
 const BASE_URL = nconf.get('BASE_URL');
 
 let api = {};
-
-api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 
 api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
   return new Promise((resolve, reject) => {
@@ -57,7 +54,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
   }
-  return api.iapValidate(iap.APPLE, user.purchased.plan.additionalData)
+  return iap.validate(iap.APPLE, user.purchased.plan.additionalData)
     .then((response) => {
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
