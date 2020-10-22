@@ -37,6 +37,7 @@ var mapEmailsToPreferences = {
   'onboarding-join-party-1': 'onboarding',
   'onboarding-post-message-guild-1': 'onboarding',
   'onboarding-set-reminder-1': 'onboarding',
+  'orb-of-rebirth-survey': 'majorUpdates',
   'party-invite-rescinded': 'kickedGroup',
   'product-fit-survey': 'majorUpdates',
   'quest-started': 'questStarted',
