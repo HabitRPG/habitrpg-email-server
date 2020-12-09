@@ -30,7 +30,7 @@
     "push-notify": "github:habitrpg/push-notify#v1.2.0",
     "request": "^2.88.2",
     "sprintf-js": "^1.1.2",
-    "stripe": "^7.15.0",
+    "stripe": "^8.127.0",
     "uuid": "^2.0.3"
   },
   "devDependencies": {
