@@ -81,7 +81,9 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
       throw new Error(`User ${user._id} with customerId ${customerId} does not have any subscription.`);
     }
 
-    if (subscription.current_period_end && !subscription.status === 'canceled') {
+    if (subscription.current_period_end) {
+      if (subscription.status === 'canceled') return;
+
       // * 1000 because stripe returns timestamps in seconds from 1970 not milliseconds
       const nextInvoice = moment(subscription.current_period_end * 1000);
 
