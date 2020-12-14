@@ -2,9 +2,7 @@ const subscriptions = require('../subscriptions');
 const moment = require('moment');
 const emailsLib = require('../email');
 const nconf = require('nconf');
-const stripe = require('stripe')(nconf.get('STRIPE_API_KEY'), {
-  apiVersion: '2020-08-27',
-});
+const stripe = require('stripe')(nconf.get('STRIPE_API_KEY'));
 
 const getToData = emailsLib.getToData;
 const getPersonalVariables = emailsLib.getPersonalVariables;
