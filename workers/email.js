@@ -23,6 +23,7 @@ var mapEmailsToPreferences = {
   'gift-one-get-one': 'giftedSubscription',
   'gifted-gems': 'giftedGems',
   'gifted-subscription': 'giftedSubscription',
+  'groups-interactivity-beta': 'importantAnnouncements',
   'guild-invite-rescinded': 'kickedGroup',
   'in-app-purchaser-survey': 'majorUpdates',
   'invite-boss-quest': 'invitedQuest',
