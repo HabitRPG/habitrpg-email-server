@@ -1,49 +1,14 @@
 const nconf = require('nconf');
 const iap = require('in-app-purchase');
-const request = require('request');
 const subscriptions = require('../libs/subscriptions');
-const moment = require('moment');
+const mobilePayments = require('./mobilePayments');
 
 const USERS_BATCH = 10;
 const BASE_URL = nconf.get('BASE_URL');
 
+const INVALID_RECEIPT_ERROR = 21010;
+
 let api = {};
-
-api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
-  return new Promise((resolve, reject) => {
-    request.get(`${BASE_URL}/iap/ios/subscribe/cancel`, {
-      qs: {
-        noRedirect: 'true',
-      },
-      headers: {
-        'x-api-user': user._id,
-        'x-api-key': user.apiToken,
-      },
-    }, (habitError, habitResponse, body) => {
-      if (!habitError && habitResponse.statusCode === 200) {
-        return resolve();
-      }
-
-      reject(habitError || body); // if there's an error or response.statusCode !== 200
-    });
-  });
-};
-
-api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
-  if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
-    nextScheduledCheck = subscription.expirationDate;
-  }
-
-  return habitrpgUsers.update(
-    {
-      _id: user._id,
-    },
-    {
-      $set: {
-        'purchased.plan.nextPaymentProcessing': moment(nextScheduledCheck).toDate(),
-      },
-    });
-};
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
@@ -61,15 +26,15 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         for (let index in purchaseDataList) {
           let subscription = purchaseDataList[index];
           if (subscription.expirationDate > jobStartDate) {
-            return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+            return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
           }
         }
-        return api.cancelSubscriptionForUser(user);
+        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, "ios");
       }
     })
     .catch(err => {
-      if (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === 21010) {
-        return api.cancelSubscriptionForUser(user);
+      if (err.status === INVALID_RECEIPT_ERROR ||  (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR)) {
+        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, "ios");
       } else {
         console.error(`Error processing subscription for user ${user._id}`);
         throw err;

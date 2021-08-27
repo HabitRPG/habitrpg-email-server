@@ -1,9 +1,8 @@
 const nconf = require('nconf');
 const iap = require('in-app-purchase');
-const request = require('request');
 const subscriptions = require('../libs/subscriptions');
+const mobilePayments = require('./mobilePayments');
 const Bluebird = require('bluebird');
-const moment = require('moment');
 
 const USERS_BATCH = 10;
 const BASE_URL = nconf.get('BASE_URL');
@@ -11,42 +10,6 @@ const BASE_URL = nconf.get('BASE_URL');
 let api = {};
 
 api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
-
-api.cancelSubscriptionForUser = function cancelSubscriptionForUser (user) {
-  return new Promise((resolve, reject) => {
-    request.get(`${BASE_URL}/iap/android/subscribe/cancel`, {
-    qs: {
-      noRedirect: 'true',
-    },
-    headers: {
-      'x-api-user': user._id,
-      'x-api-key': user.apiToken,
-    },
-    }, (habitError, habitResponse, body) => {
-      if (!habitError && habitResponse.statusCode === 200) {
-        return resolve();
-      }
-
-      reject(habitError || body); // if there's an error or response.statusCode !== 200
-    });
-  });
-};
-
-api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
-  if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
-    nextScheduledCheck = subscription.expirationDate;
-  }
-
-  return habitrpgUsers.update(
-    {
-      _id: user._id,
-    },
-    {
-      $set: {
-        'purchased.plan.nextPaymentProcessing': moment(nextScheduledCheck).toDate(),
-      },
-    });
-};
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
@@ -66,18 +29,18 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
         if (subscription.expirationDate < jobStartDate) {
-          return api.cancelSubscriptionForUser(user);
+          return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
         } else {
           return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
         }
       } else {
-        return api.cancelSubscriptionForUser(user);
+        return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
       }
     }).catch(err => {
       // Status:410 means that the subsctiption isn't active anymore
       console.log(err.message);
       if (err && err.message === 'Status:410') {
-        return api.cancelSubscriptionForUser(user);
+        return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
       } else {
         throw err;
       }
