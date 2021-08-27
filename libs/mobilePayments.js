@@ -15,7 +15,7 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
         'x-api-key': user.apiToken,
       },
       }, (habitError, habitResponse, body) => {
-          if (habitResponse.statusCode == 401) {
+          if (habitResponse.statusCode === 401) {
             return habitrpgUsers.update(
                 {
                   _id: user._id,

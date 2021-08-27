@@ -6,6 +6,8 @@ const mobilePayments = require('./mobilePayments');
 const USERS_BATCH = 10;
 const BASE_URL = nconf.get('BASE_URL');
 
+const INVALID_RECEIPT_ERROR = 21010;
+
 let api = {};
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
@@ -31,7 +33,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       }
     })
     .catch(err => {
-      if (err.status === 21010 ||  (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === 21010)) {
+      if (err.status === INVALID_RECEIPT_ERROR ||  (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR)) {
         return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, "ios");
       } else {
         console.error(`Error processing subscription for user ${user._id}`);
