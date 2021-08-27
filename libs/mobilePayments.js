@@ -4,6 +4,8 @@ const moment = require('moment');
 
 const BASE_URL = nconf.get('BASE_URL');
 
+const api = {};
+
 api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUsers, user, platform) {
     return new Promise((resolve, reject) => {
       request.get(`${BASE_URL}/iap/${patform}/subscribe/cancel`, {
@@ -50,3 +52,5 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
         },
       });
   };
+
+module.exports = api;
