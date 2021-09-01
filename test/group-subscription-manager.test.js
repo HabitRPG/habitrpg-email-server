@@ -1,18 +1,19 @@
-const kue = require('kue');
-const monk = require('monk');
-const nconf = require('nconf');
-const moment = require('moment');
-const groupSubscriptionManager = require('../libs/groupSubscriptionManager');
-const amazonPayments = require('../libs/amazonPayments');
+import { createQueue, Job } from 'kue';
+import nconf from 'nconf';
+import moment from 'moment';
+import sinon from 'sinon';
+import {
+  expect,
+} from 'chai';
+import groupSubscriptionManager from '../libs/groupSubscriptionManager.js';
+import amazonPayments from '../libs/amazonPayments.js';
 
-let db = monk(nconf.get('TEST_MONGODB_URL'));
-
-let kueRedisOpts = {
+const kueRedisOpts = {
   port: nconf.get('REDIS_PORT'),
   host: nconf.get('REDIS_HOST'),
 };
 
-let queue = kue.createQueue({
+const queue = createQueue({
   disableSearch: true,
   redis: kueRedisOpts,
 });
@@ -20,20 +21,22 @@ let queue = kue.createQueue({
 const NUMBER_OF_GROUPS = 20;
 
 function generateGroups (groupsCollection) {
-  let jobStartDate = moment.utc();
-  let oneMonthAgo = moment.utc(jobStartDate).subtract(1, 'months');
+  const jobStartDate = moment.utc();
+  const oneMonthAgo = moment.utc(jobStartDate).subtract(1, 'months');
 
-  let groupsToInsert = [];
+  const groupsToInsert = [];
   for (let i = 0; i < NUMBER_OF_GROUPS; i += 1) {
     groupsToInsert.push({
       leader: '3102aaed-7e2f-4555-8152-3e9ea20af8c2',
       type: 'guild',
       name: `testing${i}`,
-      purchased: { plan: {
-        paymentMethod: 'Amazon Payments',
-        dateTerminated: null,
-        lastBillingDate: oneMonthAgo.toDate(),
-      } },
+      purchased: {
+        plan: {
+          paymentMethod: 'Amazon Payments',
+          dateTerminated: null,
+          lastBillingDate: oneMonthAgo.toDate(),
+        },
+      },
       memberCount: 1,
     });
   }
@@ -43,10 +46,10 @@ function generateGroups (groupsCollection) {
 
 describe('GroupSubscriptionManager', () => {
   let groups;
-  let groupsCollection = db.get('groups', { castIds: false });
+  const groupsCollection = db.get('groups', { castIds: false });
   let authorizeOnBillingAgreementSpy;
   let requestSpy;
-  let amazonResponse = {
+  const amazonResponse = {
     AuthorizationDetails: {
       AuthorizationStatus: {
         State: 'Open',
@@ -57,7 +60,6 @@ describe('GroupSubscriptionManager', () => {
   beforeEach(() => {
     authorizeOnBillingAgreementSpy = sinon.stub(amazonPayments, 'authorizeOnBillingAgreement');
     authorizeOnBillingAgreementSpy
-      .returnsPromise()
       .resolves(amazonResponse);
 
     requestSpy = (data, callback) => {
@@ -65,78 +67,76 @@ describe('GroupSubscriptionManager', () => {
     };
 
     return generateGroups(groupsCollection)
-      .then((docs) => {
+      .then(docs => {
         groups = docs;
       });
   });
 
   afterEach(() => {
     groupsCollection.remove({});
-    sinon.restore(amazonPayments.authorizeOnBillingAgreement);
+    sinon.restore();
   });
 
-  it('should schedule the next queue when finished', (done) => {
-    let queueSpy = sinon.spy(kue.Job.prototype, 'save');
-    groupSubscriptionManager.init(db, queue, () => {
+  it('should schedule the next queue when finished', done => {
+    const queueSpy = sinon.spy(Job.prototype, 'save');
+    groupSubscriptionManager(db, queue, () => {
       expect(queueSpy.callCount).equals(1);
       done();
     }, amazonPayments, requestSpy);
   });
 
-  it('should charge a group', (done) => {
-    groupSubscriptionManager.init(db, queue, () => {
+  it('should charge a group', done => {
+    groupSubscriptionManager(db, queue, () => {
       expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
       done();
     }, amazonPayments, requestSpy);
   });
 
-  it('should not charge a group twice in the same month', (done) => {
-    groupSubscriptionManager.init(db, queue, () => {
+  it('should not charge a group twice in the same month', done => {
+    groupSubscriptionManager(db, queue, () => {
       expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
-      groupSubscriptionManager.init(db, queue, () => {
+      groupSubscriptionManager(db, queue, () => {
         expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
         done();
       }, amazonPayments, requestSpy);
     }, amazonPayments, requestSpy);
   });
 
-  it('should not charge a terminated group', (done) => {
+  it('should not charge a terminated group', done => {
     groupsCollection.update(
-      {_id: groups[0]._id},
-      {$set: {'purchased.plan.dateTerminated': moment.utc()}}
+      { _id: groups[0]._id },
+      { $set: { 'purchased.plan.dateTerminated': moment.utc() } },
     ).then(() => {
-      groupSubscriptionManager.init(db, queue, () => {
+      groupSubscriptionManager(db, queue, () => {
         expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS - 1);
         done();
       }, amazonPayments, requestSpy);
     });
   });
 
-  it('should page groups', (done) => {
-    let dbSpy = sinon.spy(db.collections.groups, 'find');
+  it('should page groups', done => {
+    const dbSpy = sinon.spy(db.collections.groups, 'find');
 
-    groupSubscriptionManager.init(db, queue, () => {
+    groupSubscriptionManager(db, queue, () => {
       expect(dbSpy.callCount).equals(3);
       expect(authorizeOnBillingAgreementSpy.callCount).equals(NUMBER_OF_GROUPS);
-      sinon.restore(db.collections.groups.find);
+      db.collections.groups.find.restore();
       done();
     }, amazonPayments, requestSpy);
   });
 
-  it('should cancel a subscription of amazon is Declined', (done) => {
-    let dbSpy = sinon.stub(db.collections.users, 'findOne');
+  it('should cancel a subscription of amazon is Declined', done => {
+    const dbSpy = sinon.stub(db.collections.users, 'findOne');
     dbSpy
-      .returnsPromise()
       .resolves({});
 
     amazonResponse.AuthorizationDetails.AuthorizationStatus.State = 'Declined';
     authorizeOnBillingAgreementSpy
-      .returnsPromise()
       .resolves(amazonResponse);
 
-    groupSubscriptionManager.init(db, queue, () => {
+    groupSubscriptionManager(db, queue, () => {
       expect(dbSpy.callCount).equals(NUMBER_OF_GROUPS);
-      sinon.restore(db.collections.users.findOne);
+      db.collections.users.findOne.restore();
       done();
     }, amazonPayments, requestSpy);
   });

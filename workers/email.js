@@ -1,7 +1,7 @@
-var fs = require('fs'),
-    nconf = require('nconf');
-    mandrill = require('mandrill-api'),
-    _ = require('lodash');
+import fs from 'fs';
+import nconf from 'nconf';
+import mandrill from 'mandrill-api';
+import _ from 'lodash';
 
 var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
 
@@ -62,7 +62,7 @@ var mapEmailsToPreferences = {
   //'reminder-to-login': 'remindersToLogin',  
 };
 
-module.exports = function(job, done){
+export default function(job, done){
   var replyToAddress = standardReplyTo; // For beta and production
 
   if(!job.data.variables) job.data.variables = [];

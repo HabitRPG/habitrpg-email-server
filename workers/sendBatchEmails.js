@@ -1,6 +1,6 @@
-var moment = require('moment'),
-    utils = require('../utils'),
-    _ = require('lodash');
+import moment from 'moment';
+import { encrypt } from '../utils.js';
+import _ from 'lodash';
 
 // Defined later
 var queue, db, baseUrl, habitrpgUsers;
@@ -112,7 +112,7 @@ var worker = function(job, done){
             },
             {
               name: 'RECIPIENT_UNSUB_URL',
-              content: '/email/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+              content: '/email/unsubscribe?code=' + encrypt(JSON.stringify({
                 _id: personalToData._id,
                 email: personalToData.email
               }))
@@ -320,7 +320,7 @@ var worker = function(job, done){
             },
             {
               name: 'RECIPIENT_UNSUB_URL',
-              content: '/email/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+              content: '/email/unsubscribe?code=' + encrypt(JSON.stringify({
                 _id: personalToData._id,
                 email: personalToData.email
               }))
@@ -401,7 +401,7 @@ var worker = function(job, done){
   }
 }
 
-module.exports = function(parentQueue, parentDb, parentBaseUrl){
+export default function(parentQueue, parentDb, parentBaseUrl){
   queue = parentQueue; // Pass queue from parent module
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseurl from parent module

@@ -1,12 +1,12 @@
-var nconf = require('nconf');
-var pushNotify = require('push-notify');
-var Bluebird = require('bluebird');
-var gcmLib = require('node-gcm'); // works with FCM notifications too
-var AWS = require('aws-sdk');
+import nconf from 'nconf';
+import pushNotify from 'push-notify';
+import bluebird from 'bluebird';
+import { Sender, Message } from 'node-gcm'; // works with FCM notifications too
+import aws from 'aws-sdk';
 
 var FCM_API_KEY = nconf.get('PUSH_CONFIGS:FCM_SERVER_API_KEY');
 
-var fcmSender = FCM_API_KEY ? new gcmLib.Sender(FCM_API_KEY) : undefined;
+var fcmSender = FCM_API_KEY ? new Sender(FCM_API_KEY) : undefined;
 
 var apn;
 
@@ -17,11 +17,11 @@ var APN_ENABLED = nconf.get('PUSH_CONFIGS:APN_ENABLED') === 'true';
 if (APN_ENABLED) {
   if(nconf.get('NODE_ENV') === 'production') {
     var S3_BUCKET = nconf.get('S3:bucket');
-    var S3 = new AWS.S3({
+    var S3 = new aws.S3({
       accessKeyId: nconf.get('S3:accessKeyId'),
       secretAccessKey: nconf.get('S3:secretAccessKey'),
     });
-    Bluebird.all([
+    bluebird.all([
       S3.getObject({
         Bucket: S3_BUCKET,
         Key: 'apple_apn/cert.pem',
@@ -81,7 +81,7 @@ function sendNotification (user, details) {
         payload.body = details.message;
 
         if (fcmSender) {
-          var message = new gcmLib.Message({
+          var message = new Message({
             data: payload,
           });
 
@@ -108,6 +108,6 @@ function sendNotification (user, details) {
   });
 }
 
-module.exports = {
+export {
   sendNotification,
 };

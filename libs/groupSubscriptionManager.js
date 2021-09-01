@@ -1,5 +1,5 @@
-var uuid = require('uuid');
-var moment = require('moment');
+import { v4 } from 'uuid';
+import moment from 'moment';
 
 var db, queue, amazonPayment, request, done, habitrpgUsers, jobStartDate, habitGroups, isLastDayOfMonth, oneMonthAgo;
 
@@ -55,7 +55,7 @@ function chargeGroup (group)
 
   return amazonPayment.authorizeOnBillingAgreement({
     AmazonBillingAgreementId: group.purchased.plan.customerId,
-    AuthorizationReferenceId: uuid.v4().substring(0, 32),
+    AuthorizationReferenceId: v4().substring(0, 32),
     AuthorizationAmount: {
       CurrencyCode: 'USD',
       Amount: price,
@@ -65,7 +65,7 @@ function chargeGroup (group)
     CaptureNow: true,
     SellerNote: paymentDescription,
     SellerOrderAttributes: {
-      SellerOrderId: uuid.v4(),
+      SellerOrderId: v4(),
       StoreName: 'Habitica'
     }
   })
@@ -165,6 +165,4 @@ function init(dbInc, queueInc, doneInc, amazonPaymentInc, requestInc)
   chargeAmazonGroups();
 }
 
-module.exports = {
-  init: init,
-};
+export default init;

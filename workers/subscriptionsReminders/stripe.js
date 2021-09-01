@@ -1,6 +1,6 @@
-const moment = require('moment');
-const stripeReminders = require('../../libs/subscriptionsReminders/stripe');
-const util = require('util');
+import moment from 'moment';
+import { inspect } from 'util';
+import { findAffectedUsers } from '../../libs/subscriptionsReminders/stripe.js';
 
 // Defined later
 let db;
@@ -15,7 +15,7 @@ function scheduleNextJob () {
     queue
       .create('stripeReminders')
       .priority('critical')
-      .delay(moment().add({hours: 6}).toDate() - new Date()) // schedule another job, 1 hour from now
+      .delay(moment().add({ hours: 6 }).toDate() - new Date())
       .attempts(5)
       .save(err => {
         if (err) {
@@ -32,20 +32,20 @@ function worker (job, done) {
 
   console.log('Start fetching subscriptions due in the next week with Stripe.');
 
-  stripeReminders.findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
+  findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(scheduleNextJob) // All users have been processed, schedule the next job
     .then(done)
     .catch(err => { // The processing errored, crash the job and log the error
-      console.log('Error while sending reminders for Stripe subscriptions', util.inspect(err, false, null));
+      console.log('Error while sending reminders for Stripe subscriptions', inspect(err, false, null));
       done(err);
     });
 }
 
-module.exports = function work (parentQueue, parentDb, parentBaseUrl) {
+export default function work (parentQueue, parentDb, parentBaseUrl) {
   // Pass db and queue from parent module
   db = parentDb;
   queue = parentQueue;
   baseUrl = parentBaseUrl;
 
   return worker;
-};
+}

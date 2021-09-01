@@ -1,13 +1,13 @@
-var specialPushNotificationManager = require('../libs/specialPushNotificationManager');
-var pushNotifications = require('../libs/pushNotifications');
+import { run } from '../libs/specialPushNotificationManager.js';
+import { sendNotification } from '../libs/pushNotifications.js';
 
 var db, queue, notificationBuckets;
 
 var worker = function(job, done) {
-  specialPushNotificationManager.run(db,
+  run(db,
     queue,
     done,
-    pushNotifications,
+    sendNotification,
     job.data.notificationBuckets,
     job.data.timezoneQuery,
     job.data.lastNotificationDate,
@@ -16,7 +16,7 @@ var worker = function(job, done) {
     job.data.dryRun);
 };
 
-module.exports = function(parentQueue, parentDb) {
+export default function(parentQueue, parentDb) {
   db = parentDb;
   queue = parentQueue;
 

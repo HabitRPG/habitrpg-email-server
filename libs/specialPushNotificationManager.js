@@ -1,5 +1,5 @@
-var sprintf = require('sprintf-js');
-var moment = require('moment');
+import { sprintf as _sprintf } from 'sprintf-js';
+import moment from 'moment';
 
 var db, queue, pushNotifications, done, habitrpgUsers, notificationBuckets, timezoneQuery, lastNotificationDate, lastLoginDate, testUserIDs, isDryRun;
 
@@ -56,7 +56,7 @@ function processUsersWithDevices(users) {
           var details = {
             identifier: "wonChallenge", //We still need a generic notification type for android.
             title: bucket.title,
-            message: sprintf.sprintf(bucket.message, user.profile.name)
+            message: _sprintf(bucket.message, user.profile.name)
           };
           if (!isDryRun) {
             pushNotifications.sendNotification(user, details);
@@ -137,6 +137,4 @@ function run(dbInc,
   sendPushnotifications();
 }
 
-module.exports = {
-  run: run,
-};
+export { run };

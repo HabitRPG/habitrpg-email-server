@@ -4,10 +4,11 @@
     "node": true,
   },
   "extends": [
-    "habitrpg",
-    "habitrpg/esnext"
+    "habitrpg/lib/node"
   ],
   "rules": {
     "no-console": 0,
+    "max-len": ["error", {"code": 170}],
+    "import/extensions": 0
   }
 }

@@ -1,13 +1,10 @@
-const subscriptions = require('../subscriptions');
-const moment = require('moment');
-const emailsLib = require('../email');
-
-const getToData = emailsLib.getToData;
-const getPersonalVariables = emailsLib.getPersonalVariables;
+import moment from 'moment';
+import { blocks } from '../subscriptions.js';
+import { getToData, getPersonalVariables } from '../email.js';
 
 const USERS_BATCH = 10;
 
-let api = {};
+const api = {};
 
 api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user) {
   return habitrpgUsers.update(
@@ -18,7 +15,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
       $set: {
         'purchased.plan.lastReminderDate': moment().toDate(),
       },
-    }
+    },
   );
 };
 
@@ -32,33 +29,31 @@ api.sendEmailReminder = function sendEmailReminder (user, plan, queue, baseUrl, 
     });
 
     if (
-      user.preferences.emailNotifications.unsubscribeFromAll !== true &&
-      user.preferences.emailNotifications.subscriptionReminders !== false
+      user.preferences.emailNotifications.unsubscribeFromAll !== true
+      && user.preferences.emailNotifications.subscriptionReminders !== false
     ) {
       queue.create('email', {
         emailType: 'subscription-renewal',
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
-        variables: [{name: 'BASE_URL', content: baseUrl}],
+        variables: [{ name: 'BASE_URL', content: baseUrl }],
         personalVariables,
       })
-      .priority('high')
-      .attempts(5)
-      .backoff({type: 'fixed', delay: 30 * 60 * 1000}) // try again after 30 minutes
-      .save((err) => {
-        if (err) return reject(err);
-        resolve();
-      });
+        .priority('high')
+        .attempts(5)
+        .backoff({ type: 'fixed', delay: 30 * 60 * 1000 }) // try again after 30 minutes
+        .save(err => {
+          if (err) return reject(err);
+          return resolve();
+        });
     } else {
       resolve();
     }
-  }).then(() => {
-    return api.scheduleNextCheckForUser(habitrpgUsers, user);
-  });
+  }).then(() => api.scheduleNextCheckForUser(habitrpgUsers, user));
 };
 
 api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, jobStartDate) {
-  let plan = subscriptions.blocks[user.purchased.plan.planId];
+  const plan = blocks[user.purchased.plan.planId];
 
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
@@ -68,7 +63,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   const lastBillingDate = moment(user.purchased.plan.lastBillingDate);
 
   // Calculate the (rough) next one
-  const nextBillingDate = moment(lastBillingDate.toDate()).add({months: plan.months});
+  const nextBillingDate = moment(lastBillingDate.toDate()).add({ months: plan.months });
 
   const startDate = moment(jobStartDate.toDate()).add({
     days: 6,
@@ -84,18 +79,18 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     'Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate,
     'last paymentdate', lastBillingDate.toString(),
     'next date', nextBillingDate.toString());
-  console.log('Plan', plan);*/
+  console.log('Plan', plan); */
 
   if (nextBillingDate.isAfter(startDate) && nextBillingDate.isBefore(endDate)) {
     // console.log('would send email!\n\n\n\n');
     return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
-  } else {
-    // console.log('would not send email');
   }
+  // console.log('would not send email');
+  return false;
 };
 
-api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
-  let query = {
+const findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
+  const query = {
     'purchased.plan.paymentMethod': 'Amazon Payments',
     'purchased.plan.dateTerminated': null,
     // Where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
@@ -117,27 +112,27 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   console.log('Run query', query);
 
   let usersFoundNumber;
+  let newLastId;
 
   return habitrpgUsers.find(query, {
-    sort: {_id: 1},
+    sort: { _id: 1 },
     limit: USERS_BATCH,
     fields: ['_id', 'auth', 'profile', 'purchased.plan', 'preferences'],
   })
     .then(users => {
       console.log('Amazon Payments Reminders: Found n users', users.length);
       usersFoundNumber = users.length;
-      lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
+      newLastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-      return Promise.all(users.map(user => {
-        return api.processUser(habitrpgUsers, user, queue, baseUrl, jobStartDate);
-      }));
+      return Promise.all(users.map(user => api.processUser(habitrpgUsers, user, queue, baseUrl, jobStartDate)));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
-        return api.findAffectedUsers(habitrpgUsers, lastId, jobStartDate, queue, baseUrl);
-      } else {
-        return;
+        return findAffectedUsers(habitrpgUsers, newLastId, jobStartDate, queue, baseUrl);
       }
+      return true;
     });
 };
 
-module.exports = api;
+export {
+  findAffectedUsers,
+};

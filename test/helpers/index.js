@@ -2,20 +2,23 @@
 /* eslint-disable global-require */
 /* eslint-disable no-process-env */
 
-const nconf = require('nconf');
-const sinonStubPromise = require('sinon-stub-promise');
-
+import monk from 'monk';
+import nconf from 'nconf';
+import chai from 'chai';
+import sinon from 'sinon';
 //------------------------------
 // Global modules
 //------------------------------
-global.chai = require('chai');
+global.chai = chai;
+
 global.expect = chai.expect;
-global.sinon = require('sinon');
-sinonStubPromise(global.sinon);
-global.sandbox = sinon.sandbox.create();
+
+global.sinon = sinon;
 process.env.NODE_ENV = 'test';
 
-nconf
-  .argv()
+nconf.argv()
   .env()
-  .file({ file: `${__dirname  }/../../config.json` });
+  .file({ file: `./config.json` });
+
+global.db = monk(nconf.get('TEST_MONGODB_URL'));
+global.usersCollection = db.get('users', { castIds: false });

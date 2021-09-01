@@ -1,11 +1,9 @@
-const moment = require('moment');
-const _ = require('lodash');
-const pushNotifications = require('../libs/pushNotifications');
-const emailsLib = require('../libs/email');
-const USERS_BATCH = 10;
+import moment from 'moment';
+import lodash from 'lodash';
+import { sendNotification } from '../libs/pushNotifications.js';
+import { getToData, getPersonalVariables } from '../libs/email.js';
 
-const getToData = emailsLib.getToData;
-const getPersonalVariables = emailsLib.getPersonalVariables;
+const USERS_BATCH = 10;
 
 // Defined later
 let queue;
@@ -30,11 +28,7 @@ const steps = [
         userId: user._id,
       }, {
         fields: ['completed', 'history'],
-      }).then(tasks => {
-        return tasks.some(task => { // check if the user scored a task (history record exist or task is completed)
-          return task.completed || task.history && task.history.length > 0;
-        });
-      });
+      }).then(tasks => tasks.some(task => task.completed || (task.history && task.history.length > 0)));
     },
     requires: null,
   },
@@ -46,11 +40,7 @@ const steps = [
         userId: user._id,
       }, {
         fields: ['createdAt'],
-      }).then(tasks => {
-        return tasks.some(task => { // check if the user added a task (except the ones created at the same time of the account)
-          return moment(task.createdAt).isAfter(moment(user.auth.timestamps.created).add(1, 'minutes'));
-        });
-      });
+      }).then(tasks => tasks.some(task => moment(task.createdAt).isAfter(moment(user.auth.timestamps.created).add(1, 'minutes'))));
     },
     requires: null,
   },
@@ -62,11 +52,7 @@ const steps = [
         userId: user._id,
       }, {
         fields: ['reminders'],
-      }).then(tasks => {
-        return tasks.some(task => { // check if any reminder on tasks has been set by the user
-          return task.reminders ? task.reminders.length > 0 : false;
-        });
-      });
+      }).then(tasks => tasks.some(task => (task.reminders ? task.reminders.length > 0 : false)));
     },
     requires: null,
   },
@@ -76,18 +62,16 @@ const steps = [
     check: function hasBoughtReward (user) {
       // Return a promise even if no async op is necessary for consistency
       return new Promise(resolve => {
-        let owned = user.items.gear.owned;
-        let ownedKeys = Object.keys(owned);
+        const { owned } = user.items.gear;
+        const ownedKeys = Object.keys(owned);
 
         // Skip special items and the ones set to false
         // See if the user bought anything else (at least one item set to true)
-        let hasNotBoughtAReward = ownedKeys
+        const hasNotBoughtAReward = ownedKeys
           .filter(k => k.indexOf('_special_'))
-          .every(k => {
-            return !owned[k]; // !false -> true -> OK because means not bought
-          });
+          .every(k => !owned[k] /* !false -> true -> OK because means not bought */);
 
-        let hasBoughtAReward = !hasNotBoughtAReward;
+        const hasBoughtAReward = !hasNotBoughtAReward;
 
         resolve(hasBoughtAReward);
       });
@@ -110,14 +94,8 @@ const steps = [
   {
     check: function hasPostedGuildMessage (user) {
       return dbGroups.find({
-        _id: {$in: user.guilds || []},
-      }).then(guilds => {
-        return guilds.some(guild => { // check if any message in guilds the user belongs to has been sent by the user
-          return (guild.chat || []).some(msg => {
-            return msg ? msg.uuid === user._id : false;
-          });
-        });
-      });
+        _id: { $in: user.guilds || [] },
+      }).then(guilds => guilds.some(guild => (guild.chat || []).some(msg => (msg ? msg.uuid === user._id : false))));
     },
     requires: 5,
   },
@@ -134,7 +112,7 @@ const steps = [
   },
 ];
 
-let mapCodeToEmail = {
+const mapCodeToEmail = {
   1: 'check-off-task',
   2: 'add-edit-task',
   3: 'set-reminder',
@@ -211,11 +189,11 @@ function sendEmail (user, email) {
       'flags.onboardingEmailsPhase': `${email}-${Date.now()}`,
     },
   }).then(() => {
-    let toData = getToData(user);
+    const toData = getToData(user);
     const step = email[0];
 
     // If the email is disabled, don't send it
-    if (DISABLED_EMAILS.indexOf(Number(step)) !== -1) return new Promise((resolve) => resolve());
+    if (DISABLED_EMAILS.indexOf(Number(step)) !== -1) return new Promise(resolve => resolve());
 
     console.log('Sending onboarding email: ', `onboarding-${mapCodeToEmail[step]}-1`, ' to: ', user._id);
 
@@ -224,28 +202,28 @@ function sendEmail (user, email) {
         emailType: `onboarding-${mapCodeToEmail[step]}-1`, // needed to correctly match the template
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
-        variables: [{name: 'BASE_URL', content: baseUrl}],
+        variables: [{ name: 'BASE_URL', content: baseUrl }],
         personalVariables: getPersonalVariables(toData),
       })
-      .priority('high')
-      .attempts(5)
-      .backoff({type: 'fixed', delay: 60 * 1000}) // try again after 60s
-      .save((err) => {
-        if (err) return reject(err);
-        resolve();
-      });
+        .priority('high')
+        .attempts(5)
+        .backoff({ type: 'fixed', delay: 60 * 1000 }) // try again after 60s
+        .save(err => {
+          if (err) return reject(err);
+          return resolve();
+        });
     });
   });
 }
 
 function sendPushNotification (user, notification) {
   // step-phase
-  let step = notification[0];
-  let phase = notification[2];
+  const step = notification[0];
+  const phase = notification[2];
 
-  let notificationDetails = pushNotificationsMap[step];
-  let random = _.random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
-  let version = ['A', 'B', 'C', 'D'][random];
+  const notificationDetails = pushNotificationsMap[step];
+  const random = lodash.random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
+  const version = ['A', 'B', 'C', 'D'][random];
 
   return dbUsers.update({ // update user to signal that the email has been sent
     _id: user._id,
@@ -255,31 +233,29 @@ function sendPushNotification (user, notification) {
       '_ABTests.onboardingPushNotification': `Onboarding-Step${step}-Phase${phase}-Version${version}`,
     },
   }).then(() => {
-    let toData = getToData(user);
+    const toData = getToData(user);
 
     console.log('Sending onboarding notifications: ', `onboarding-${mapCodeToEmail[notification[0]]}-1`, ' to: ', user._id);
 
-    if (version === 'D') return; // Version D means no push notification
+    if (version === 'D') return false; // Version D means no push notification
 
     if (step === 6) { // load guild info
       return dbGroups.findOne({
-        _id: {$in: user.guilds || []},
+        _id: { $in: user.guilds || [] },
       }, 'name').then(guild => {
-        pushNotifications.sendNotification(user, {
+        sendNotification(user, {
           identifier: `onboarding-${notification}`,
           title: notificationDetails.title,
-          message: _.template(notificationDetails.messages[random])(_.assign({guildName: guild.name}, toData)),
+          message: lodash.template(notificationDetails.messages[random])(lodash.assign({ guildName: guild.name }, toData)),
         });
       });
-    } else {
-      pushNotifications.sendNotification(user, {
-        identifier: `onboarding-${notification}`,
-        title: notificationDetails.title,
-        message: _.template(notificationDetails.messages[random])(toData),
-      });
     }
-
-    return;
+    sendNotification(user, {
+      identifier: `onboarding-${notification}`,
+      title: notificationDetails.title,
+      message: lodash.template(notificationDetails.messages[random])(toData),
+    });
+    return true;
   });
 }
 
@@ -297,7 +273,7 @@ function stopOnboarding (user) {
 
 // see if user has completed step and in case send email
 function hasCompletedStep (user, lastStep, lastPhase) {
-  let step = steps[lastStep];
+  const step = steps[lastStep];
   let stepToSend;
   let phaseToSend;
 
@@ -323,18 +299,17 @@ function hasCompletedStep (user, lastStep, lastPhase) {
     }
 
     // first check if the step has any requirement
-    let requirement = steps[stepToSend].requires;
+    const requirement = steps[stepToSend].requires;
     if (requirement) { // see if requirement is fulfilled
       return steps[requirement].check(user).then(hasCompletedRequirement => {
         if (hasCompletedRequirement) return sendEmail(user, `${stepToSend}-${phaseToSend}`); // send email
         // try next email because requirement is not fulfilled
         return hasCompletedStep(user, stepToSend + 1);
       });
-    } else {
-      return phaseToSend === 'a' ?
-        sendPushNotification(user, `${stepToSend}-${phaseToSend}`) :
-        sendEmail(user, `${stepToSend}-${phaseToSend}`);
     }
+    return phaseToSend === 'a'
+      ? sendPushNotification(user, `${stepToSend}-${phaseToSend}`)
+      : sendEmail(user, `${stepToSend}-${phaseToSend}`);
   });
 }
 
@@ -353,41 +328,40 @@ function hasCompletedStep (user, lastStep, lastPhase) {
 // phase is 'a' or 'b' and indicated if the first or second email for the phase was sent
 // date indicates when the last email was sent.
 function processUser (user) {
-  let yesterday = moment().subtract(24, 'hours');
-  let lastOnboarding = user.flags.onboardingEmailsPhase;
+  const yesterday = moment().subtract(24, 'hours');
+  const lastOnboarding = user.flags.onboardingEmailsPhase;
   let lastStep;
   let lastPhase = undefined; // eslint-disable-line no-undef-init
 
   if (moment(user.auth.timestamps.created).isAfter(yesterday)) { // Do not send email until 24 hours after account creation
-    return;
-  } else if (!lastOnboarding) {
+    return false;
+  } if (!lastOnboarding) {
     lastStep = 1;
   } else {
-    let lastOnboardingSplit = lastOnboarding.split('-');
+    const lastOnboardingSplit = lastOnboarding.split('-');
 
-    lastStep = Number(lastOnboardingSplit[0]);
-    lastPhase = lastOnboardingSplit[1];
-    let lastDate = moment(Number(lastOnboardingSplit[2]));
+    [lastStep, lastPhase] = lastOnboardingSplit;
+    const lastDate = moment(Number(lastOnboardingSplit[2]));
 
     if (lastDate.isAfter(yesterday)) {
-      return; // Wait 24 hours between an email and the next
+      return false; // Wait 24 hours between an email and the next
     }
   }
 
-  if (lastStep === 7 && lastPhase === 'b') return; // user has got all possible emails
+  if (lastStep === 7 && lastPhase === 'b') return false; // user has got all possible emails
 
   return hasCompletedStep(user, lastStep, lastPhase);
 }
 
-function findAffectedUsers ({twoWeeksAgo, lastUserId}) {
-  let query = {
+function findAffectedUsers ({ twoWeeksAgo, lastUserId }) {
+  const query = {
     // Fetch all users that signed up in the last two weeks
     'auth.timestamps.created': {
       $gte: twoWeeksAgo,
     },
 
-    'preferences.emailNotifications.unsubscribeFromAll': {$ne: true},
-    'preferences.emailNotifications.onboarding': {$ne: false},
+    'preferences.emailNotifications.unsubscribeFromAll': { $ne: true },
+    'preferences.emailNotifications.onboarding': { $ne: false },
   };
 
   if (lastUserId) {
@@ -399,26 +373,25 @@ function findAffectedUsers ({twoWeeksAgo, lastUserId}) {
   console.log('Running query: ', query);
 
   let usersFoundNumber; // the number of found users: 5 -> some missing, <5 -> all have been processed
+  let newLastId;
 
   return dbUsers.find(query, {
-    sort: {_id: 1},
+    sort: { _id: 1 },
     limit: USERS_BATCH,
   }).then(users => {
     usersFoundNumber = users.length;
-    lastUserId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
+    newLastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-    return Promise.all(users.map(user => {
-      return processUser(user);
-    }));
+    return Promise.all(users.map(user => processUser(user)));
   }).then(() => {
     if (usersFoundNumber === USERS_BATCH) {
       return findAffectedUsers({ // Find and process another batch of users
         twoWeeksAgo,
-        lastUserId,
+        newLastId,
       });
-    } else {
-      return; // Finish the job
     }
+    return false;
+    // Finish the job
   });
 }
 
@@ -429,7 +402,7 @@ function scheduleNextJob () {
     queue
       .create('sendOnboardingEmails')
       .priority('critical')
-      .delay(moment().add({hours: 6}).toDate() - new Date()) // schedule another job, 1 hour from now
+      .delay(moment().add({ hours: 6 }).toDate() - new Date()) // schedule another job, 1 hour from now
       .attempts(5)
       .save(err => {
         if (err) {
@@ -442,8 +415,8 @@ function scheduleNextJob () {
 }
 
 function onboardingEmailsWorker (job, done) {
-  let jobStartDate = new Date();
-  let twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
+  const jobStartDate = new Date();
+  const twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
   let lastUserId; // id of the last processed user
 
   console.log('Start sending onboarding emails.');
@@ -452,17 +425,17 @@ function onboardingEmailsWorker (job, done) {
     twoWeeksAgo,
     lastUserId,
   })
-  .then(scheduleNextJob) // All users have been processed, schedule the next job
-  .then(() => {
-    done();
-  })
-  .catch(err => { // The processing errored, crash the job and log the error
-    done(err);
-    console.log('Error while sending onboarding emails.', err);
-  });
+    .then(scheduleNextJob) // All users have been processed, schedule the next job
+    .then(() => {
+      done();
+    })
+    .catch(err => { // The processing errored, crash the job and log the error
+      done(err);
+      console.log('Error while sending onboarding emails.', err);
+    });
 }
 
-module.exports = (parentQueue, parentDb, parentBaseUrl) => {
+export default (parentQueue, parentDb, parentBaseUrl) => {
   queue = parentQueue; // Pass queue from parent module
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseUrl from parent module

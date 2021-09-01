@@ -1,17 +1,23 @@
 {
   "name": "habitrpg-email-server",
-  "version": "1.0.1",
+  "version": "1.1.0",
+  "main": "./index.js",
   "scripts": {
     "start": "node ./index.js",
-    "test": "npm run lint && NODE_ENV=test mocha test/",
-    "lint": "eslint --ext .js ."
+    "test": "NODE_ENV=test mocha test/",
+    "lint": "eslint --ext .js .",
+    "lint:fix": "eslint --ext .js --fix ."
   },
+  "type": "module",
   "engines": {
-    "node": "^10",
+    "node": "^14",
     "npm": "^6"
   },
   "dependencies": {
-    "amazon-payments": "^0.2.8",
+    "@babel/core": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "@babel/register": "^7.15.3",
+    "amazon-payments": "^0.2.9",
     "async": "^2.6.3",
     "aws-sdk": "^2.806.0",
     "basic-auth-connect": "^1.0.0",
@@ -21,7 +27,7 @@
     "kue": "^0.11.5",
     "lodash": "^4.17.21",
     "mandrill-api": "^1.0.45",
-    "mocha": "^3.2.0",
+    "mocha": "^9.1.1",
     "moment": "^2.29.1",
     "monk": "^7.3.2",
     "nchart": "git://github.com/HabitRPG/nchart.git#master",
@@ -31,13 +37,12 @@
     "request": "^2.88.2",
     "sprintf-js": "^1.1.2",
     "stripe": "^8.127.0",
-    "uuid": "^2.0.3"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "eslint": "^3.12.2",
-    "eslint-config-habitrpg": "^2.0.2",
-    "chai": "^3.5.0",
-    "sinon": "^1.17.6",
-    "sinon-stub-promise": "^4.0.0"
+    "eslint": "^6.8.0",
+    "eslint-config-habitrpg": "^6.2.0",
+    "chai": "^4.3.4",
+    "sinon": "^10.0.0"
   }
 }
