@@ -18,7 +18,7 @@ process.env.NODE_ENV = 'test';
 
 nconf.argv()
   .env()
-  .file({ file: `./config.json` });
+  .file({ file: './config.json' });
 
 global.db = monk(nconf.get('TEST_MONGODB_URL'));
 global.usersCollection = db.get('users', { castIds: false });

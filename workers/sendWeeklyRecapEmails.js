@@ -45,12 +45,8 @@ var worker = function(job, done){
 
     // When there are no users to process, schedule next job & end this one
     if(docs.length === 0){
-      queue.create('sendWeeklyRecapEmails')
-      .priority('critical')
-      .delay(moment(jobStartDate).add({hours: 6}).toDate() - new Date())
-      .attempts(5)
-      .save(function(err){
-        return err ? done(err) : done();
+      queue.add('sendWeeklyRecapEmails', {
+        delay: moment(jobStartDate).add({hours: 6}).toDate() - new Date()
       });
       return;
     }
@@ -349,20 +345,13 @@ var worker = function(job, done){
                 ])
               }];
 
-              queue.create('email', {
+              queue.add('email', {
                 emailType: 'weekly-recap',
                 to: toData,
                 tags: ['weekly-recap-phase-' + ((user.flags.weeklyRecapEmailsPhase || 0) + 1)],
                 // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
                 variables: [{name: 'BASE_URL', content: baseUrl}],
                 personalVariables: variables
-              })
-              .priority('high')
-              .attempts(5)
-              .backoff({type: 'fixed', delay: 60*1000})
-              .save(function(err){
-                if(err) return cb(err);
-                cb();
               });
             });
           });
@@ -376,13 +365,9 @@ var worker = function(job, done){
       if(docs.length === 5){
         findAffectedUsers();
       }else{
-        queue.create('sendWeeklyRecapEmails')
-        .priority('critical')
-        .delay(moment(jobStartDate).add({hours: 6}).toDate() - new Date())
-        .attempts(5)
-        .save(function(err){
-          return err ? done(err) : done();
-        });
+        queue.add('sendWeeklyRecapEmails', {
+          delay: moment(jobStartDate).add({hours: 6}).toDate() - new Date()
+        })
       }
     });
   });

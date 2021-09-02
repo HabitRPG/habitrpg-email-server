@@ -38,7 +38,7 @@ api.getLeaderData = function getLeaderData (group, habitrpgUsers) {
 api.sendEmailReminder = function sendEmailReminder (group, subPrice, queue, baseUrl, habitrpgUsers, habitrpgGroups) {
   return api
     .getLeaderData(group, habitrpgUsers)
-    .then(user => new Promise((resolve, reject) => {
+    .then(user => new Promise(resolve => {
       const toData = getToData(user);
       const personalVariables = getPersonalVariables(toData);
       personalVariables[0].vars.push({
@@ -59,20 +59,13 @@ api.sendEmailReminder = function sendEmailReminder (group, subPrice, queue, base
           }, null, 4));
           resolve(); */
 
-        queue.create('email', {
+        queue.add('email', {
           emailType: 'group-renewal',
           to: [toData],
           // Manually pass BASE_URL as emails are sent from here and not from the main server
           variables: [{ name: 'BASE_URL', content: baseUrl }],
           personalVariables,
-        })
-          .priority('high')
-          .attempts(5)
-          .backoff({ type: 'fixed', delay: 30 * 60 * 1000 }) // try again after 30 minutes
-          .save(err => {
-            if (err) return reject(err);
-            return resolve();
-          });
+        });
       } else {
         // console.log('would not send email due to preferences');
         resolve();

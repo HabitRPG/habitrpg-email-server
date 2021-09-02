@@ -158,7 +158,7 @@ var worker = function(job, done){
         }, function(e, res){
           if(e) return done(e);
 
-          queue.create('email', {
+          queue.add('email', {
             emailType: emailType,
             to: toData,
             // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
@@ -166,13 +166,6 @@ var worker = function(job, done){
               {name: 'BASE_URL', content: baseUrl}
             ],
             personalVariables: personalVariables
-          })
-          .priority('high')
-          .attempts(5)
-          .backoff({type: 'fixed', delay: 60*1000})
-          .save(function(err){
-            if(err) return done(err);
-            continueCb();
           });
         });
     };
@@ -217,14 +210,10 @@ var worker = function(job, done){
         case 7:
           phaseRecapture = 0;
 
-          queue.create('sendBatchEmails', {
+          queue.add('sendBatchEmails', {
             type: 'sendRecaptureEmails'
-          })
-          .priority('critical')
-          .delay(moment(nowRecapture).add({hours: 1}).toDate() - new Date())
-          .attempts(5)
-          .save(function(err){
-            return err ? done(err) : done();
+          }, {
+            delay: moment(nowRecapture).add({hours: 1}).toDate() - new Date()
           });
           break;
       }
@@ -343,7 +332,7 @@ var worker = function(job, done){
         }, function(e, res){
           if(e) return done(e);
 
-          queue.create('email', {
+          queue.add('email', {
             emailType: '1-day-email',
             to: toData,
             // Manually pass BASE_URL as it's not been passed from server like other emails
@@ -351,13 +340,6 @@ var worker = function(job, done){
               {name: 'BASE_URL', content: baseUrl}
             ],
             personalVariables: personalVariables
-          })
-          .priority('high')
-          .attempts(5)
-          .backoff({type: 'fixed', delay: 60*1000})
-          .save(function(err){
-            if(err) return done(err);
-            continueCb();
           });
         });
     };
@@ -382,14 +364,10 @@ var worker = function(job, done){
         case 1:
           phaseOneDay = 0;
 
-          queue.create('sendBatchEmails', {
+          queue.add('sendBatchEmails', {
             type: 'sendOneDayEmails'
-          })
-          .priority('critical')
-          .delay(moment(nowOneDay).add({hours: 1}).toDate() - new Date())
-          .attempts(5)
-          .save(function(err){
-            return err ? done(err) : done();
+          }, {
+            delay: moment(nowOneDay).add({hours: 1}).toDate() - new Date()
           });
           break;
       }

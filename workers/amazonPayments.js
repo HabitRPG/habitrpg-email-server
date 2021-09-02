@@ -53,14 +53,7 @@ var worker = function(job, done){
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
-          queue.create('amazonPayments')
-          .priority('critical')
-          .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-          .attempts(5)
-          .save(function(err){
-            return err ? done(err) : done();
-          });
-
+          done();
           return;
         }
 
@@ -163,14 +156,6 @@ var worker = function(job, done){
           if(err) return done(err);
           if(docs.length === 10){
             findAffectedUsers();
-          }else{
-            queue.create('amazonPayments')
-            .priority('critical')
-            .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-            .attempts(5)
-            .save(function(err){
-              return err ? done(err) : done();
-            });
           }
         });
     });

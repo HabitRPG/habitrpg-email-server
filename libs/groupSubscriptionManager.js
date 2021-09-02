@@ -13,17 +13,6 @@ var pageLimit = 10;
 
 var SUBSCRIPTION_CANCEL_URL = 'https://habitica.com/amazon/subscribe/cancel';
 
-function scheduleNextQueue()
-{
-  queue.create('amazonGroupPlanPayments')
-    .priority('critical')
-    .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-    .attempts(5)
-    .save(function(err){
-      return err ? done(err) : done();
-    });
-}
-
 function cancelSubscription(group)
 {
   return new Promise(function (fulfill, reject){
@@ -92,7 +81,6 @@ function chargeGroup (group)
 function processGroupsWithAmazonPayment(groups)
 {
   if (groups.length === 0) {
-    scheduleNextQueue();
     return;
   }
 
@@ -105,8 +93,6 @@ function processGroupsWithAmazonPayment(groups)
       if (groups.length === pageLimit) {
         var lastGroup = groups[groups.length - 1];
         chargeAmazonGroups(lastGroup._id);
-      } else {
-        scheduleNextQueue();
       }
     })
     .catch(function (err) {

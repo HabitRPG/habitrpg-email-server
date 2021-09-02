@@ -12,6 +12,7 @@
     "sinon": "readonly"
   },
   "rules": {
-    "max-len": ["error", {"code": 170}]
+    "max-len": ["error", {"code": 170}],
+    "import/extensions": 0
   }
 }

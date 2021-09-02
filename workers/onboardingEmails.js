@@ -197,21 +197,15 @@ function sendEmail (user, email) {
 
     console.log('Sending onboarding email: ', `onboarding-${mapCodeToEmail[step]}-1`, ' to: ', user._id);
 
-    return new Promise((resolve, reject) => {
-      queue.create('email', {
+    return new Promise(resolve => {
+      queue.add('email', {
         emailType: `onboarding-${mapCodeToEmail[step]}-1`, // needed to correctly match the template
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{ name: 'BASE_URL', content: baseUrl }],
         personalVariables: getPersonalVariables(toData),
-      })
-        .priority('high')
-        .attempts(5)
-        .backoff({ type: 'fixed', delay: 60 * 1000 }) // try again after 60s
-        .save(err => {
-          if (err) return reject(err);
-          return resolve();
-        });
+      });
+      resolve();
     });
   });
 }
@@ -395,25 +389,6 @@ function findAffectedUsers ({ twoWeeksAgo, lastUserId }) {
   });
 }
 
-function scheduleNextJob () {
-  console.log('Scheduling new job');
-
-  return new Promise((resolve, reject) => {
-    queue
-      .create('sendOnboardingEmails')
-      .priority('critical')
-      .delay(moment().add({ hours: 6 }).toDate() - new Date()) // schedule another job, 1 hour from now
-      .attempts(5)
-      .save(err => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-  });
-}
-
 function onboardingEmailsWorker (job, done) {
   const jobStartDate = new Date();
   const twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
@@ -425,7 +400,6 @@ function onboardingEmailsWorker (job, done) {
     twoWeeksAgo,
     lastUserId,
   })
-    .then(scheduleNextJob) // All users have been processed, schedule the next job
     .then(() => {
       done();
     })

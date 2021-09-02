@@ -1,22 +1,19 @@
-import { createQueue, Job } from 'kue';
 import nconf from 'nconf';
 import moment from 'moment';
 import sinon from 'sinon';
+import Queue from 'bull';
 import {
   expect,
 } from 'chai';
 import groupSubscriptionManager from '../libs/groupSubscriptionManager.js';
 import amazonPayments from '../libs/amazonPayments.js';
 
-const kueRedisOpts = {
+const redisOpts = {
   port: nconf.get('REDIS_PORT'),
   host: nconf.get('REDIS_HOST'),
 };
 
-const queue = createQueue({
-  disableSearch: true,
-  redis: kueRedisOpts,
-});
+const queue = Queue('Test', redisOpts);
 
 const NUMBER_OF_GROUPS = 20;
 
@@ -75,14 +72,6 @@ describe('GroupSubscriptionManager', () => {
   afterEach(() => {
     groupsCollection.remove({});
     sinon.restore();
-  });
-
-  it('should schedule the next queue when finished', done => {
-    const queueSpy = sinon.spy(Job.prototype, 'save');
-    groupSubscriptionManager(db, queue, () => {
-      expect(queueSpy.callCount).equals(1);
-      done();
-    }, amazonPayments, requestSpy);
   });
 
   it('should charge a group', done => {

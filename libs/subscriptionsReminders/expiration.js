@@ -19,7 +19,7 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
 };
 
 api.sendEmailReminder = function sendEmailReminder (user, queue, baseUrl, habitrpgUsers) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const toData = getToData(user);
     const personalVariables = getPersonalVariables(toData);
     personalVariables[0].vars.push({
@@ -31,20 +31,13 @@ api.sendEmailReminder = function sendEmailReminder (user, queue, baseUrl, habitr
       user.preferences.emailNotifications.unsubscribeFromAll !== true
       && user.preferences.emailNotifications.subscriptionReminders !== false
     ) {
-      queue.create('email', {
+      queue.add('email', {
         emailType: 'gift-subscription-reminder', // not actually limited to gift subscriptions
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
         variables: [{ name: 'BASE_URL', content: baseUrl }],
         personalVariables,
-      })
-        .priority('high')
-        .attempts(5)
-        .backoff({ type: 'fixed', delay: 30 * 60 * 1000 }) // try again after 30 minutes
-        .save(err => {
-          if (err) return reject(err);
-          return resolve();
-        });
+      });
     } else {
       resolve();
     }

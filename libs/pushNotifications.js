@@ -1,5 +1,5 @@
 import nconf from 'nconf';
-import pushNotify from 'push-notify';
+/*import pushNotify from 'push-notify';
 import bluebird from 'bluebird';
 import { Sender, Message } from 'node-gcm'; // works with FCM notifications too
 import aws from 'aws-sdk';
@@ -107,6 +107,12 @@ function sendNotification (user, details) {
     }
   });
 }
+*/
+function sendNotification (user, details) {
+}
+export default {
+  sendNotification,
+};
 
 export {
   sendNotification,
