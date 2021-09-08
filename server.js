@@ -163,26 +163,26 @@ expressApp.post('/job', jsonParser, async (req, res) => {
 });
 
 expressApp.get('/health', jsonParser, async (req, res) => {
-  let status = "green"
-  let totalFailed = 0
-  const statuses = (await Promise.all(queues.map( async queue => {
-    const failed = await queue.getFailedCount()
-    totalFailed += failed
+  let status = 'green';
+  let totalFailed = 0;
+  const statuses = (await Promise.all(queues.map(async queue => {
+    const failed = await queue.getFailedCount();
+    totalFailed += failed;
     return {
       queue: queue.name,
       repeating: (await queue.getRepeatableJobs()).length,
-      failed: failed
-    }
+      failed,
+    };
   })));
   if (totalFailed > 0 && totalFailed < 4) {
-    status = "yellow";
+    status = 'yellow';
   } else if (totalFailed >= 4) {
-    status = "red";
+    status = 'red';
   }
   res.json({
     status,
-    queues: statuses
-  })
+    queues: statuses,
+  });
 });
 
 console.log(`Server listening on port ${nconf.get('PORT')}`);
