@@ -37,12 +37,7 @@ import amazonGroupsReminders from './workers/subscriptionsReminders/amazonGroups
 
 import expirationReminders from './workers/subscriptionsReminders/expiration.js';
 
-nconf.argv()
-  .env()
-  .file({ file: './config.json' });
-
 const DB_URL = nconf.get('NODE_ENV') === 'test' ? nconf.get('TEST_MONGODB_URL') : nconf.get('MONGODB_URL');
-console.log(DB_URL);
 const db = monk(DB_URL);
 
 const BASE_URL = nconf.get('BASE_URL');
@@ -165,6 +160,21 @@ expressApp.post('/job', jsonParser, async (req, res) => {
     req.body.data,
   );
   res.json({ id: job.id });
+});
+
+expressApp.get('/health', jsonParser, async (req, res) => {
+  let status = "green"
+  const statuses = (await Promise.all(queues.map( async queue => {
+    return {
+      queue: queue.name,
+      repeating: (await queue.getRepeatableJobs()).length,
+      failed: await queue.getFailedCount()
+    }
+  })))
+  res.json({
+    status,
+    queues: statuses
+  })
 });
 
 console.log(`Server listening on port ${nconf.get('PORT')}`);

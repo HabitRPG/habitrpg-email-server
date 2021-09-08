@@ -3,12 +3,11 @@
   "version": "1.1.0",
   "main": "./index.js",
   "scripts": {
-    "start": "node ./index.js",
+    "start": "node ./index.cjs",
     "test": "NODE_ENV=test mocha test/",
     "lint": "eslint --ext .js .",
     "lint:fix": "eslint --ext .js --fix ."
   },
-  "type": "module",
   "engines": {
     "node": "^14",
     "npm": "^6"
@@ -46,6 +45,7 @@
     "eslint": "^6.8.0",
     "eslint-config-habitrpg": "^6.2.0",
     "chai": "^4.3.4",
-    "sinon": "^10.0.0"
+    "sinon": "^10.0.0",
+    "babel-polyfill": "^6.0.16"
   }
 }
