@@ -11,9 +11,7 @@ on:
 
 jobs:
   lint:
-
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [14.x, 16.x]
@@ -28,3 +26,23 @@ jobs:
         cache: 'npm'
     - run: npm ci
     - run: npm run lint
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.6.0
+    - name: Start Redis
+      uses: supercharge/redis-github-action@1.2.0
+    - run: npm ci
+    - run: npm run test
