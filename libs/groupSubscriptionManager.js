@@ -81,6 +81,7 @@ function chargeGroup (group)
 function processGroupsWithAmazonPayment(groups)
 {
   if (groups.length === 0) {
+    done();
     return;
   }
 
@@ -93,6 +94,8 @@ function processGroupsWithAmazonPayment(groups)
       if (groups.length === pageLimit) {
         var lastGroup = groups[groups.length - 1];
         chargeAmazonGroups(lastGroup._id);
+      } else {
+        done();
       }
     })
     .catch(function (err) {
