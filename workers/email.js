@@ -45,6 +45,7 @@ var mapEmailsToPreferences = {
   'party-invite-rescinded': 'kickedGroup',
   'product-fit-survey': 'majorUpdates',
   'quest-started': 'questStarted',
+  'report-a-bug': 'majorUpdates',  
   'subscription-renewal': 'subscriptionReminders',
   'subscription-renewal-apple': 'subscriptionReminders',
   'gift-subscription-reminder': 'subscriptionReminders',
