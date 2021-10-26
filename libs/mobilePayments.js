@@ -8,7 +8,7 @@ const api = {};
 
 api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUsers, user, platform) {
     return new Promise((resolve, reject) => {
-      request.get(`${BASE_URL}/iap/${patform}/subscribe/cancel`, {
+      request.get(`${BASE_URL}/iap/${platform}/subscribe/cancel`, {
       qs: {
         noRedirect: 'true',
       },
