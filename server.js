@@ -55,7 +55,7 @@ awsConfig.config.update({
 
 _config({
   verbose: false,
-  // This is the path to the directory containing iap-sanbox/iap-live files
+  // This is the path to the directory containing iap-sandbox/iap-live files
   googlePublicKeyPath: nconf.get('IAP_GOOGLE_KEYDIR'),
   googleAccToken: nconf.get('PLAY_API_ACCESS_TOKEN'),
   googleRefToken: nconf.get('PLAY_API_REFRESH_TOKEN'),

@@ -56,7 +56,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   if (user.purchased.plan.customerId === 'habitrpg') return false;
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }
 
   const { customerId } = user.purchased.plan;

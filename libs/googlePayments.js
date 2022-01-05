@@ -13,7 +13,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   const plan = blocks[user.purchased.plan.planId];
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }
 
   const receipt = user.purchased.plan.additionalData;
@@ -39,7 +39,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       }
       throw err;
     }).catch(err => {
-      console.log('User:', user._id, 'has errorred');
+      console.log('User:', user._id, 'has errored');
       console.log('date updated', user.purchased.plan.dateUpdated);
       console.log('date created', user.purchased.plan.dateCreated);
       console.log('error', JSON.stringify(err, null, 4));
@@ -66,6 +66,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
 
   let usersFoundNumber;
   let newLastId;
+
   return habitrpgUsers.find(query, {
     sort: { _id: 1 },
     limit: USERS_BATCH,

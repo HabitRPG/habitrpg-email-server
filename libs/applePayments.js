@@ -15,7 +15,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   if (user.auth.blocked === true) return false;
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }
   return iap.validate(iap.APPLE, user.purchased.plan.additionalData)
     .then(response => {
@@ -46,7 +46,6 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   const query = {
     'purchased.plan.paymentMethod': 'Apple',
     'purchased.plan.dateTerminated': null,
-
     'purchased.plan.nextPaymentProcessing': {
       $lte: jobStartDate.toDate(),
     },

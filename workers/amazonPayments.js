@@ -66,7 +66,7 @@ var worker = function(job, done){
             var lastBillingDate = moment.utc(user.purchased.plan.lastBillingDate);
 
             if(!plan){
-              throw new Error('Plan ' + user.purchased.plan.planId + ' does not exists. User ' + user._id);
+              throw new Error('Plan ' + user.purchased.plan.planId + ' does not exist. User ' + user._id);
             }
 
             // For diff() to work we must adjust the number of days in case oneMonthAgo has less

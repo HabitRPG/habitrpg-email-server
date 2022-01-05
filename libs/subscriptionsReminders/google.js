@@ -55,7 +55,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   const plan = blocks[user.purchased.plan.planId];
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }
 
   const startDate = moment(jobStartDate.toDate()).add({

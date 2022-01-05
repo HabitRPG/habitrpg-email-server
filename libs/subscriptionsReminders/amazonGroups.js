@@ -80,7 +80,7 @@ api.processGroup = function processGroup (habitrpgGroups, habitrpgUsers, group, 
   if (group.purchased.plan.customerId === 'habitrpg') return false;
 
   if (!plan || plan.target !== 'group') {
-    throw new Error(`Plan ${group.purchased.plan.planId} does not exists. Group ${group._id}`);
+    throw new Error(`Plan ${group.purchased.plan.planId} does not exist. Group ${group._id}`);
   }
 
   // Get the last billing date

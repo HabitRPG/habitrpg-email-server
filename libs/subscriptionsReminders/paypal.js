@@ -63,7 +63,7 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   if (BILLING_AGREEMENT_TO_SKIP && user.purchased.plan.customerId === BILLING_AGREEMENT_TO_SKIP) return false;
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }
 
   const billingAgreementId = user.purchased.plan.customerId;

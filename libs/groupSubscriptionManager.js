@@ -13,9 +13,9 @@ var pageLimit = 10;
 
 var SUBSCRIPTION_CANCEL_URL = 'https://habitica.com/amazon/subscribe/cancel';
 
-function cancelSubscription(group)
+function cancelSubscription (group)
 {
-  return new Promise(function (fulfill, reject){
+  return new Promise(function (fulfill, reject) {
     habitrpgUsers.findOne({ _id: group.leader }, { castIds: false, fields: ['_id', 'apiToken'] })
       .then(function (user) {
         request({
@@ -55,7 +55,7 @@ function chargeGroup (group)
     SellerNote: paymentDescription,
     SellerOrderAttributes: {
       SellerOrderId: v4(),
-      StoreName: 'Habitica'
+      StoreName: 'Habitica',
     }
   })
   .then(function(response) {
@@ -78,7 +78,7 @@ function chargeGroup (group)
   });
 }
 
-function processGroupsWithAmazonPayment(groups)
+function processGroupsWithAmazonPayment (groups)
 {
   if (groups.length === 0) {
     done();
@@ -104,7 +104,7 @@ function processGroupsWithAmazonPayment(groups)
     });
 };
 
-function chargeAmazonGroups(lastId)
+function chargeAmazonGroups (lastId)
 {
   var query = {
     'purchased.plan.paymentMethod': 'Amazon Payments',
