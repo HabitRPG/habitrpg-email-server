@@ -2,6 +2,7 @@
   "name": "habitrpg-email-server",
   "version": "1.0.1",
   "scripts": {
+    "preinstall": "git config --global url.\"https://\".insteadOf git://",
     "start": "node ./index.js",
     "test": "npm run lint && NODE_ENV=test mocha test/",
     "lint": "eslint --ext .js ."
@@ -24,10 +25,10 @@
     "mocha": "^3.2.0",
     "moment": "^2.29.1",
     "monk": "^7.3.2",
-    "nchart": "git://github.com/HabitRPG/nchart.git#master",
+    "nchart": "https://github.com/HabitRPG/nchart.git#master",
     "nconf": "^0.8.4",
     "paypal-rest-sdk": "^1.8.1",
-    "push-notify": "github:habitrpg/push-notify#v1.2.0",
+    "push-notify": "https://github.com/HabitRPG/push-notify#v1.2.0",
     "request": "^2.88.2",
     "sprintf-js": "^1.1.2",
     "stripe": "^8.127.0",
