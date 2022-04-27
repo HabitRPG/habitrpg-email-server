@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "amazon-payments": "^0.2.8",
-    "async": "^2.6.3",
+    "async": "^2.6.4",
     "aws-sdk": "^2.814.0",
     "basic-auth-connect": "^1.0.0",
     "bluebird": "^3.7.2",
