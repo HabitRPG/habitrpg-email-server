@@ -46,6 +46,7 @@ var mapEmailsToPreferences = {
   'product-fit-survey': 'majorUpdates',
   'quest-started': 'questStarted',
   'remove-facebook-login-announcement': 'importantAnnouncements',
+  'remove-facebook-login-second-announcement': 'importantAnnouncements',
   'report-a-bug': 'majorUpdates',  
   'subscription-renewal': 'subscriptionReminders',
   'subscription-renewal-apple': 'subscriptionReminders',
