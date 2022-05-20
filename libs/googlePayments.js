@@ -27,11 +27,20 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
     .then((response) => {
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
-        let subscription = purchaseDataList[0];
-        if (subscription.expirationDate < jobStartDate) {
+        let expirationDate;
+        for (let i in purchaseDataList) {
+          const purchase = purchaseDataList[i];
+          if (purchase.autoRenewing === true) {
+            expirationDate = purchase.expirationDate;
+            break;
+          } else if (!expirationDate || Number(purchase.expirationDate) > Number(expirationDate)) {
+            expirationDate = subscriptions.expirationDate;
+          }
+        }
+        if (expirationDate < jobStartDate) {
           return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
         } else {
-          return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+          return api.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
         }
       } else {
         return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
