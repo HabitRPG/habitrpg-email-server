@@ -1,11 +1,9 @@
-const nconf = require('nconf');
 const iap = require('in-app-purchase');
 const subscriptions = require('../libs/subscriptions');
 const mobilePayments = require('./mobilePayments');
 const Bluebird = require('bluebird');
 
 const USERS_BATCH = 10;
-const BASE_URL = nconf.get('BASE_URL');
 
 let api = {};
 
@@ -29,18 +27,18 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         let purchaseDataList = iap.getPurchaseData(response);
         let subscription = purchaseDataList[0];
         if (subscription.expirationDate < jobStartDate) {
-          return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
+          return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
         } else {
-          return api.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+          return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
         }
       } else {
-        return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
+        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       }
     }).catch(err => {
       // Status:410 means that the subsctiption isn't active anymore
       console.log(err.message);
       if (err && err.message === 'Status:410') {
-        return api.cancelSubscriptionForUser(habitrpgUsers, user, "android");
+        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       } else {
         throw err;
       }
