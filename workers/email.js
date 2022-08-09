@@ -35,6 +35,7 @@ var mapEmailsToPreferences = {
   'kicked-from-guild': 'kickedGroup',
   'kicked-from-party': 'kickedGroup',
   'mystic-hourglass-survey': 'majorUpdates',
+  'new-groups-announcement': 'importantAnnouncements',
   'new-pm': 'newPM',
   'onboarding-add-edit-task-1': 'onboarding',
   'onboarding-buy-reward-1': 'onboarding',
