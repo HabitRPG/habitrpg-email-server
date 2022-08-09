@@ -26,7 +26,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         for (let index in purchaseDataList) {
           let subscription = purchaseDataList[index];
           if (subscription.expirationDate > jobStartDate) {
-            return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+            return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription.expirationDate, nextScheduledCheck);
           }
         }
         return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, "ios");

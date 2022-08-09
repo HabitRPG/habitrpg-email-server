@@ -37,9 +37,9 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
     });
   };
   
-  api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, subscription, nextScheduledCheck) {
-    if (nextScheduledCheck.isAfter(subscription.expirationDate)) {
-      nextScheduledCheck = subscription.expirationDate;
+  api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, expirationDate, nextScheduledCheck) {
+    if (nextScheduledCheck.isAfter(expirationDate)) {
+      nextScheduledCheck = expirationDate;
     }
   
     return habitrpgUsers.update(
