@@ -68,17 +68,9 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     hours: 12,
   }).toDate();
 
-  /* console.log(
-    'Found user with id', user._id, 'lastReminderDate', user.purchased.plan.lastReminderDate,
-    'last paymentdate', lastBillingDate.toString(),
-    'next date', nextBillingDate.toString());
-  console.log('Plan', plan); */
-
   if (nextBillingDate.isAfter(startDate) && nextBillingDate.isBefore(endDate)) {
-    // console.log('would send email!\n\n\n\n');
     return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
   }
-  // console.log('would not send email');
   return false;
 };
 
@@ -101,8 +93,6 @@ const findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, job
       $gt: lastId,
     };
   }
-
-  console.log('Run query', query);
 
   let usersFoundNumber;
   let newLastId;

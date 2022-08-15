@@ -1,7 +1,6 @@
-import fs from 'fs';
 import nconf from 'nconf';
 import mandrill from 'mandrill-api';
-import _ from 'lodash';
+import { find, findIndex } from 'lodash';
 
 var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
 
@@ -66,7 +65,7 @@ export default function(job, done){
   var replyToAddress = standardReplyTo; // For beta and production
 
   if(!job.data.variables) job.data.variables = [];
-  var baseUrlI = _.findIndex(job.data.variables, {name: 'BASE_URL'});
+  var baseUrlI = findIndex(job.data.variables, {name: 'BASE_URL'});
   var baseUrl;
 
   if(baseUrlI === -1){
@@ -106,7 +105,7 @@ export default function(job, done){
     }
   }
 
-  var replyToAddressVar = _.find(job.data.variables, {name: 'REPLY_TO_ADDRESS'});
+  var replyToAddressVar = find(job.data.variables, {name: 'REPLY_TO_ADDRESS'});
 
   if(replyToAddressVar && replyToAddressVar.content){
     replyToAddress = replyToAddressVar.content;

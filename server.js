@@ -19,8 +19,6 @@ import sendBatchEmails from './workers/sendBatchEmails.js';
 import sendOnboardingEmails from './workers/onboardingEmails.js';
 // queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, BASE_URL));
 
-import sendSpecialPushNotifications from './workers/sendSpecialPushNotifications.js';
-
 import amazonPayments from './workers/amazonPayments.js';
 import googlePayments from './workers/googlePayments.js';
 import applePayments from './workers/applePayments.js';
@@ -90,7 +88,6 @@ const comQueue = Queue('Communication', redisOpts, queueOpts);
 comQueue.process('email', 30, email);
 comQueue.process('sendBatchEmails', sendBatchEmails(comQueue, db, BASE_URL));
 comQueue.process('sendOnboardingEmails', sendOnboardingEmails(comQueue, db, BASE_URL));
-comQueue.process('sendSpecialPushNotifications', sendSpecialPushNotifications(comQueue, db));
 const paymentQueue = Queue('Payments', redisOpts, queueOpts);
 paymentQueue.process('amazonPayments', amazonPayments(paymentQueue, db));
 paymentQueue.process('googlePayments', googlePayments(paymentQueue, db));
@@ -118,13 +115,6 @@ queues.forEach(queue => {
   });
   queue.on('failed', (job, error) => {
     console.log(error);
-    /* const args = Array.prototype.slice.call(arguments);
-    args.unshift('Error processing job.');
-    try {
-      console.error(...JSON.stringify(args));
-    } catch (e) {
-      console.error('Impossible to convert error to JSON', e);
-    } */
   });
 });
 

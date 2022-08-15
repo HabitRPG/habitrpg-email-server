@@ -50,14 +50,6 @@ api.sendEmailReminder = function sendEmailReminder (group, subPrice, queue, base
         user.preferences.emailNotifications.unsubscribeFromAll !== true
           && user.preferences.emailNotifications.subscriptionReminders !== false
       ) {
-        /* console.log('would send email, data', JSON.stringify({
-            emailType: 'group-renewal',
-            to: [toData],
-            // Manually pass BASE_URL as emails are sent from here and not from the main server
-            variables: [{name: 'BASE_URL', content: baseUrl}],
-            personalVariables,
-          }, null, 4));
-          resolve(); */
 
         queue.add('email', {
           emailType: 'group-renewal',
@@ -67,7 +59,6 @@ api.sendEmailReminder = function sendEmailReminder (group, subPrice, queue, base
           personalVariables,
         });
       } else {
-        // console.log('would not send email due to preferences');
         resolve();
       }
     })).then(() => api.scheduleNextCheckForGroup(habitrpgGroups, group));
@@ -99,20 +90,10 @@ api.processGroup = function processGroup (habitrpgGroups, habitrpgUsers, group, 
     hours: 12,
   }).toDate();
 
-  /* console.log(
-    'Found group with id', group._id, 'lastReminderDate', group.purchased.plan.lastReminderDate,
-    'last paymentdate', lastBillingDate.toString(),
-    'next date', nextBillingDate.toString());
-  console.log('Plan', plan); */
-
   if (nextBillingDate.isAfter(startDate) && nextBillingDate.isBefore(endDate)) {
     const subPrice = plan.price * (plan.quantity + group.memberCount - 1);
-
-    // console.log('would send email!\n\n\n\n');
-
     return api.sendEmailReminder(group, subPrice, queue, baseUrl, habitrpgUsers, habitrpgGroups);
   }
-  // console.log('would not send email');
   return false;
 };
 
@@ -135,8 +116,6 @@ const findAffectedGroups = function findAffectedGroups (habitrpgGroups, habitrpg
       $gt: lastId,
     };
   }
-
-  console.log('Run query', query);
 
   let groupsFoundNumber;
   let newLastId;

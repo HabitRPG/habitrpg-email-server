@@ -11,7 +11,8 @@ var plan = {
 };
 var pageLimit = 10;
 
-var SUBSCRIPTION_CANCEL_URL = 'https://habitica.com/amazon/subscribe/cancel';
+const BASE_URL = nconf.get('BASE_URL');
+var SUBSCRIPTION_CANCEL_URL = `https://${BASE_URL}/amazon/subscribe/cancel`;
 
 function cancelSubscription (group)
 {

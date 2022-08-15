@@ -1,5 +1,5 @@
 import moment from 'moment';
-import lodash from 'lodash';
+import {random, template, assign } from 'lodash';
 import { sendNotification } from '../libs/pushNotifications.js';
 import { getToData, getPersonalVariables } from '../libs/email.js';
 
@@ -216,7 +216,7 @@ function sendPushNotification (user, notification) {
   const phase = notification[2];
 
   const notificationDetails = pushNotificationsMap[step];
-  const random = lodash.random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
+  const random = random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
   const version = ['A', 'B', 'C', 'D'][random];
 
   return dbUsers.update({ // update user to signal that the email has been sent
@@ -240,14 +240,14 @@ function sendPushNotification (user, notification) {
         sendNotification(user, {
           identifier: `onboarding-${notification}`,
           title: notificationDetails.title,
-          message: lodash.template(notificationDetails.messages[random])(lodash.assign({ guildName: guild.name }, toData)),
+          message: template(notificationDetails.messages[random])(assign({ guildName: guild.name }, toData)),
         });
       });
     }
     sendNotification(user, {
       identifier: `onboarding-${notification}`,
       title: notificationDetails.title,
-      message: lodash.template(notificationDetails.messages[random])(toData),
+      message: template(notificationDetails.messages[random])(toData),
     });
     return true;
   });

@@ -11,9 +11,6 @@ const api = {};
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   const plan = blocks[user.purchased.plan.planId];
 
-  // Skip users with a blocked account
-  if (user.auth.blocked === true) return false;
-
   if (!plan) {
     throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }

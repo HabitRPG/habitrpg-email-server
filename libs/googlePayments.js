@@ -25,10 +25,10 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       if (iap.isValidated(response)) {
         const purchaseDataList = iap.getPurchaseData(response);
         const subscription = purchaseDataList[0];
-        if (subscription.expirationDate < jobStartDate) {
-          return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+        if (subscription.expirationDate > jobStartDate) {
+          return scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
         }
-        return scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+        return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       }
       return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
     }).catch(err => {

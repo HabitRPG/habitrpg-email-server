@@ -22,7 +22,7 @@ const cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUs
           },
           {
             $set: {
-              'purchased.plan.dateTerminated': Date(),
+              'purchased.plan.dateTerminated': new Date(),
             },
           },
         );
