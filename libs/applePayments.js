@@ -17,13 +17,11 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   return iap.validate(iap.APPLE, user.purchased.plan.additionalData)
     .then(response => {
       if (iap.isValidated(response)) {
-        const purchaseDataList = iap.getPurchaseData(response);
-        for (const index in purchaseDataList) {
-          if (Object.prototype.hasOwnProperty.call(purchaseDataList, index)) {
-            const subscription = purchaseDataList[index];
-            if (subscription.expirationDate > jobStartDate) {
-              return scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
-            }
+        let purchaseDataList = iap.getPurchaseData(response);
+        for (let index in purchaseDataList) {
+          let subscription = purchaseDataList[index];
+          if (subscription.expirationDate > jobStartDate) {
+            return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription.expirationDate, nextScheduledCheck);
           }
         }
         return cancelSubscriptionForUser(habitrpgUsers, user, 'ios');

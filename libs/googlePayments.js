@@ -1,7 +1,7 @@
-import iap from 'in-app-purchase';
-import bluebird from 'bluebird';
-import { blocks } from './subscriptions.js';
-import { cancelSubscriptionForUser, scheduleNextCheckForUser } from './mobilePayments.js';
+const iap = require('in-app-purchase');
+const subscriptions = require('../libs/subscriptions');
+const mobilePayments = require('./mobilePayments');
+const Bluebird = require('bluebird');
 
 const USERS_BATCH = 10;
 
@@ -23,19 +23,33 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   return api.iapValidate(iap.GOOGLE, user.purchased.plan.additionalData)
     .then(response => {
       if (iap.isValidated(response)) {
-        const purchaseDataList = iap.getPurchaseData(response);
-        const subscription = purchaseDataList[0];
-        if (subscription.expirationDate > jobStartDate) {
-          return scheduleNextCheckForUser(habitrpgUsers, user, subscription, nextScheduledCheck);
+        let purchaseDataList = iap.getPurchaseData(response);
+        let expirationDate;
+        for (let i in purchaseDataList) {
+          const purchase = purchaseDataList[i];
+          if (purchase.autoRenewing === true) {
+            expirationDate = purchase.expirationDate;
+            break;
+          } else if (!expirationDate || Number(purchase.expirationDate) > Number(expirationDate)) {
+            expirationDate = subscriptions.expirationDate;
+          }
         }
-        return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+        if (expirationDate < jobStartDate) {
+          return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+        } else {
+          return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
+        }
+      } else {
+        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       }
       return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
     }).catch(err => {
       // Status:410 means that the subsctiption isn't active anymore
       console.log(err.message);
       if (err && err.message === 'Status:410') {
-        return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+      } else {
+        throw err;
       }
       throw err;
     }).catch(err => {
