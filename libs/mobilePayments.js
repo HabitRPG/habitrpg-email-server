@@ -1,6 +1,6 @@
-const nconf = require('nconf');
-const request = require('request');
-const moment = require('moment');
+import nconf from 'nconf';
+import request from 'request';
+import moment from 'moment';
 
 const BASE_URL = nconf.get('BASE_URL');
 
@@ -16,24 +16,24 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
         'x-api-user': user._id,
         'x-api-key': user.apiToken,
       },
-      }, (habitError, habitResponse, body) => {
-          if (habitResponse.statusCode === 401) {
-            return habitrpgUsers.update(
-                {
-                  _id: user._id,
-                },
-                {
-                  $set: {
-                    'purchased.plan.dateTerminated': Date(),
-                  },
-                });
-          }
-          if (!habitError && habitResponse.statusCode === 200) {
-            return resolve();
-          }
+    }, (habitError, habitResponse, body) => {
+      if (habitResponse.statusCode === 401) {
+        return habitrpgUsers.update(
+          {
+            _id: user._id,
+          },
+          {
+            $set: {
+              'purchased.plan.dateTerminated': new Date(),
+            },
+          },
+        );
+      }
+      if (!habitError && habitResponse.statusCode === 200) {
+        return resolve();
+      }
 
-          reject(habitError || body); // if there's an error or response.statusCode !== 200
-      });
+      return reject(habitError || body); // if there's an error or response.statusCode !== 200
     });
   };
   
@@ -46,11 +46,11 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
       {
         _id: user._id,
       },
-      {
-        $set: {
-          'purchased.plan.nextPaymentProcessing': moment(nextScheduledCheck).toDate(),
-        },
-      });
-  };
+    },
+  );
+};
 
-module.exports = api;
+export {
+  cancelSubscriptionForUser,
+  scheduleNextCheckForUser,
+};

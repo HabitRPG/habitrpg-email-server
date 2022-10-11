@@ -1,17 +1,17 @@
-var amazonPayments = require('amazon-payments');
-var uuid = require('uuid');
-var nconf = require('nconf');
-var moment = require('moment');
-var request = require('request');
-var async = require('async');
-const subscriptions = require('../libs/subscriptions');
+import { connect, Environment } from 'amazon-payments';
+import { v4 } from 'uuid';
+import nconf from 'nconf';
+import moment from 'moment';
+import request from 'request';
+import { eachSeries } from 'async';
+import subscriptions from '../libs/subscriptions.js';
 const BASE_URL = nconf.get('BASE_URL');
 
 // Defined later
 var db, queue, habitrpgUsers;
 
-var amzPayment = amazonPayments.connect({
-  environment: amazonPayments.Environment[nconf.get('NODE_ENV') === 'production' ? 'Production' : 'Sandbox'],
+var amzPayment = connect({
+  environment: Environment[nconf.get('NODE_ENV') === 'production' ? 'Production' : 'Sandbox'],
   sellerId: nconf.get('AMAZON_PAYMENTS_SELLER_ID'),
   mwsAccessKey: nconf.get('AMAZON_PAYMENTS_MWS_KEY'),
   mwsSecretKey: nconf.get('AMAZON_PAYMENTS_MWS_SECRET'),
@@ -53,27 +53,20 @@ var worker = function(job, done){
 
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
-          queue.create('amazonPayments')
-          .priority('critical')
-          .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-          .attempts(5)
-          .save(function(err){
-            return err ? done(err) : done();
-          });
-
+          done();
           return;
         }
 
         lastId = docs.length > 0 ? docs[docs.length - 1]._id : null;
 
-        async.eachSeries(docs, function(user, cb){
+        eachSeries(docs, function(user, cb){
           try{
             // console.log('Processing', user._id);
             var plan = subscriptions.blocks[user.purchased.plan.planId];
             var lastBillingDate = moment.utc(user.purchased.plan.lastBillingDate);
 
             if(!plan){
-              throw new Error('Plan ' + user.purchased.plan.planId + ' does not exists. User ' + user._id);
+              throw new Error('Plan ' + user.purchased.plan.planId + ' does not exist. User ' + user._id);
             }
 
             // For diff() to work we must adjust the number of days in case oneMonthAgo has less
@@ -97,7 +90,7 @@ var worker = function(job, done){
             console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
-              AuthorizationReferenceId: uuid.v4().substring(0, 32),
+              AuthorizationReferenceId: v4().substring(0, 32),
               AuthorizationAmount: {
                 CurrencyCode: 'USD',
                 Amount: plan.price
@@ -107,7 +100,7 @@ var worker = function(job, done){
               CaptureNow: true,
               SellerNote: 'Habitica Subscription Payment',
               SellerOrderAttributes: {
-                SellerOrderId: uuid.v4(),
+                SellerOrderId: v4(),
                 StoreName: 'Habitica'
               }
             }, function(err, amzRes){
@@ -163,14 +156,6 @@ var worker = function(job, done){
           if(err) return done(err);
           if(docs.length === 10){
             findAffectedUsers();
-          }else{
-            queue.create('amazonPayments')
-            .priority('critical')
-            .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-            .attempts(5)
-            .save(function(err){
-              return err ? done(err) : done();
-            });
           }
         });
     });
@@ -191,7 +176,7 @@ var worker = function(job, done){
   findAffectedUsers();
 }
 
-module.exports = function(parentQueue, parentDb){
+export default function(parentQueue, parentDb){
   // Pass db and queue from parent module
   db = parentDb;
   queue = parentQueue;

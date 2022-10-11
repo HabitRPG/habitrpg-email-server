@@ -2,6 +2,7 @@
 --reporter spec
 --timeout 8000
 --check-leaks
+--require @babel/register
 --growl
 --globals io
 --require ./test/helpers/index.js

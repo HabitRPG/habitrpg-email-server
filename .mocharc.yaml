@@ -1,0 +1,9 @@
+require:
+  - '@babel/register'
+  - './test/helpers/index.js'
+colors: true
+timeout: 8000
+check-leaks: true
+reporter: spec
+globals: io
+exit: true

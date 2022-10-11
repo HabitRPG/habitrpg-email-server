@@ -1,5 +1,5 @@
-var uuid = require('uuid');
-var moment = require('moment');
+import { v4 } from 'uuid';
+import moment from 'moment';
 
 var db, queue, amazonPayment, request, done, habitrpgUsers, jobStartDate, habitGroups, isLastDayOfMonth, oneMonthAgo;
 
@@ -11,22 +11,12 @@ var plan = {
 };
 var pageLimit = 10;
 
-var SUBSCRIPTION_CANCEL_URL = 'https://habitica.com/amazon/subscribe/cancel';
+const BASE_URL = nconf.get('BASE_URL');
+var SUBSCRIPTION_CANCEL_URL = `https://${BASE_URL}/amazon/subscribe/cancel`;
 
-function scheduleNextQueue()
+function cancelSubscription (group)
 {
-  queue.create('amazonGroupPlanPayments')
-    .priority('critical')
-    .delay(jobStartDate.add({hours: 1}).toDate() - new Date())
-    .attempts(5)
-    .save(function(err){
-      return err ? done(err) : done();
-    });
-}
-
-function cancelSubscription(group)
-{
-  return new Promise(function (fulfill, reject){
+  return new Promise(function (fulfill, reject) {
     habitrpgUsers.findOne({ _id: group.leader }, { castIds: false, fields: ['_id', 'apiToken'] })
       .then(function (user) {
         request({
@@ -55,7 +45,7 @@ function chargeGroup (group)
 
   return amazonPayment.authorizeOnBillingAgreement({
     AmazonBillingAgreementId: group.purchased.plan.customerId,
-    AuthorizationReferenceId: uuid.v4().substring(0, 32),
+    AuthorizationReferenceId: v4().substring(0, 32),
     AuthorizationAmount: {
       CurrencyCode: 'USD',
       Amount: price,
@@ -65,8 +55,8 @@ function chargeGroup (group)
     CaptureNow: true,
     SellerNote: paymentDescription,
     SellerOrderAttributes: {
-      SellerOrderId: uuid.v4(),
-      StoreName: 'Habitica'
+      SellerOrderId: v4(),
+      StoreName: 'Habitica',
     }
   })
   .then(function(response) {
@@ -89,10 +79,10 @@ function chargeGroup (group)
   });
 }
 
-function processGroupsWithAmazonPayment(groups)
+function processGroupsWithAmazonPayment (groups)
 {
   if (groups.length === 0) {
-    scheduleNextQueue();
+    done();
     return;
   }
 
@@ -106,7 +96,7 @@ function processGroupsWithAmazonPayment(groups)
         var lastGroup = groups[groups.length - 1];
         chargeAmazonGroups(lastGroup._id);
       } else {
-        scheduleNextQueue();
+        done();
       }
     })
     .catch(function (err) {
@@ -115,7 +105,7 @@ function processGroupsWithAmazonPayment(groups)
     });
 };
 
-function chargeAmazonGroups(lastId)
+function chargeAmazonGroups (lastId)
 {
   var query = {
     'purchased.plan.paymentMethod': 'Amazon Payments',
@@ -165,6 +155,4 @@ function init(dbInc, queueInc, doneInc, amazonPaymentInc, requestInc)
   chargeAmazonGroups();
 }
 
-module.exports = {
-  init: init,
-};
+export default init;

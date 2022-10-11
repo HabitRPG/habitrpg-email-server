@@ -1,7 +1,6 @@
-var fs = require('fs'),
-    nconf = require('nconf');
-    mandrill = require('mandrill-api'),
-    _ = require('lodash');
+import nconf from 'nconf';
+import mandrill from 'mandrill-api';
+import { find, findIndex } from 'lodash';
 
 var mandrillClient = new mandrill.Mandrill(nconf.get('MANDRILL_API_KEY'));
 
@@ -68,11 +67,11 @@ var mapEmailsToPreferences = {
   //'reminder-to-login': 'remindersToLogin',  
 };
 
-module.exports = function(job, done){
+export default function(job, done){
   var replyToAddress = standardReplyTo; // For beta and production
 
   if(!job.data.variables) job.data.variables = [];
-  var baseUrlI = _.findIndex(job.data.variables, {name: 'BASE_URL'});
+  var baseUrlI = findIndex(job.data.variables, {name: 'BASE_URL'});
   var baseUrl;
 
   if(baseUrlI === -1){
@@ -112,7 +111,7 @@ module.exports = function(job, done){
     }
   }
 
-  var replyToAddressVar = _.find(job.data.variables, {name: 'REPLY_TO_ADDRESS'});
+  var replyToAddressVar = find(job.data.variables, {name: 'REPLY_TO_ADDRESS'});
 
   if(replyToAddressVar && replyToAddressVar.content){
     replyToAddress = replyToAddressVar.content;

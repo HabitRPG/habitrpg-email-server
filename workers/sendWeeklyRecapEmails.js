@@ -1,14 +1,14 @@
-var moment = require('moment'),
-    utils = require('../utils'),
-    _ = require('lodash'),
-    uuidGen = require('uuid'),
-    AWS = require('aws-sdk'),
-    Canvas = require('canvas'),
-    Chart = require('nchart'),
-    fs = require('fs'),
-    async = require('async');
+import moment from 'moment';
+import { encrypt } from '../utils.js';
+import { find, takeRight } from 'lodash';
+import { v1 } from 'uuid';
+import { S3 } from 'aws-sdk';
+import Canvas from 'canvas';
+import Chart from 'nchart';
+import fs from 'fs';
+import { each, parallel } from 'async';
 
-var s3 = new AWS.S3();
+var s3 = new S3();
 
 // Defined later
 var queue, habitrpgUsers, baseUrl, db;
@@ -45,12 +45,8 @@ var worker = function(job, done){
 
     // When there are no users to process, schedule next job & end this one
     if(docs.length === 0){
-      queue.create('sendWeeklyRecapEmails')
-      .priority('critical')
-      .delay(moment(jobStartDate).add({hours: 6}).toDate() - new Date())
-      .attempts(5)
-      .save(function(err){
-        return err ? done(err) : done();
+      queue.add('sendWeeklyRecapEmails', {
+        delay: moment(jobStartDate).add({hours: 6}).toDate() - new Date()
       });
       return;
     }
@@ -59,7 +55,7 @@ var worker = function(job, done){
 
     var currentUserId;
 
-    async.each(docs, function(user, cb){
+    each(docs, function(user, cb){
       try{
         console.log('Processing', user._id);
 
@@ -102,7 +98,7 @@ var worker = function(job, done){
         }
 
         // TODO this assumes exp history is sorted from least to most recent
-        XP_START = _.find(user.history.exp, function(obj, i){
+        XP_START = find(user.history.exp, function(obj, i){
           if(moment(obj.date).isSame(START_DATE) || moment(obj.date).isAfter(START_DATE)){
             XP_START_INDEX = i;
             return true;
@@ -211,7 +207,7 @@ var worker = function(job, done){
         };
 
         // TODO be sure on how many values taken
-        _.takeRight(user.history.exp, user.history.exp.length - XP_START_INDEX)
+        takeRight(user.history.exp, user.history.exp.length - XP_START_INDEX)
           .forEach(function(item){
             xpGraphData.labels.push(moment(item.date).format('MM/DD'));
             xpGraphData.datasets[0].data.push(item.value);
@@ -253,7 +249,7 @@ var worker = function(job, done){
           showTooltips: false
         });
 
-        variables.GRAPHS_UUID = uuidGen.v1().toString();
+        variables.GRAPHS_UUID = v1().toString();
 
         var toData = {_id: user._id};
 
@@ -272,7 +268,7 @@ var worker = function(job, done){
         // If missing email, skip, don't break the whole process
         if(!toData.email) return handleUserWithoutData();
 
-        async.parallel([
+        parallel([
           function(cbParallel){
             xpCanvas.toBuffer(function(err, buf){
               if(err) return cbParallel(err);
@@ -337,7 +333,7 @@ var worker = function(job, done){
                 vars: variables.concat([
                   {
                     name: 'RECIPIENT_UNSUB_URL',
-                    content: '/email/unsubscribe?code=' + utils.encrypt(JSON.stringify({
+                    content: '/email/unsubscribe?code=' + encrypt(JSON.stringify({
                       _id: toData._id,
                       email: toData.email
                     }))
@@ -349,20 +345,13 @@ var worker = function(job, done){
                 ])
               }];
 
-              queue.create('email', {
+              queue.add('email', {
                 emailType: 'weekly-recap',
                 to: toData,
                 tags: ['weekly-recap-phase-' + ((user.flags.weeklyRecapEmailsPhase || 0) + 1)],
                 // Manually pass BASE_URL and EMAIL_SETTINGS_URL as they are sent from here and not from the main server
                 variables: [{name: 'BASE_URL', content: baseUrl}],
                 personalVariables: variables
-              })
-              .priority('high')
-              .attempts(5)
-              .backoff({type: 'fixed', delay: 60*1000})
-              .save(function(err){
-                if(err) return cb(err);
-                cb();
               });
             });
           });
@@ -376,13 +365,9 @@ var worker = function(job, done){
       if(docs.length === 5){
         findAffectedUsers();
       }else{
-        queue.create('sendWeeklyRecapEmails')
-        .priority('critical')
-        .delay(moment(jobStartDate).add({hours: 6}).toDate() - new Date())
-        .attempts(5)
-        .save(function(err){
-          return err ? done(err) : done();
-        });
+        queue.add('sendWeeklyRecapEmails', {
+          delay: moment(jobStartDate).add({hours: 6}).toDate() - new Date()
+        })
       }
     });
   });
@@ -394,7 +379,7 @@ var worker = function(job, done){
   findAffectedUsers();
 }
 
-module.exports = function(parentQueue, parentDb, parentBaseUrl){
+export default function(parentQueue, parentDb, parentBaseUrl){
   queue = parentQueue; // Pass queue from parent module
   db = parentDb; // Pass db from parent module
   baseUrl = parentBaseUrl; // Pass baseurl from parent module

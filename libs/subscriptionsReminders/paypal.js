@@ -1,12 +1,9 @@
-const subscriptions = require('../subscriptions');
-const moment = require('moment');
-const emailsLib = require('../email');
-const util = require('util');
-const paypalSDK = require('paypal-rest-sdk');
-const nconf = require('nconf');
-
-const getToData = emailsLib.getToData;
-const getPersonalVariables = emailsLib.getPersonalVariables;
+import moment from 'moment';
+import util from 'util';
+import paypalSDK from 'paypal-rest-sdk';
+import nconf from 'nconf';
+import { getToData, getPersonalVariables } from '../email.js';
+import { blocks } from '../subscriptions.js';
 
 const BILLING_AGREEMENT_TO_SKIP = nconf.get('PAYPAL_BILLING_AGREEMENT_TO_SKIP');
 
@@ -26,12 +23,12 @@ api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers,
       $set: {
         'purchased.plan.lastReminderDate': moment().toDate(),
       },
-    }
+    },
   );
 };
 
 api.sendEmailReminder = function sendEmailReminder (user, plan, queue, baseUrl, habitrpgUsers) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const toData = getToData(user);
     const personalVariables = getPersonalVariables(toData);
     personalVariables[0].vars.push({
@@ -40,42 +37,33 @@ api.sendEmailReminder = function sendEmailReminder (user, plan, queue, baseUrl, 
     });
 
     if (
-      user.preferences.emailNotifications.unsubscribeFromAll !== true &&
-      user.preferences.emailNotifications.subscriptionReminders !== false
+      user.preferences.emailNotifications.unsubscribeFromAll !== true
+      && user.preferences.emailNotifications.subscriptionReminders !== false
     ) {
-      queue.create('email', {
+      queue.add('email', {
         emailType: 'subscription-renewal',
         to: [toData],
         // Manually pass BASE_URL as emails are sent from here and not from the main server
-        variables: [{name: 'BASE_URL', content: baseUrl}],
+        variables: [{ name: 'BASE_URL', content: baseUrl }],
         personalVariables,
-      })
-      .priority('high')
-      .attempts(5)
-      .backoff({type: 'fixed', delay: 30 * 60 * 1000}) // try again after 30 minutes
-      .save((err) => {
-        if (err) return reject(err);
-        resolve();
       });
     } else {
       resolve();
     }
-  }).then(() => {
-    return api.scheduleNextCheckForUser(habitrpgUsers, user);
-  });
+  }).then(() => api.scheduleNextCheckForUser(habitrpgUsers, user));
 };
 
 api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, jobStartDate) {
-  let plan = subscriptions.blocks[user.purchased.plan.planId];
+  const plan = blocks[user.purchased.plan.planId];
 
   // Users with free subscriptions
-  if (user.purchased.plan.customerId === 'habitrpg') return;
+  if (user.purchased.plan.customerId === 'habitrpg') return false;
 
   // Skip a billing agreement currently unavailable for processing due to a Paypal bug
-  if (BILLING_AGREEMENT_TO_SKIP && user.purchased.plan.customerId === BILLING_AGREEMENT_TO_SKIP) return;
+  if (BILLING_AGREEMENT_TO_SKIP && user.purchased.plan.customerId === BILLING_AGREEMENT_TO_SKIP) return false;
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User ${user._id}`);
+    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
   }
 
   const billingAgreementId = user.purchased.plan.customerId;
@@ -138,22 +126,22 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
     if (nextBillingDate.isAfter(startDate) && nextBillingDate.isBefore(endDate)) {
       // console.log('would send email!\n\n\n\n');
       return api.sendEmailReminder(user, plan, queue, baseUrl, habitrpgUsers);
-    } else {
-      // console.log('would not send email');
     }
-  }).catch((err) => {
+    return false;
+    // console.log('would not send email');
+  }).catch(err => {
     // Catch and ignore errors due to having an account using Paypal sandbox mode
     if (
-      err && err.httpStatusCode === 400 &&
-      err.response.name === 'MERCHANT_ACCOUNT_DENIED' &&
-      err.response.message && err.response.message.indexOf('Profile ID is not valid for this account.  Please resubmit') !== -1) {
+      err && err.httpStatusCode === 400
+      && err.response.name === 'MERCHANT_ACCOUNT_DENIED'
+      && err.response.message && err.response.message.indexOf('Profile ID is not valid for this account.  Please resubmit') !== -1) {
       console.log(`SANDBOX ${user._id} with billing agreement ${billingAgreementId}`);
-      return;
+
     /* } else if (
       err && err.httpStatusCode === 400 &&
       err.response.name === 'INVALID_PROFILE_ID') {
       console.log(`INVALID ${user._id} with billing agreement ${billingAgreementId}`);
-      return;*/
+      return; */
     } else {
       console.log(`ERROR ${user._id} with billing agreement ${billingAgreementId}`);
       throw err;
@@ -161,8 +149,8 @@ api.processUser = function processUser (habitrpgUsers, user, queue, baseUrl, job
   });
 };
 
-api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
-  let query = {
+const findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, queue, baseUrl) {
+  const query = {
     'purchased.plan.paymentMethod': 'Paypal',
     'purchased.plan.dateTerminated': null,
     // Where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
@@ -184,27 +172,27 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   console.log('Run query', query);
 
   let usersFoundNumber;
+  let newLastId;
 
   return habitrpgUsers.find(query, {
-    sort: {_id: 1},
+    sort: { _id: 1 },
     limit: USERS_BATCH,
     fields: ['_id', 'auth', 'profile', 'purchased.plan', 'preferences'],
   })
     .then(users => {
       console.log('Paypal Reminders: Found n users', users.length);
       usersFoundNumber = users.length;
-      lastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
+      newLastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-      return Promise.all(users.map(user => {
-        return api.processUser(habitrpgUsers, user, queue, baseUrl, jobStartDate);
-      }));
+      return Promise.all(users.map(user => api.processUser(habitrpgUsers, user, queue, baseUrl, jobStartDate)));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
-        return api.findAffectedUsers(habitrpgUsers, lastId, jobStartDate, queue, baseUrl);
-      } else {
-        return;
+        return findAffectedUsers(habitrpgUsers, newLastId, jobStartDate, queue, baseUrl);
       }
+      return true;
     });
 };
 
-module.exports = api;
+export {
+  findAffectedUsers,
+};

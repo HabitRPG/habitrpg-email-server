@@ -1,6 +1,6 @@
-const utils = require('../utils');
+import { encrypt } from '../utils.js';
 
-module.exports.getToData = function getToData (user) {
+export function getToData (user) {
   let email;
   let name;
 
@@ -19,10 +19,10 @@ module.exports.getToData = function getToData (user) {
     name = user.auth.local.username;
   }
 
-  return {email, name, _id: user._id};
-};
+  return { email, name, _id: user._id };
+}
 
-module.exports.getPersonalVariables = function getPersonalVariables (toData) {
+export function getPersonalVariables (toData) {
   return [{
     rcpt: toData.email,
     vars: [
@@ -32,11 +32,11 @@ module.exports.getPersonalVariables = function getPersonalVariables (toData) {
       },
       {
         name: 'RECIPIENT_UNSUB_URL',
-        content: `/email/unsubscribe?code=${utils.encrypt(JSON.stringify({
+        content: `/email/unsubscribe?code=${encrypt(JSON.stringify({
           _id: toData._id,
           email: toData.email,
         }))}`,
       },
     ],
   }];
-};
+}

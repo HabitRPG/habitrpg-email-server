@@ -1,9 +1,18 @@
 {
   "extends": [
-    "habitrpg/mocha",
-    "habitrpg/esnext"
+    "habitrpg/lib/node"
   ],
   "env": {
     "node": true,
+    "mocha": true
   },
+  "globals": {
+    "db": "readonly",
+    "usersCollection": "readonly",
+    "sinon": "readonly"
+  },
+  "rules": {
+    "max-len": ["error", {"code": 170}],
+    "import/extensions": 0
+  }
 }
