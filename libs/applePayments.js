@@ -3,7 +3,7 @@ const iap = require('in-app-purchase');
 const subscriptions = require('../libs/subscriptions');
 const mobilePayments = require('./mobilePayments');
 
-const USERS_BATCH = 10;
+const USERS_BATCH = 50;
 const BASE_URL = nconf.get('BASE_URL');
 
 const INVALID_RECEIPT_ERROR = 21010;
@@ -17,7 +17,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   if (user.auth.blocked === true) return;
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
+    return;
   }
   return iap.validate(iap.APPLE, user.purchased.plan.additionalData)
     .then((response) => {
@@ -29,15 +29,16 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
             return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription.expirationDate, nextScheduledCheck);
           }
         }
+        console.log("CANCELLING SUB");
         return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, "ios");
       }
     })
     .catch(err => {
-      if (err.status === INVALID_RECEIPT_ERROR ||  (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR)) {
+      if (err.status === INVALID_RECEIPT_ERROR || err.includes('"status":21010') ||  (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR)) {
         return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, "ios");
       } else {
         console.error(`Error processing subscription for user ${user._id}`);
-        throw err;
+        return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
       }
     });
 };

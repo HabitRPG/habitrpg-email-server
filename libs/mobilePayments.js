@@ -17,7 +17,7 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
         'x-api-key': user.apiToken,
       },
       }, (habitError, habitResponse, body) => {
-          if (habitResponse.statusCode === 401) {
+          if (habitResponse && habitResponse.statusCode === 401) {
             return habitrpgUsers.update(
                 {
                   _id: user._id,
@@ -38,7 +38,7 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
   };
   
   api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, expirationDate, nextScheduledCheck) {
-    if (nextScheduledCheck.isAfter(expirationDate)) {
+    if (expirationDate !== null && nextScheduledCheck.isAfter(expirationDate)) {
       nextScheduledCheck = expirationDate;
     }
   
