@@ -1,6 +1,5 @@
 import nconf from 'nconf';
 import request from 'request';
-import moment from 'moment';
 
 const BASE_URL = nconf.get('BASE_URL');
 
@@ -35,17 +34,17 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
 
       return reject(habitError || body); // if there's an error or response.statusCode !== 200
     });
-  };
+  })
+};
   
-  api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, expirationDate, nextScheduledCheck) {
-    if (nextScheduledCheck.isAfter(expirationDate)) {
-      nextScheduledCheck = expirationDate;
-    }
-  
-    return habitrpgUsers.update(
-      {
-        _id: user._id,
-      },
+api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, expirationDate, nextScheduledCheck) {
+  if (expirationDate && nextScheduledCheck.isAfter(expirationDate)) {
+    nextScheduledCheck = expirationDate;
+  }
+
+  return habitrpgUsers.update(
+    {
+      _id: user._id,
     },
   );
 };

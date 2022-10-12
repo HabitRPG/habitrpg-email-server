@@ -12,7 +12,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
   const plan = blocks[user.purchased.plan.planId];
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
+    return;
   }
   return iap.validate(iap.APPLE, user.purchased.plan.additionalData)
     .then(response => {
@@ -32,8 +32,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       if (err.status === INVALID_RECEIPT_ERROR || (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR)) {
         return cancelSubscriptionForUser(habitrpgUsers, user, 'ios');
       }
-      console.error(`Error processing subscription for user ${user._id}`);
-      throw err;
+      return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
     });
 };
 

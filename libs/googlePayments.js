@@ -7,13 +7,13 @@ const USERS_BATCH = 10;
 
 const api = {};
 
-api.iapValidate = bluebird.promisify(iap.validate, { context: iap });
+api.iapValidate = Bluebird.promisify(iap.validate, { context: iap });
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   const plan = blocks[user.purchased.plan.planId];
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exist. User ${user._id}`);
+    return;
   }
 
   const receipt = user.purchased.plan.additionalData;
@@ -39,8 +39,6 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
         } else {
           return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
         }
-      } else {
-        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       }
       return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
     }).catch(err => {
@@ -49,17 +47,8 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       if (err && err.message === 'Status:410') {
         return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       } else {
-        throw err;
+        return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
       }
-      throw err;
-    }).catch(err => {
-      console.log('User:', user._id, 'has errored');
-      console.log('date updated', user.purchased.plan.dateUpdated);
-      console.log('date created', user.purchased.plan.dateCreated);
-      console.log('error', JSON.stringify(err, null, 4));
-      console.log('receipt', JSON.stringify(receipt, null, 4));
-
-      throw err;
     });
 };
 
