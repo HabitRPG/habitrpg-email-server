@@ -26,7 +26,7 @@
     "moment": "^2.29.4",
     "monk": "^7.3.2",
     "nchart": "https://github.com/HabitRPG/nchart#master",
-    "nconf": "^0.8.4",
+    "nconf": "^0.11.4",
     "paypal-rest-sdk": "^1.8.1",
     "push-notify": "https://github.com/HabitRPG/push-notify#v1.2.0",
     "request": "^2.88.2",
