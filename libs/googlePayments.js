@@ -3,7 +3,7 @@ const subscriptions = require('../libs/subscriptions');
 const mobilePayments = require('./mobilePayments');
 const Bluebird = require('bluebird');
 
-const USERS_BATCH = 10;
+const USERS_BATCH = 50;
 
 let api = {};
 
@@ -11,10 +11,9 @@ api.iapValidate = Bluebird.promisify(iap.validate, {context: iap});
 
 api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
   let plan = subscriptions.blocks[user.purchased.plan.planId];
-  console.log('Processing google sub for ', user._id);
 
   if (!plan) {
-    throw new Error(`Plan ${user.purchased.plan.planId} does not exists. User \{user._id}`);
+    return;
   }
 
   const receipt = user.purchased.plan.additionalData;
@@ -36,20 +35,18 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
           }
         }
         if (expirationDate < jobStartDate) {
+          console.log("CANCELLING SUB", expirationDate);
           return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
-        } else {
-          return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
         }
-      } else {
-        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       }
+      return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
     }).catch(err => {
       // Status:410 means that the subsctiption isn't active anymore
-      console.log(err.message);
       if (err && err.message === 'Status:410') {
+        console.log("CANCELLING SUB");
         return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
       } else {
-        throw err;
+        return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
       }
     }).catch(err => {
       console.log('User:', user._id, 'has errorred');
@@ -58,7 +55,7 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
       console.log('error', JSON.stringify(err, null, 4));
       console.log('receipt', JSON.stringify(receipt, null, 4));
 
-      throw err;
+      return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
     });
 };
 
