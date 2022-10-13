@@ -10,19 +10,16 @@ let habitrpgUsers;
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
 
-  console.log('Start fetching subscriptions due with Apple Payments.');
-
   setup(error => {
     if (error) {
       done(error);
       return;
     }
-    applePayments.findAffectedUsers(habitrpgUsers, null, moment.utc(), moment.utc().add({ days: 7 }))
+    applePayments.findAffectedUsers(habitrpgUsers, job, null, moment.utc(), moment.utc().add({ days: 7 }))
       .then(() => {
         done();
       })
       .catch(err => { // The processing errored, crash the job and log the error
-        console.log('Error while sending processing apple payments', inspect(err, false, null));
         done(err);
       });
   });

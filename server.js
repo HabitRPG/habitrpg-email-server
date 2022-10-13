@@ -69,9 +69,11 @@ const redisOpts = {
 
 if (nconf.get('NODE_ENV') === 'production') {
   const redisURL = parse(nconf.get('REDIS_URL'));
-  [, redisOpts.auth] = redisURL.auth.split(':');
-  redisOpts.host = redisURL.hostname;
-  redisOpts.port = redisURL.port;
+  if (redisURL.auth !== null) {
+    [, redisOpts.auth] = redisURL.auth.split(':');
+  }
+    redisOpts.host = redisURL.hostname;
+    redisOpts.port = redisURL.port;
 }
 
 const queueOpts = {
@@ -110,11 +112,14 @@ const queues = [
 ];
 
 queues.forEach(queue => {
+  queue.on('active', job => {
+    job.log('Starting Job');
+  });
   queue.on('completed', job => {
-    job.remove();
+    job.log('Run Completed');
   });
   queue.on('failed', (job, error) => {
-    console.log(error);
+    job.log('Error while processing', inspect(err, { depth: null, showHidden: true }));
   });
 });
 
@@ -179,15 +184,15 @@ console.log(`Server listening on port ${nconf.get('PORT')}`);
 
 comQueue.add('sendOnboardingEmails', {}, { repeat: { cron: '0 */1 * * *' } });
 
-paymentQueue.add('applePayments', {}, { repeat: { cron: '0 */6 * * *' } });
-paymentQueue.add('googlePayments', {}, { repeat: { cron: '0 */6 * * *' } });
-paymentQueue.add('amazonPayments', {}, { repeat: { cron: '0 */6 * * *' } });
+paymentQueue.add('applePayments', {}, { repeat: { cron: '5 */6 * * *' } });
+paymentQueue.add('googlePayments', {}, { repeat: { cron: '10 */6 * * *' } });
+paymentQueue.add('amazonPayments', {}, { repeat: { cron: '15 */6 * * *' } });
 
-remindersQueue.add('applePaymentsReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('googlePaymentsReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('amazonPaymentsReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('stripeReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('paypalReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('stripeGroupsReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('amazonGroupsReminders', {}, { repeat: { cron: '0 */12 * * *' } });
-remindersQueue.add('expirationReminders', {}, { repeat: { cron: '0 */12 * * *' } });
+remindersQueue.add('applePaymentsReminders', {}, { repeat: { cron: '3 */12 * * *' } });
+remindersQueue.add('googlePaymentsReminders', {}, { repeat: { cron: '6 */12 * * *' } });
+remindersQueue.add('amazonPaymentsReminders', {}, { repeat: { cron: '9 */12 * * *' } });
+remindersQueue.add('stripeReminders', {}, { repeat: { cron: '12 */12 * * *' } });
+remindersQueue.add('paypalReminders', {}, { repeat: { cron: '15 */12 * * *' } });
+remindersQueue.add('stripeGroupsReminders', {}, { repeat: { cron: '18 */12 * * *' } });
+remindersQueue.add('amazonGroupsReminders', {}, { repeat: { cron: '21 */12 * * *' } });
+remindersQueue.add('expirationReminders', {}, { repeat: { cron: '24 */12 * * *' } });

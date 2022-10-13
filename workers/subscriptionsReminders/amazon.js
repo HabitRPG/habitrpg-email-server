@@ -11,8 +11,6 @@ let habitrpgUsers;
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
 
-  console.log('Start fetching subscriptions due in the next week with Amazon Payments.');
-
   findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(() => {
       done();

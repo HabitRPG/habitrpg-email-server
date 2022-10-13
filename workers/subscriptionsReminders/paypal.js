@@ -11,14 +11,11 @@ let habitrpgUsers;
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
 
-  console.log('Start fetching subscriptions due in the next week with Paypal.');
-
   findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(() => {
       done();
     })
     .catch(err => { // The processing errored, crash the job and log the error
-      console.log('Error while sending reminders for Paypal subscriptions', inspect(err, false, null));
       done(err);
     });
 }

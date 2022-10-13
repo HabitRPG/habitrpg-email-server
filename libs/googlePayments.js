@@ -1,7 +1,7 @@
-const iap = require('in-app-purchase');
-const subscriptions = require('../libs/subscriptions');
-const mobilePayments = require('./mobilePayments');
-const Bluebird = require('bluebird');
+import iap from 'in-app-purchase';
+import { blocks } from './subscriptions.js';
+import { cancelSubscriptionForUser, scheduleNextCheckForUser } from './mobilePayments.js';
+import Bluebird from 'bluebird';
 
 const USERS_BATCH = 10;
 
@@ -9,7 +9,7 @@ const api = {};
 
 api.iapValidate = Bluebird.promisify(iap.validate, { context: iap });
 
-api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
+api.processUser = function processUser (habitrpgUsers, job, user, jobStartDate, nextScheduledCheck) {
   const plan = blocks[user.purchased.plan.planId];
 
   if (!plan) {
@@ -34,25 +34,27 @@ api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextS
             expirationDate = subscriptions.expirationDate;
           }
         }
-        if (expirationDate < jobStartDate) {
-          return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+        if (expirationDate && expirationDate < jobStartDate) {
+          return cancelSubscriptionForUser(habitrpgUsers, job, user, 'android');
         } else {
-          return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
+          return scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
         }
       }
-      return cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+      return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
     }).catch(err => {
       // Status:410 means that the subsctiption isn't active anymore
-      console.log(err.message);
       if (err && err.message === 'Status:410') {
-        return mobilePayments.cancelSubscriptionForUser(habitrpgUsers, user, 'android');
+        return cancelSubscriptionForUser(habitrpgUsers, job, user, 'android');
       } else {
-        return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
+        if (err) {
+          job.log(`User Errored: ${err}`);
+        }
+        return scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
       }
     });
 };
 
-api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, nextScheduledCheck) {
+api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, job, lastId, jobStartDate, nextScheduledCheck) {
   const query = {
     'purchased.plan.paymentMethod': 'Google',
     'purchased.plan.dateTerminated': null,
@@ -62,6 +64,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   };
 
   if (lastId) {
+    job.progress(('0123456789abcdef'.indexOf(lastId[0]) / 16) * 100);
     query._id = {
       $gt: lastId,
     };
@@ -79,10 +82,10 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       usersFoundNumber = users.length;
       newLastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-      return Promise.all(users.map(user => api.processUser(habitrpgUsers, user, jobStartDate, nextScheduledCheck)));
+      return Promise.all(users.map(user => api.processUser(habitrpgUsers, job, user, jobStartDate, nextScheduledCheck)));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
-        return api.findAffectedUsers(habitrpgUsers, newLastId, jobStartDate, nextScheduledCheck);
+        return api.findAffectedUsers(habitrpgUsers, job, newLastId, jobStartDate, nextScheduledCheck);
       }
       return true;
     });

@@ -12,8 +12,6 @@ let habitrpgUsers;
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
 
-  console.log('Start fetching subscriptions due in the next week with Apple Payments.');
-
   setup(error => {
     if (error) {
       done(error);

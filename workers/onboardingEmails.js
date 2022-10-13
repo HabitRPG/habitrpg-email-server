@@ -216,8 +216,8 @@ function sendPushNotification (user, notification) {
   const phase = notification[2];
 
   const notificationDetails = pushNotificationsMap[step];
-  const random = random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
-  const version = ['A', 'B', 'C', 'D'][random];
+  const randomNumber = random(0, 3); // 0, 1, 2, 3 // 3 means Version D, no notification
+  const version = ['A', 'B', 'C', 'D'][randomNumber];
 
   return dbUsers.update({ // update user to signal that the email has been sent
     _id: user._id,
@@ -240,14 +240,14 @@ function sendPushNotification (user, notification) {
         sendNotification(user, {
           identifier: `onboarding-${notification}`,
           title: notificationDetails.title,
-          message: template(notificationDetails.messages[random])(assign({ guildName: guild.name }, toData)),
+          message: template(notificationDetails.messages[randomNumber])(assign({ guildName: guild.name }, toData)),
         });
       });
     }
     sendNotification(user, {
       identifier: `onboarding-${notification}`,
       title: notificationDetails.title,
-      message: template(notificationDetails.messages[random])(toData),
+      message: template(notificationDetails.messages[randomNumber])(toData),
     });
     return true;
   });

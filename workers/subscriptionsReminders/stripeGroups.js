@@ -13,14 +13,11 @@ function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
   habitrpgGroups = db.get('groups', { castIds: false });
 
-  console.log('Start fetching group subscriptions due in the next week with Stripe.');
-
   findAffectedGroups(habitrpgGroups, habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(() => {
       done();
     })
     .catch(err => { // The processing errored, crash the job and log the error
-      console.log('Error while sending reminders for Stripe group subscriptions', inspect(err, false, null));
       done(err);
     });
 }

@@ -13,8 +13,6 @@ function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
   habitrpgGroups = db.get('groups', { castIds: false });
 
-  console.log('Start fetching group subscriptions due in the next week with Amazon.');
-
   findAffectedGroups(habitrpgGroups, habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(() => {
       done();

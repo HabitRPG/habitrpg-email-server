@@ -1,11 +1,10 @@
 import nconf from 'nconf';
 import request from 'request';
+import moment from 'moment';
 
 const BASE_URL = nconf.get('BASE_URL');
 
-const api = {};
-
-api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUsers, user, platform) {
+function cancelSubscriptionForUser (habitrpgUsers, job, user, platform) {
     return new Promise((resolve, reject) => {
       request.get(`${BASE_URL}/iap/${platform}/subscribe/cancel`, {
       qs: {
@@ -29,6 +28,7 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
         );
       }
       if (!habitError && habitResponse.statusCode === 200) {
+        job.log(`Cancelled subscription for ${user._id}`);
         return resolve();
       }
 
@@ -37,15 +37,19 @@ api.cancelSubscriptionForUser = function cancelSubscriptionForUser (habitrpgUser
   })
 };
   
-api.scheduleNextCheckForUser = function scheduleNextCheckForUser (habitrpgUsers, user, expirationDate, nextScheduledCheck) {
-  if (expirationDate && nextScheduledCheck.isAfter(expirationDate)) {
+function scheduleNextCheckForUser (habitrpgUsers, user, expirationDate, nextScheduledCheck) {
+  if (expirationDate != null && expirationDate != undefined && nextScheduledCheck.isAfter(expirationDate)) {
     nextScheduledCheck = expirationDate;
   }
-
   return habitrpgUsers.update(
     {
       _id: user._id,
     },
+    {
+      $set: {
+        'purchased.plan.nextPaymentProcessing': moment(nextScheduledCheck).toDate(),
+      },
+    }
   );
 };
 

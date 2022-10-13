@@ -8,35 +8,38 @@ const INVALID_RECEIPT_ERROR = 21010;
 
 const api = {};
 
-api.processUser = function processUser (habitrpgUsers, user, jobStartDate, nextScheduledCheck) {
+api.processUser = function processUser (habitrpgUsers, job, user, jobStartDate, nextScheduledCheck) {
   const plan = blocks[user.purchased.plan.planId];
+
+  if (user.auth.blocked === true) return;
 
   if (!plan) {
     return;
   }
   return iap.validate(iap.APPLE, user.purchased.plan.additionalData)
-    .then(response => {
+    .then((response) => {
       if (iap.isValidated(response)) {
         let purchaseDataList = iap.getPurchaseData(response);
         for (let index in purchaseDataList) {
           let subscription = purchaseDataList[index];
           if (subscription.expirationDate > jobStartDate) {
-            return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, subscription.expirationDate, nextScheduledCheck);
+            return scheduleNextCheckForUser(habitrpgUsers, user, subscription.expirationDate, nextScheduledCheck);
           }
         }
-        return cancelSubscriptionForUser(habitrpgUsers, user, 'ios');
+        return cancelSubscriptionForUser(habitrpgUsers, job, user, "ios");
       }
-      return false;
     })
     .catch(err => {
-      if (err.status === INVALID_RECEIPT_ERROR || (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR)) {
-        return cancelSubscriptionForUser(habitrpgUsers, user, 'ios');
+      if (err && (err.status === INVALID_RECEIPT_ERROR || (typeof num === 'string' && err.includes('"status":21010')) ||  (err.validatedData && err.validatedData.is_retryable === false && err.validatedData.status === INVALID_RECEIPT_ERROR))) {
+        return cancelSubscriptionForUser(habitrpgUsers, job, user, "ios");
+      } else {
+        job.log(`Error processing subscription for user ${user._id}`);
+        return scheduleNextCheckForUser(habitrpgUsers, user, null, nextScheduledCheck);
       }
-      return mobilePayments.scheduleNextCheckForUser(habitrpgUsers, user, expirationDate, nextScheduledCheck);
     });
 };
 
-api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobStartDate, nextScheduledCheck) {
+api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, job, lastId, jobStartDate, nextScheduledCheck) {
   const query = {
     'purchased.plan.paymentMethod': 'Apple',
     'purchased.plan.dateTerminated': null,
@@ -46,6 +49,7 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
   };
 
   if (lastId) {
+    job.progress(('0123456789abcdef'.indexOf(lastId[0]) / 16) * 100);
     query._id = {
       $gt: lastId,
     };
@@ -63,10 +67,10 @@ api.findAffectedUsers = function findAffectedUsers (habitrpgUsers, lastId, jobSt
       usersFoundNumber = users.length;
       newLastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
 
-      return Promise.all(users.map(user => api.processUser(habitrpgUsers, user, jobStartDate, nextScheduledCheck)));
+      return Promise.all(users.map(user => api.processUser(habitrpgUsers, job, user, jobStartDate, nextScheduledCheck)));
     }).then(() => {
       if (usersFoundNumber === USERS_BATCH) {
-        return api.findAffectedUsers(habitrpgUsers, newLastId, jobStartDate, nextScheduledCheck);
+        return api.findAffectedUsers(habitrpgUsers, job, newLastId, jobStartDate, nextScheduledCheck);
       }
       return true;
     });

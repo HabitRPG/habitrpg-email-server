@@ -49,8 +49,6 @@ var worker = function(job, done){
     }, function(err, docs){
         if(err) return done(err);
 
-        console.log('AMAZON PAYMENTS, found n users', docs.length)
-
         // When there are no users to process, schedule next job & end this one
         if(docs.length === 0){
           done();
@@ -87,7 +85,6 @@ var worker = function(job, done){
               }
             }
 
-            console.log('Authorizing');
             amzPayment.offAmazonPayments.authorizeOnBillingAgreement({
               AmazonBillingAgreementId: user.purchased.plan.customerId,
               AuthorizationReferenceId: v4().substring(0, 32),
@@ -161,7 +158,6 @@ var worker = function(job, done){
     });
   }
 
-  console.log('Start fetching subscriptions due with Amazon Payments.');
   jobStartDate = moment.utc();
   isLastDayOfMonth = jobStartDate.daysInMonth() === jobStartDate.date();
 

@@ -16,8 +16,8 @@
     "@babel/core": "^7.7.4",
     "@babel/preset-env": "^7.7.4",
     "@babel/register": "^7.15.3",
-    "@bull-board/api": "^3.5.4",
-    "@bull-board/express": "^3.5.4",
+    "@bull-board/api": "^4.5.0",
+    "@bull-board/express": "^4.5.0",
     "amazon-payments": "^0.2.9",
     "async": "^3.2.1",
     "aws-sdk": "^2.980.0",
@@ -42,10 +42,10 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "babel-polyfill": "^6.0.16",
+    "chai": "^4.3.4",
     "eslint": "^6.8.0",
     "eslint-config-habitrpg": "^6.2.0",
-    "chai": "^4.3.4",
-    "sinon": "^10.0.0",
-    "babel-polyfill": "^6.0.16"
+    "sinon": "^10.0.0"
   }
 }

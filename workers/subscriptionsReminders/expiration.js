@@ -11,8 +11,6 @@ let habitrpgUsers;
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
 
-  console.log('Start fetching Gift and non-Gift subscriptions due to expire in the next week.');
-
   findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
     .then(() => {
       done();
