@@ -1,6 +1,6 @@
 import moment from 'moment';
-import { inspect } from 'util';
-import { findAffectedUsers } from '../../libs/subscriptionsReminders/expiration.js';
+import pagedQueryer from '../../libs/pagedQueryer.js';
+import { sendEmailReminder } from '../../libs/subscriptionsReminders/expiration.js';
 
 // Defined later
 let db;
@@ -10,21 +10,42 @@ let habitrpgUsers;
 
 function worker (job, done) {
   habitrpgUsers = db.get('users', { castIds: false });
-
-  findAffectedUsers(habitrpgUsers, null, moment.utc(), queue, baseUrl)
+  const jobStartDate = moment.utc();
+  const query = {
+    'purchased.plan.dateTerminated': {
+      $gt: moment(jobStartDate.toDate()).add({
+        days: 6,
+        hours: 12,
+      }).toDate(),
+      $lt: moment(jobStartDate.toDate()).add({
+        days: 7,
+        hours: 12,
+      }).toDate(),
+    },
+    // Where lastReminderDate is not recent (25 days to be sure?) or doesn't exist
+    $or: [{
+      'purchased.plan.lastReminderDate': {
+        $lte: moment(jobStartDate.toDate()).subtract(25, 'days').toDate(),
+      },
+    }, {
+      'purchased.plan.lastReminderDate': null,
+    }],
+  };
+  pagedQueryer(habitrpgUsers, job, null, query, user => {
+    sendEmailReminder(habitrpgUsers, job, user, queue, baseUrl);
+  })
     .then(() => {
       done();
     })
-    .catch(err => { // The processing errored, crash the job and log the error
-      console.log('Error while sending reminders for gift and non-gift subscriptions about to expire', inspect(err, false, null));
+    .catch(err => {
       done(err);
     });
 }
 
-export default function work (parentQueue, parentDb, parentBaseUrl) {
+export default function work (comQueue, parentDb, parentBaseUrl) {
   // Pass db and queue from parent module
   db = parentDb;
-  queue = parentQueue;
+  queue = comQueue;
   baseUrl = parentBaseUrl;
 
   return worker;

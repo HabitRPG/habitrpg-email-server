@@ -10,7 +10,7 @@ var plan = {
   price: 3,
   quantity: 3,
 };
-var pageLimit = 10;
+const pageLimit = nconf.get('USERS_BATCH');
 
 const BASE_URL = nconf.get('BASE_URL');
 var SUBSCRIPTION_CANCEL_URL = `https://${BASE_URL}/amazon/subscribe/cancel`;

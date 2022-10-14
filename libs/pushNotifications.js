@@ -32,7 +32,7 @@ if (APN_ENABLED) {
         configureApn(cert, key);
       });
   } else {
-    configureApn('./cert.pem', './key.pem');
+    configurePush('./cert.pem', './key.pem');
   }
 }
 
@@ -44,7 +44,7 @@ function configurePush(cert, key) {
         },
         apn: {
             token: {
-                key: './certs/key.p8', // optionally: fs.readFileSync('./certs/key.p8')
+                key: key, // optionally: fs.readFileSync('./certs/key.p8')
                 keyId: 'ABCD',
                 teamId: 'EFGH',
             },

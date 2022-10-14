@@ -2,8 +2,8 @@ import moment from 'moment';
 import {random, template, assign } from 'lodash';
 import { sendNotification } from '../libs/pushNotifications.js';
 import { getToData, getPersonalVariables } from '../libs/email.js';
-
-const USERS_BATCH = 10;
+import nconf from 'nconf';
+import pagedQueryer from '../libs/pagedQueryer.js';
 
 // Defined later
 let queue;
@@ -347,56 +347,21 @@ function processUser (user) {
   return hasCompletedStep(user, lastStep, lastPhase);
 }
 
-function findAffectedUsers ({ twoWeeksAgo, lastUserId }) {
+function onboardingEmailsWorker (job, done) {
+  const jobStartDate = new Date();
+  const twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
+
   const query = {
-    // Fetch all users that signed up in the last two weeks
     'auth.timestamps.created': {
       $gte: twoWeeksAgo,
     },
-
     'preferences.emailNotifications.unsubscribeFromAll': { $ne: true },
     'preferences.emailNotifications.onboarding': { $ne: false },
   };
 
-  if (lastUserId) {
-    query._id = {
-      $gt: lastUserId,
-    };
-  }
-
-  console.log('Running query: ', query);
-
-  let usersFoundNumber;
-  let newLastId;
-
-  return dbUsers.find(query, {
-    sort: { _id: 1 },
-    limit: USERS_BATCH,
-  }).then(users => {
-    usersFoundNumber = users.length;
-    newLastId = usersFoundNumber > 0 ? users[usersFoundNumber - 1]._id : null; // the user if of the last found user
-
-    return Promise.all(users.map(user => processUser(user)));
-  }).then(() => {
-    if (usersFoundNumber === USERS_BATCH) {
-      return findAffectedUsers({ // Find and process another batch of users
-        twoWeeksAgo,
-        newLastId,
-      });
-    }
-    return false;
-  });
-}
-
-function onboardingEmailsWorker (job, done) {
-  const jobStartDate = new Date();
-  const twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
-  let lastUserId; // id of the last processed user
-
-  findAffectedUsers({
-    twoWeeksAgo,
-    lastUserId,
-  })
+  pagedQueryer(habitrpgUsers, job, query, user => {
+    processUser(user);
+  }, ['_id', 'purchased.plan', 'profile', 'preferences', 'flags', 'pushDevices'])
     .then(() => {
       done();
     })

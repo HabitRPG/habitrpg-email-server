@@ -20,21 +20,25 @@ import sendOnboardingEmails from './workers/onboardingEmails.js';
 // queue.process('sendWeeklyRecapEmails', require('./workers/sendWeeklyRecapEmails')(queue, db, BASE_URL));
 
 import amazonPayments from './workers/amazonPayments.js';
-import googlePayments from './workers/googlePayments.js';
-import applePayments from './workers/applePayments.js';
+import applePayments from './libs/applePayments.js';
+import googlePayments from './libs/googlePayments.js';
+import mobilePayments from './workers/mobilePayments';
 import amazonGroupPlanPayments from './workers/amazonGroupPlanPayments.js';
 
-import appleSubscriptionReminders from './workers/subscriptionsReminders/applePayments.js';
-import googleSubscriptionReminders from './workers/subscriptionsReminders/googlePayments.js';
-import amazonPaymentsReminders from './workers/subscriptionsReminders/amazon.js';
-import stripeReminders from './workers/subscriptionsReminders/stripe.js';
-import paypalReminders from './workers/subscriptionsReminders/paypal.js';
+import userSubscriptionReminders from './workers/subscriptionsReminders/userReminders.js';
+import amazonReminders from './libs/subscriptionsReminders/amazon.js';
+import appleReminders from './libs/subscriptionsReminders/apple.js';
+import googleReminders from './libs/subscriptionsReminders/google.js';
+import paypalReminders from './libs/subscriptionsReminders/paypal.js';
+import stripeReminders from './libs/subscriptionsReminders/stripe.js';
 
-import stripeGroupsReminders from './workers/subscriptionsReminders/stripeGroups.js';
-import amazonGroupsReminders from './workers/subscriptionsReminders/amazonGroups.js';
+import groupSubscriptionReminders from './workers/subscriptionsReminders/groupReminders.js';
+import stripeGroupsReminders from './libs/subscriptionsReminders/stripeGroups.js';
+import amazonGroupsReminders from './libs/subscriptionsReminders/amazonGroups.js';
 
 import expirationReminders from './workers/subscriptionsReminders/expiration.js';
 import { notifyAdmins } from './libs/notifyAdmins.js';
+
 
 const DB_URL = nconf.get('NODE_ENV') === 'test' ? nconf.get('TEST_MONGODB_URL') : nconf.get('MONGODB_URL');
 const db = monk(DB_URL);
@@ -92,19 +96,19 @@ comQueue.process('email', 30, email);
 comQueue.process('sendBatchEmails', sendBatchEmails(comQueue, db, BASE_URL));
 comQueue.process('sendOnboardingEmails', sendOnboardingEmails(comQueue, db, BASE_URL));
 const paymentQueue = Queue('Payments', redisOpts, queueOpts);
-paymentQueue.process('amazonPayments', amazonPayments(paymentQueue, db));
-paymentQueue.process('googlePayments', googlePayments(paymentQueue, db));
-paymentQueue.process('applePayments', applePayments(paymentQueue, db));
-paymentQueue.process('amazonGroupPlanPayments', amazonGroupPlanPayments(paymentQueue, db));
+paymentQueue.process('amazonPayments', amazonPayments(db));
+paymentQueue.process('applePayments', mobilePayments('Apple', applePayments, db));
+paymentQueue.process('googlePayments', mobilePayments('Google', googlePayments, db));
+paymentQueue.process('amazonGroupPlanPayments', amazonGroupPlanPayments(db));
 const remindersQueue = Queue('Reminders', redisOpts, queueOpts);
-remindersQueue.process('applePaymentsReminders', appleSubscriptionReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('googlePaymentsReminders', googleSubscriptionReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('amazonPaymentsReminders', amazonPaymentsReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('stripeReminders', stripeReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('paypalReminders', paypalReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('stripeGroupsReminders', stripeGroupsReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('amazonGroupsReminders', amazonGroupsReminders(remindersQueue, db, BASE_URL));
-remindersQueue.process('expirationReminders', expirationReminders(remindersQueue, db, BASE_URL));
+remindersQueue.process('applePaymentsReminders', userSubscriptionReminders(comQueue, 'Apple', appleReminders, db, BASE_URL));
+remindersQueue.process('googlePaymentsReminders', userSubscriptionReminders(comQueue, 'Google', googleReminders, db, BASE_URL));
+remindersQueue.process('amazonPaymentsReminders', userSubscriptionReminders(comQueue, 'Amazon Payments', amazonReminders, db, BASE_URL));
+remindersQueue.process('stripeReminders', userSubscriptionReminders(comQueue, 'Stripe', stripeReminders, db, BASE_URL));
+remindersQueue.process('paypalReminders', userSubscriptionReminders(comQueue, 'Paypal', paypalReminders, db, BASE_URL));
+remindersQueue.process('stripeGroupsReminders', groupSubscriptionReminders(comQueue, 'Stripe', stripeGroupsReminders, db, BASE_URL));
+remindersQueue.process('amazonGroupsReminders', groupSubscriptionReminders(comQueue, 'Amazon Payments', amazonGroupsReminders, db, BASE_URL));
+remindersQueue.process('expirationReminders', expirationReminders(comQueue, db, BASE_URL));
 
 const queues = [
   comQueue,
