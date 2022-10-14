@@ -6,7 +6,7 @@ import { getToData, getPersonalVariables } from '../email.js';
 
 const stripe = Stripe(nconf.get('STRIPE_API_KEY'));
 
-const GROUPS_BATCH = 10;
+const USERS_BATCH = nconf.get('USERS_BATCH');
 
 const api = {};
 

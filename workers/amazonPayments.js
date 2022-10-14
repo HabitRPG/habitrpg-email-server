@@ -44,7 +44,7 @@ var worker = function(job, done){
 
     habitrpgUsers.find(query, {
       sort: {_id: 1},
-      limit: 10,
+      limit: 50,
       fields: ['_id', 'apiToken', 'purchased.plan']
     }, function(err, docs){
         if(err) return done(err);
@@ -149,7 +149,6 @@ var worker = function(job, done){
             cb(e);
           }
         }, function(err){
-          console.log('terminating', err);
           if(err) return done(err);
           if(docs.length === 10){
             findAffectedUsers();

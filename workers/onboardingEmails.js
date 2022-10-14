@@ -366,7 +366,7 @@ function findAffectedUsers ({ twoWeeksAgo, lastUserId }) {
 
   console.log('Running query: ', query);
 
-  let usersFoundNumber; // the number of found users: 5 -> some missing, <5 -> all have been processed
+  let usersFoundNumber;
   let newLastId;
 
   return dbUsers.find(query, {
@@ -385,7 +385,6 @@ function findAffectedUsers ({ twoWeeksAgo, lastUserId }) {
       });
     }
     return false;
-    // Finish the job
   });
 }
 
@@ -393,8 +392,6 @@ function onboardingEmailsWorker (job, done) {
   const jobStartDate = new Date();
   const twoWeeksAgo = moment(jobStartDate).subtract(14, 'days').toDate();
   let lastUserId; // id of the last processed user
-
-  console.log('Start sending onboarding emails.');
 
   findAffectedUsers({
     twoWeeksAgo,
@@ -405,7 +402,6 @@ function onboardingEmailsWorker (job, done) {
     })
     .catch(err => { // The processing errored, crash the job and log the error
       done(err);
-      console.log('Error while sending onboarding emails.', err);
     });
 }
 

@@ -34,6 +34,7 @@ import stripeGroupsReminders from './workers/subscriptionsReminders/stripeGroups
 import amazonGroupsReminders from './workers/subscriptionsReminders/amazonGroups.js';
 
 import expirationReminders from './workers/subscriptionsReminders/expiration.js';
+import { notifyAdmins } from './libs/notifyAdmins.js';
 
 const DB_URL = nconf.get('NODE_ENV') === 'test' ? nconf.get('TEST_MONGODB_URL') : nconf.get('MONGODB_URL');
 const db = monk(DB_URL);
@@ -119,7 +120,11 @@ queues.forEach(queue => {
     job.log('Run Completed');
   });
   queue.on('failed', (job, error) => {
-    job.log('Error while processing', inspect(err, { depth: null, showHidden: true }));
+    job.log('Error while processing', inspect(error, { depth: null, showHidden: true }));
+
+    if (queue !== comQueue) {
+      notifyAdmins(job, `💥 There was an error with the following job: ${job.name}\n${error}`, 0)
+    }
   });
 });
 

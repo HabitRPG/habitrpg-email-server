@@ -18,6 +18,7 @@
     "@babel/register": "^7.15.3",
     "@bull-board/api": "^4.5.0",
     "@bull-board/express": "^4.5.0",
+    "@slack/webhook": "^6.1.0",
     "amazon-payments": "^0.2.9",
     "async": "^3.2.1",
     "aws-sdk": "^2.980.0",
