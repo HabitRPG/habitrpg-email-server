@@ -23,6 +23,7 @@ var mapEmailsToPreferences = {
   'gift-one-get-one': 'giftedSubscription',
   'gifted-gems': 'giftedGems',
   'gifted-subscription': 'giftedSubscription',
+  'group-gems-survey': 'importantAnnouncements',
   'groups-interactivity-beta': 'importantAnnouncements',
   'groups-interactivity-beta-nudge': 'importantAnnouncements',
   'groups-interactivity-beta-ending': 'importantAnnouncements',
