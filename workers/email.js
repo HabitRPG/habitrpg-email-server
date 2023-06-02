@@ -17,6 +17,7 @@ var mapEmailsToPreferences = {
   '10-days-recapture': 'importantAnnouncements',
   '3-days-recapture': 'importantAnnouncements',
   'amazon-payments-issue': 'importantAnnouncements',
+  'ask-a-question': 'majorUpdates',
   'g1g1-announcement': 'importantAnnouncements',  
   'g1g1-last-chance': 'importantAnnouncements',
   'g1g1-recapture': 'importantAnnouncements',
