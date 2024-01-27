@@ -123,26 +123,32 @@ module.exports = function(job, done){
   // If it's an object there is only one email to send, otherwise
   // the same one to multiple users
   var toArr = job.data.to.email ? [job.data.to] : job.data.to;
-  mandrillClient.messages.sendTemplate({
-    template_name: job.data.emailType, // template_name === tag === emailType
-    template_content: [], // must be supplied even if not used
-    message: {
-      to: toArr,
-      'headers': {
-        'Reply-To': replyToAddress
-      },
-      global_merge_vars: job.data.variables,
-      merge_vars: job.data.personalVariables,
-      //google_analytics_domains: ['habitica.com'],
-      from_email: 'messengers@habitica.com',
-      from_name: 'Habitica',
-      track_opens: true,
-      preserve_recipients: false,
-      tags: job.data.tags ? job.data.tags.concat([job.data.emailType]) : [job.data.emailType]
-    }
-  }, function(r){
-    done(null, r);
-  }, function(e){
-    done(e);
+  toArr.forEach(toObj => {
+    var personalVariables = _.find(job.data.personalVariables, { rcpt: toObj.email });
+    var oneClickUnsubscribe = _.find(personalVariables, { name: 'RECIPIENT_UNSUB_URL' });
+
+    mandrillClient.messages.sendTemplate({
+      template_name: job.data.emailType, // template_name === tag === emailType
+      template_content: [], // must be supplied even if not used
+      message: {
+        to: [toObj],
+        'headers': {
+          'Reply-To': replyToAddress,
+          'List-Unsubscribe': `${baseUrl}${oneClickUnsubscribe.content}`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+        global_merge_vars: job.data.variables,
+        merge_vars: [personalVariables],
+        from_email: 'messengers@habitica.com',
+        from_name: 'Habitica',
+        track_opens: true,
+        preserve_recipients: false,
+        tags: job.data.tags ? job.data.tags.concat([job.data.emailType]) : [job.data.emailType]
+      }
+    }, function(r){
+      done(null, r);
+    }, function(e){
+      done(e);
+    });
   });
 };
