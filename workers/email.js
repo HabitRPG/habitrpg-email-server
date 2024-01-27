@@ -125,7 +125,7 @@ module.exports = function(job, done){
   var toArr = job.data.to.email ? [job.data.to] : job.data.to;
   toArr.forEach(toObj => {
     var personalVariables = _.find(job.data.personalVariables, { rcpt: toObj.email });
-    var oneClickUnsubscribe = _.find(personalVariables, { name: 'RECIPIENT_UNSUB_URL' });
+    var oneClickUnsubscribe = _.find(personalVariables.vars, { name: 'RECIPIENT_UNSUB_URL' });
 
     mandrillClient.messages.sendTemplate({
       template_name: job.data.emailType, // template_name === tag === emailType
