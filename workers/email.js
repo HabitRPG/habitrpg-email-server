@@ -41,6 +41,7 @@ var mapEmailsToPreferences = {
   'mystic-hourglass-survey': 'majorUpdates',
   'new-groups-announcement': 'importantAnnouncements',
   'new-pm': 'newPM',
+  'ny-recapture': 'contentRelease',
   'onboarding-add-edit-task-1': 'onboarding',
   'onboarding-buy-reward-1': 'onboarding',
   'onboarding-check-off-task-1': 'onboarding',
